@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: stage-share-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fafah}
+      POSTGRES_DB: ${DB_NAME:-stage-share}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./stage_share.sql:/docker-entrypoint-initdb.d/01-stage_share.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      args:
+        JWT_SECRET: ${JWT_SECRET}
+    container_name: stage-share-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-fafah}
+      DB_NAME: ${DB_NAME:-stage-share}
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { fetchAuth, getUtilisateur } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
@@ -22,7 +22,7 @@ import {
   SearchUsersWrapper, SearchUsersIcon, SearchUsersInput
 } from '@/components/styleMessages'
 
-export default function MessagesPage() {
+function MessagesPageInner() {
   const searchParams = useSearchParams()
   const destinataireParam = searchParams.get('destinataire')
 
@@ -356,5 +356,13 @@ export default function MessagesPage() {
         </ChatPanel>
       </MessagesContainer>
     </>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <MessagesPageInner />
+    </Suspense>
   )
 }
