@@ -366,6 +366,7 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 0 | 0.3 Nettoyage des données de test | ✅ | 27/08/2026 |
 | 1 | 1.1 Compétences d'offre par référentiel | ✅ | 27/08/2026 |
 | 1 | 1.2 Sélecteur d'université | ✅ | 27/08/2026 |
+| 1 | 1.2b Rattachement validé par l'université | ✅ | 27/08/2026 |
 | 1 | 1.3 Listes fermées niveau/ville/durée | ⬜ | |
 | 2 | 2.1 Page « Mes candidatures » | ⬜ | |
 | 2 | 2.2 Notification de statut | ⬜ | |

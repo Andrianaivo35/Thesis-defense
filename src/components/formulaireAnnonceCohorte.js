@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import { VILLES } from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import {
   ArrowLeft, Pencil, Sparkles, ClipboardList, Users, Plus,
@@ -377,11 +378,13 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
           <Grid2Cols>
             <FieldGroup>
               <Label>Ville préférée</Label>
-              <Input
+              <Select
                 value={formData.villePreferee}
                 onChange={(e) => updateField('villePreferee', e.target.value)}
-                placeholder="Ex: Antananarivo"
-              />
+              >
+                <option value="">— Sélectionner —</option>
+                {VILLES.map(v => <option key={v} value={v}>{v}</option>)}
+              </Select>
             </FieldGroup>
             <FieldGroup>
               <Label>Accepte le télétravail ?</Label>

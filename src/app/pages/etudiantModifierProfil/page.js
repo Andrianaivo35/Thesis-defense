@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import { NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE } from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import ChangerMotDePasseModal from '@/components/changerMotDePasseModal'
 import {
@@ -682,7 +683,10 @@ export default function EtudiantModifierProfilPage() {
 
                   <ContainerLabelInput>
                     <Label>Niveau Académique</Label>
-                    <Input value={formData.niveauAcademique} onChange={(e) => updateField('niveauAcademique', e.target.value)} />
+                    <Select value={formData.niveauAcademique} onChange={(e) => updateField('niveauAcademique', e.target.value)}>
+                      <option value="">Sélectionner votre niveau</option>
+                      {NIVEAUX_ACADEMIQUES.map(n => <option key={n} value={n}>{n}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>
@@ -834,10 +838,13 @@ export default function EtudiantModifierProfilPage() {
                 <FormColumn>
                   <ContainerLabelInput>
                     <Label>Ville préférée</Label>
-                    <Input
+                    <Select
                       value={formData.preferenceStage.villePreferee}
                       onChange={(e) => updatePreference('villePreferee', e.target.value)}
-                    />
+                    >
+                      <option value="">Sélectionner une ville</option>
+                      {VILLES.map(v => <option key={v} value={v}>{v}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>
@@ -893,10 +900,13 @@ export default function EtudiantModifierProfilPage() {
 
                   <ContainerLabelInput>
                     <Label>Durée souhaitée</Label>
-                    <Input
+                    <Select
                       value={formData.preferenceStage.dureeSouhaitee}
                       onChange={(e) => updatePreference('dureeSouhaitee', e.target.value)}
-                    />
+                    >
+                      <option value="">Sélectionner une durée</option>
+                      {DUREES_STAGE.map(d => <option key={d} value={d}>{d}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import { VILLES, DUREES_STAGE } from '@/lib/referentiels'
 import {
   PageContainer, ContainerForm, ContainerTexte, FormGrid, ColumnForm,
   SectionTitle, Label, Input, Select, ContainerLabelInput,
@@ -238,7 +239,10 @@ export default function EntrepriseCreerOffre() {
 
               <ContainerLabelInput>
                 <Label>Durée</Label>
-                <Input type="text" value={duree} onChange={(e) => setDuree(e.target.value)} placeholder="Ex: 6 mois" />
+                <Select value={duree} onChange={(e) => setDuree(e.target.value)}>
+                  <option value="">Sélectionner une durée</option>
+                  {DUREES_STAGE.map(d => <option key={d} value={d}>{d}</option>)}
+                </Select>
               </ContainerLabelInput>
 
               <ContainerLabelInput>
@@ -270,7 +274,10 @@ export default function EntrepriseCreerOffre() {
 
               <ContainerLabelInput>
                 <Label>Ville</Label>
-                <Input type="text" value={ville} onChange={(e) => setVille(e.target.value)} placeholder="Ex: Antananarivo" />
+                <Select value={ville} onChange={(e) => setVille(e.target.value)}>
+                  <option value="">Sélectionner une ville</option>
+                  {VILLES.map(v => <option key={v} value={v}>{v}</option>)}
+                </Select>
               </ContainerLabelInput>
 
               <ContainerLabelInput>

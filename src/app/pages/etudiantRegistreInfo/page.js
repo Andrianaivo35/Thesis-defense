@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE } from '@/lib/referentiels'
 import {
   User, GraduationCap, MapPin, Target, Briefcase, Heart, Wrench,
   Plus, Trash2, Info, Check, Sparkles,
@@ -382,7 +383,10 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Niveau académique <span>*</span></Label>
-                    <Input type="text" value={niveauAcademique} onChange={(e) => setNiveauAcademique(e.target.value)} placeholder="Ex : Licence 3, Master 1" required />
+                    <Select value={niveauAcademique} onChange={(e) => setNiveauAcademique(e.target.value)} required>
+                      <option value="">Sélectionner votre niveau</option>
+                      {NIVEAUX_ACADEMIQUES.map(n => <option key={n} value={n}>{n}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>
@@ -528,7 +532,10 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Ville</Label>
-                    <Input type="text" value={ville} onChange={(e) => setVille(e.target.value)} placeholder="Ex : Antananarivo" />
+                    <Select value={ville} onChange={(e) => setVille(e.target.value)}>
+                      <option value="">Sélectionner une ville</option>
+                      {VILLES.map(v => <option key={v} value={v}>{v}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>
@@ -585,7 +592,10 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Durée souhaitée</Label>
-                    <Input type="text" value={dureeSouhaitee} onChange={(e) => setDureeSouhaitee(e.target.value)} placeholder="Ex : 3 mois, 6 mois" />
+                    <Select value={dureeSouhaitee} onChange={(e) => setDureeSouhaitee(e.target.value)}>
+                      <option value="">Sélectionner une durée</option>
+                      {DUREES_STAGE.map(d => <option key={d} value={d}>{d}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

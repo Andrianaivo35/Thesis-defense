@@ -1,6 +1,7 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
+import { VALEUR_NIVEAU, DUREE_EN_MOIS } from '@/lib/referentiels';
 
 /* =====================================================================
    NOMS RÉELS UTILISÉS DANS CETTE ROUTE
@@ -53,7 +54,14 @@ function recouvrement(a, b) {
   return communs.length / Math.min(motsA.length, motsB.length);
 }
 
+/* Les niveaux sont désormais saisis dans une liste fermée : la valeur est
+   lue directement dans le référentiel. L'analyse textuelle ci-dessous n'est
+   conservée que pour les profils créés avant cette normalisation. */
 function valeurNiveau(niveau) {
+  if (niveau && VALEUR_NIVEAU[niveau] !== undefined) {
+    return VALEUR_NIVEAU[niveau];
+  }
+
   const n = normaliser(niveau);
   if (!n) return null;
 
@@ -78,7 +86,13 @@ function valeurCompetence(niveau) {
   return 2;
 }
 
+/* Même principe que valeurNiveau : lecture directe dans le référentiel,
+   extraction par expression régulière en repli pour les anciennes saisies. */
 function dureeEnMois(duree) {
+  if (duree && DUREE_EN_MOIS[duree] !== undefined) {
+    return DUREE_EN_MOIS[duree];
+  }
+
   const n = normaliser(duree);
   const nombre = parseInt(n.match(/\d+/)?.[0] || '', 10);
   if (isNaN(nombre)) return null;
