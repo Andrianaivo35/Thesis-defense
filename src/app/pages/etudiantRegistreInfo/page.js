@@ -85,8 +85,58 @@ export default function EtudiantRegistreInfo() {
   // === Informations académiques ===
   const [niveauAcademique, setNiveauAcademique] = useState('')
   const [specialisation, setSpecialisation] = useState('')
-  const [universite, setUniversite] = useState('')  // contient le NOM saisi
   const [filiere, setFiliere] = useState('')
+
+  /* === Université ===
+     On conserve l'identifiant choisi, et non plus seulement le nom saisi.
+     Auparavant le formulaire n'envoyait qu'une chaîne, que le serveur devait
+     ensuite rapprocher d'une université par normalisation de texte : le
+     rattachement échouait silencieusement à la moindre différence d'écriture.
+
+     - idUniversite : renseigné dès qu'une université de la liste est choisie
+     - universite   : le nom, utilisé uniquement en saisie libre (hors liste)
+     - rechercheUniversite : le texte tapé dans le champ de recherche */
+  const [idUniversite, setIdUniversite] = useState('')
+  const [universite, setUniversite] = useState('')
+  const [rechercheUniversite, setRechercheUniversite] = useState('')
+  const [universiteHorsListe, setUniversiteHorsListe] = useState(false)
+
+  // Comparaison souple : sans accents, sans casse, sans ponctuation
+  const normaliser = (texte) =>
+    (texte || '')
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+
+  /* Recherche sur le nom ET le sigle : un étudiant tapant « ESPA » doit
+     trouver « École Supérieure Polytechnique d'Antananarivo ». */
+  const universitesFiltrees = (() => {
+    const recherche = normaliser(rechercheUniversite)
+    if (!recherche) return universites
+    return universites.filter(u =>
+      normaliser(u.nomUniversite).includes(recherche) ||
+      normaliser(u.sigleUniversitaire).includes(recherche) ||
+      normaliser(u.ville).includes(recherche)
+    )
+  })()
+
+  const universiteChoisie = universites.find(
+    u => String(u.idUniversite) === String(idUniversite)
+  )
+
+  const choisirUniversite = (u) => {
+    setIdUniversite(u.idUniversite)
+    setUniversite(u.nomUniversite)
+    setRechercheUniversite('')
+  }
+
+  const annulerChoixUniversite = () => {
+    setIdUniversite('')
+    setUniversite('')
+  }
 
   // === Préférences localisation / stage ===
   const [ville, setVille] = useState('')
@@ -175,6 +225,15 @@ export default function EtudiantRegistreInfo() {
     setSuccess('')
 
     try {
+      // L'université doit être soit choisie dans la liste, soit saisie
+      // explicitement via la case « pas dans la liste ».
+      if (!idUniversite && !universite.trim()) {
+        setError("Veuillez sélectionner votre université, ou cocher « Mon université n'est pas dans la liste » pour saisir son nom.")
+        setLoading(false)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
       const experiencesValides = experiences.filter(exp => exp.titrePoste?.trim())
       const centresValides = centresInteret.filter(c => c.domaine?.trim())
       const competencesValides = competences.filter(c => c.idCompetenceReference)
@@ -185,6 +244,7 @@ export default function EtudiantRegistreInfo() {
         body: JSON.stringify({
           nom, prenom, email, adresse, telephone, sexe, motDePasse, matricule,
           niveauAcademique, specialisation,
+          idUniversite: idUniversite || null,
           nomUniversite: universite,
           filiere, ville, rayonDeplacement, accepteTeletravail,
           mobiliteNational, typeStagePreferee, typeEntreprisePreferee,
@@ -332,27 +392,105 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Université <span>*</span></Label>
-                    <Input
-                      type="text"
-                      value={universite}
-                      onChange={(e) => setUniversite(e.target.value)}
-                      placeholder="Tapez le nom complet de votre université"
-                      list="liste-universites"
-                      required
-                    />
-                    <datalist id="liste-universites">
-                      {universites.map((univ) => (
-                        <option key={univ.idUniversite} value={univ.nomUniversite} />
-                      ))}
-                    </datalist>
-                    <HelperText>
-                      <Info size={12} strokeWidth={2} />
-                      {isLoadingUniversites
-                        ? 'Chargement des suggestions...'
-                        : universites.length > 0
-                          ? "Si votre université apparaît dans la liste, sélectionnez-la. Sinon, tapez son nom complet : le rattachement se fera automatiquement lors de son inscription."
-                          : "Tapez le nom complet de votre université. Le rattachement se fera automatiquement lors de son inscription."}
-                    </HelperText>
+
+                    {/* Cas 1 : une université de la liste a été choisie */}
+                    {!universiteHorsListe && universiteChoisie && (
+                      <>
+                        <ItemCard>
+                          <ItemHeader>
+                            <ItemBadge>
+                              <Check size={13} strokeWidth={2.5} />
+                              {universiteChoisie.sigleUniversitaire
+                                ? `${universiteChoisie.sigleUniversitaire} — ${universiteChoisie.nomUniversite}`
+                                : universiteChoisie.nomUniversite}
+                            </ItemBadge>
+                            <DeleteItemButton type="button" onClick={annulerChoixUniversite}>
+                              Changer
+                            </DeleteItemButton>
+                          </ItemHeader>
+                          <HelperText>
+                            <Info size={12} strokeWidth={2} />
+                            {universiteChoisie.ville}
+                            {universiteChoisie.estVerifie === false && ' — en attente de vérification'}
+                          </HelperText>
+                        </ItemCard>
+                      </>
+                    )}
+
+                    {/* Cas 2 : recherche et sélection dans la liste */}
+                    {!universiteHorsListe && !universiteChoisie && (
+                      <>
+                        <Input
+                          type="text"
+                          value={rechercheUniversite}
+                          onChange={(e) => setRechercheUniversite(e.target.value)}
+                          placeholder="Rechercher par nom, sigle ou ville (ex : ESPA, Antananarivo)"
+                        />
+                        <Select
+                          value=""
+                          onChange={(e) => {
+                            const u = universites.find(
+                              x => String(x.idUniversite) === String(e.target.value)
+                            )
+                            if (u) choisirUniversite(u)
+                          }}
+                          size={universitesFiltrees.length > 1 ? 6 : 2}
+                          style={{ marginTop: '8px' }}
+                        >
+                          {isLoadingUniversites ? (
+                            <option value="" disabled>Chargement des universités...</option>
+                          ) : universitesFiltrees.length === 0 ? (
+                            <option value="" disabled>Aucune université ne correspond</option>
+                          ) : (
+                            universitesFiltrees.map((univ) => (
+                              <option key={univ.idUniversite} value={univ.idUniversite}>
+                                {univ.sigleUniversitaire
+                                  ? `${univ.sigleUniversitaire} — ${univ.nomUniversite}`
+                                  : univ.nomUniversite}
+                                {univ.ville ? ` (${univ.ville})` : ''}
+                              </option>
+                            ))
+                          )}
+                        </Select>
+                        <HelperText>
+                          <Info size={12} strokeWidth={2} />
+                          Sélectionnez votre université dans la liste pour être rattaché
+                          automatiquement à son établissement.
+                        </HelperText>
+                      </>
+                    )}
+
+                    {/* Cas 3 : université absente de la liste, saisie libre */}
+                    {universiteHorsListe && (
+                      <>
+                        <Input
+                          type="text"
+                          value={universite}
+                          onChange={(e) => setUniversite(e.target.value)}
+                          placeholder="Tapez le nom complet de votre université"
+                          required
+                        />
+                        <HelperText>
+                          <Info size={12} strokeWidth={2} />
+                          Le rattachement se fera automatiquement dès que votre université
+                          créera son compte sur Stage Share.
+                        </HelperText>
+                      </>
+                    )}
+
+                    <Label style={{ marginTop: '10px', fontWeight: 400 }}>
+                      <input
+                        type="checkbox"
+                        checked={universiteHorsListe}
+                        onChange={(e) => {
+                          setUniversiteHorsListe(e.target.checked)
+                          annulerChoixUniversite()
+                          setRechercheUniversite('')
+                        }}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Mon université n&apos;est pas dans la liste
+                    </Label>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

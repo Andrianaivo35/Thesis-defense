@@ -9,6 +9,7 @@ export async function POST(req) {
 
   try {
     const {
+      idUniversite,
       nomUniversite,
       nom,
       prenom,
@@ -36,10 +37,11 @@ export async function POST(req) {
       competences          // [{ idCompetenceReference, niveau }]
     } = await req.json();
 
-    // === Validation du nom d'université ===
-    if (!nomUniversite || nomUniversite.trim() === '') {
+    // === Validation de l'université ===
+    // Soit un identifiant choisi dans la liste, soit un nom saisi librement.
+    if (!idUniversite && (!nomUniversite || nomUniversite.trim() === '')) {
       return NextResponse.json(
-        { error: 'Le nom de l\'université est obligatoire' },
+        { error: 'Veuillez sélectionner votre université ou saisir son nom' },
         { status: 400 }
       );
     }
@@ -52,23 +54,52 @@ export async function POST(req) {
       );
     }
 
-    // === Tentative de rattachement automatique à une université existante ===
-    const nomNormalise = normalizeName(nomUniversite);
+    /* === Rattachement à une université ===
+       Priorité à l'identifiant transmis par le formulaire : c'est un choix
+       explicite de l'étudiant, il n'y a rien à deviner.
 
-    const matchResult = await client.query(`
-      SELECT "idUniversite", "nomUniversite"
-      FROM universite
-      WHERE LOWER(
-        regexp_replace(
-          translate("nomUniversite", 'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ', 'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC'),
-          '[^a-zA-Z0-9]+', ' ', 'g'
-        )
-      ) = $1
-    `, [nomNormalise]);
+       Le rapprochement par nom n'intervient plus qu'en repli, lorsque
+       l'étudiant a déclaré que son université n'est pas dans la liste. Il
+       reste utile : si l'établissement s'inscrit plus tard sous le même nom,
+       le rattachement pourra se faire. */
+    let idUniversiteMatched = null;
+    let nomUniversiteFinal = (nomUniversite || '').trim();
 
-    const idUniversiteMatched = matchResult.rows.length > 0
-      ? matchResult.rows[0].idUniversite
-      : null;
+    if (idUniversite) {
+      const choisie = await client.query(
+        'SELECT "idUniversite", "nomUniversite" FROM universite WHERE "idUniversite" = $1',
+        [parseInt(idUniversite, 10)]
+      );
+
+      if (choisie.rows.length === 0) {
+        return NextResponse.json(
+          { error: 'Université introuvable' },
+          { status: 400 }
+        );
+      }
+
+      idUniversiteMatched = choisie.rows[0].idUniversite;
+      // On enregistre le nom officiel, pas une éventuelle saisie approximative
+      nomUniversiteFinal = choisie.rows[0].nomUniversite;
+    } else {
+      const nomNormalise = normalizeName(nomUniversiteFinal);
+
+      const matchResult = await client.query(`
+        SELECT "idUniversite", "nomUniversite"
+        FROM universite
+        WHERE LOWER(
+          regexp_replace(
+            translate("nomUniversite", 'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ', 'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC'),
+            '[^a-zA-Z0-9]+', ' ', 'g'
+          )
+        ) = $1
+      `, [nomNormalise]);
+
+      if (matchResult.rows.length > 0) {
+        idUniversiteMatched = matchResult.rows[0].idUniversite;
+        nomUniversiteFinal = matchResult.rows[0].nomUniversite;
+      }
+    }
 
     // === Vérification email AVANT la transaction ===
     const checkEmail = await client.query(
@@ -136,7 +167,7 @@ export async function POST(req) {
         null,                      // photoProfil
         null,                      // bio
         idUniversiteMatched,       // peut être NULL si université pas encore inscrite
-        nomUniversite.trim(),      // nom saisi (toujours rempli)
+        nomUniversiteFinal,        // nom officiel si rattachée, sinon nom saisi
         matricule,
         filiere,
         specialisation,
