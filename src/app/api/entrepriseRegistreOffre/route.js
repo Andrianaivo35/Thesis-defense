@@ -71,35 +71,36 @@ export async function POST(req) {
 
     const idOffre = offreResult.rows[0].idOffre;
 
-    // === 2. Insertion des compétences (find or create) ===
+    /* === 2. Rattachement des compétences ===
+       Seules les compétences du référentiel sont acceptées. Aucune n'est plus
+       créée à la volée : c'est ce qui produisait des doublons ("JavaScript",
+       "Javascript", "JS") et rendait le référentiel inexploitable. */
     if (Array.isArray(competences) && competences.length > 0) {
+      const dejaLiees = new Set();
+
       for (const comp of competences) {
-        if (!comp.nom || comp.nom.trim() === '') continue;
+        const idCompetenceReference = parseInt(comp.idCompetenceReference, 10);
+        if (!idCompetenceReference || isNaN(idCompetenceReference)) continue;
 
-        let idCompetenceReference;
+        // Ignorer un doublon envoyé par le formulaire
+        if (dejaLiees.has(idCompetenceReference)) continue;
 
-        // Chercher si la compétence existe déjà (case-insensitive)
+        // Vérifier que la compétence existe bien dans le référentiel
         const existante = await client.query(
-          `SELECT "idCompetenceReference" FROM "CompetenceReference" 
-           WHERE LOWER("nomCompetenceReference") = LOWER($1)`,
-          [comp.nom.trim()]
+          `SELECT 1 FROM "CompetenceReference" WHERE "idCompetenceReference" = $1`,
+          [idCompetenceReference]
         );
 
-        if (existante.rows.length > 0) {
-          idCompetenceReference = existante.rows[0].idCompetenceReference;
-        } else {
-          // Créer la nouvelle compétence
-          const nouvelle = await client.query(
-            `INSERT INTO "CompetenceReference" (
-              "nomCompetenceReference", "categorieCompetenceReference", "description"
-            ) VALUES ($1, $2, $3)
-            RETURNING "idCompetenceReference"`,
-            [comp.nom.trim(), comp.categorie || 'Autre', null]
+        if (existante.rows.length === 0) {
+          await client.query('ROLLBACK');
+          return NextResponse.json(
+            { error: 'Compétence inconnue dans le référentiel' },
+            { status: 400 }
           );
-          idCompetenceReference = nouvelle.rows[0].idCompetenceReference;
         }
 
-        // Lier la compétence à l'offre
+        dejaLiees.add(idCompetenceReference);
+
         await client.query(
           `INSERT INTO "CompetenceOffre" (
             "idOffre", "idCompetenceReference", "niveauSouhaitee", "estObligatoire"

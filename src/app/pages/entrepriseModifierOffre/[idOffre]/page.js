@@ -158,7 +158,7 @@ export default function EntrepriseModifierOffrePage() {
         const ref = competencesDisponibles.find(
           c => String(c.idCompetenceReference) === String(valeur)
         )
-        if (ref) updated[idx].nom = ref.nom
+        if (ref) updated[idx].nom = ref.nomCompetenceReference
       }
       return { ...prev, competences: updated }
     })
@@ -548,7 +548,9 @@ export default function EntrepriseModifierOffrePage() {
                               <option value="">Sélectionner une compétence</option>
                               {competencesDisponibles.map(ref => (
                                 <option key={ref.idCompetenceReference} value={ref.idCompetenceReference}>
-                                  {ref.nom} ({ref.categorie})
+                                  {ref.categorieCompetenceReference
+                                    ? `${ref.categorieCompetenceReference} — ${ref.nomCompetenceReference}`
+                                    : ref.nomCompetenceReference}
                                 </option>
                               ))}
                             </Select>

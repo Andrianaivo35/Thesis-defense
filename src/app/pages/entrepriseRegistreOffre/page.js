@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import {
@@ -31,9 +31,42 @@ export default function EntrepriseCreerOffre() {
   const [typeStage, setTypeStage] = useState('')
 
   // === Compétences requises ===
+  // On ne stocke que l'identifiant du référentiel : plus aucune compétence
+  // n'est créée à la volée à partir d'une saisie libre.
   const [competences, setCompetences] = useState([
-    { nom: '', categorie: '', niveauSouhaitee: 'Débutant', estObligatoire: false }
+    { idCompetenceReference: '', niveauSouhaitee: 'Débutant', estObligatoire: false }
   ])
+  const [referentiel, setReferentiel] = useState([])
+  const [erreurReferentiel, setErreurReferentiel] = useState('')
+
+  // Chargement du référentiel de compétences
+  useEffect(() => {
+    const chargerReferentiel = async () => {
+      try {
+        const res = await fetch('/api/competenceReference')
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Chargement impossible')
+        setReferentiel(data.competences || [])
+      } catch (err) {
+        console.error('Erreur chargement référentiel:', err)
+        setErreurReferentiel(
+          "Le référentiel de compétences n'a pas pu être chargé. Rechargez la page."
+        )
+      }
+    }
+    chargerReferentiel()
+  }, [])
+
+  // Compétences encore sélectionnables (on masque celles déjà choisies)
+  const competencesDisponibles = (indexCourant) => {
+    const dejaChoisies = competences
+      .filter((_, i) => i !== indexCourant)
+      .map(c => String(c.idCompetenceReference))
+      .filter(Boolean)
+    return referentiel.filter(
+      r => !dejaChoisies.includes(String(r.idCompetenceReference))
+    )
+  }
 
   // === QCM ===
   const [qcmTitre, setQcmTitre] = useState('')
@@ -55,7 +88,7 @@ export default function EntrepriseCreerOffre() {
 
   // === Helpers COMPÉTENCES ===
   const ajouterCompetence = () => {
-    setCompetences([...competences, { nom: '', categorie: '', niveauSouhaitee: 'Débutant', estObligatoire: false }])
+    setCompetences([...competences, { idCompetenceReference: '', niveauSouhaitee: 'Débutant', estObligatoire: false }])
   }
   const supprimerCompetence = (idx) => {
     if (competences.length > 1) setCompetences(competences.filter((_, i) => i !== idx))
@@ -120,7 +153,7 @@ export default function EntrepriseCreerOffre() {
     setSuccess('')
 
     try {
-      const competencesValides = competences.filter(c => c.nom && c.nom.trim() !== '')
+      const competencesValides = competences.filter(c => c.idCompetenceReference)
 
       const res = await fetchAuth('/api/entrepriseRegistreOffre', {
         method: 'POST',
@@ -254,6 +287,7 @@ export default function EntrepriseCreerOffre() {
 
           {/* === SECTION 2 : COMPÉTENCES REQUISES === */}
           <SectionTitle><h2>2. Compétences requises</h2></SectionTitle>
+          {erreurReferentiel && <Alert $type="error">{erreurReferentiel}</Alert>}
           {competences.map((comp, idx) => (
             <ItemCard key={idx} $tone="sauge">
               <ItemHeader $tone="sauge">
@@ -266,12 +300,24 @@ export default function EntrepriseCreerOffre() {
               <FormGrid>
                 <ColumnForm>
                   <ContainerLabelInput>
-                    <Label>Nom</Label>
-                    <Input type="text" value={comp.nom} onChange={(e) => modifierCompetence(idx, 'nom', e.target.value)} placeholder="Ex: JavaScript, React..." />
-                  </ContainerLabelInput>
-                  <ContainerLabelInput>
-                    <Label>Catégorie</Label>
-                    <Input type="text" value={comp.categorie} onChange={(e) => modifierCompetence(idx, 'categorie', e.target.value)} placeholder="Ex: Technique, Soft skill..." />
+                    <Label>Compétence</Label>
+                    <Select
+                      value={comp.idCompetenceReference}
+                      onChange={(e) => modifierCompetence(idx, 'idCompetenceReference', e.target.value)}
+                    >
+                      <option value="">
+                        {referentiel.length === 0
+                          ? 'Chargement du référentiel...'
+                          : 'Sélectionner une compétence'}
+                      </option>
+                      {competencesDisponibles(idx).map(r => (
+                        <option key={r.idCompetenceReference} value={r.idCompetenceReference}>
+                          {r.categorieCompetenceReference
+                            ? `${r.categorieCompetenceReference} — ${r.nomCompetenceReference}`
+                            : r.nomCompetenceReference}
+                        </option>
+                      ))}
+                    </Select>
                   </ContainerLabelInput>
                 </ColumnForm>
                 <ColumnForm>
