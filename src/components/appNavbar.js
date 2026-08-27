@@ -24,7 +24,7 @@ export default function AppNavbar() {
       return <EtudiantNavbar />
     case 'Entreprise':
       return <EntrepriseNavbar />
-    case 'Université':
+    case 'Universite':
       return <UniversiteNavbar />
     default:
       return null

@@ -11,7 +11,7 @@ export async function GET(req) {
     const token = authHeader?.replace('Bearer ', '');
     const payload = verifyToken(token);
 
-    if (!payload || !['Entreprise', 'Université'].includes(payload.typeUtilisateur)) {
+    if (!payload || !['Entreprise', 'Universite'].includes(payload.typeUtilisateur)) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 

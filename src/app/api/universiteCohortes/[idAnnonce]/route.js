@@ -28,7 +28,7 @@ export async function GET(req, { params }) {
     const token = authHeader?.replace('Bearer ', '');
     const payload = verifyToken(token);
 
-    if (!payload || payload.typeUtilisateur !== 'Université') {
+    if (!payload || payload.typeUtilisateur !== 'Universite') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -71,7 +71,7 @@ export async function PATCH(req, { params }) {
     const token = authHeader?.replace('Bearer ', '');
     const payload = verifyToken(token);
 
-    if (!payload || payload.typeUtilisateur !== 'Université') {
+    if (!payload || payload.typeUtilisateur !== 'Universite') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -177,7 +177,7 @@ export async function DELETE(req, { params }) {
     const token = authHeader?.replace('Bearer ', '');
     const payload = verifyToken(token);
 
-    if (!payload || payload.typeUtilisateur !== 'Université') {
+    if (!payload || payload.typeUtilisateur !== 'Universite') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 

@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Fichiers televerses par les utilisateurs (CV, lettres) - jamais dans le depot
+public/uploads/

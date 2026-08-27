@@ -79,6 +79,7 @@ export async function POST(req) {
           idAdmin: admin.idAdmin,
           nomAdmin: admin.nomAdmin,
           prenomAdmin: admin.prenomAdmin,
+          typeUtilisateur: 'Admin',
           email: utilisateur.emailUtilisateur
         }
       },

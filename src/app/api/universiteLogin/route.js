@@ -22,7 +22,7 @@ export async function POST(req) {
       `SELECT "idUtilisateur", "emailUtilisateur", "motDePasse", "typeUtilisateur"
        FROM utilisateur
        WHERE "emailUtilisateur" = $1 AND "typeUtilisateur" = $2`,
-      [email, 'Université']
+      [email, 'Universite']
     );
 
     if (utilisateurResult.rows.length === 0) {
@@ -65,7 +65,7 @@ export async function POST(req) {
     const token = signToken({
       idUtilisateur: utilisateur.idUtilisateur,
       idUniversite: universite.idUniversite,
-      typeUtilisateur: 'Université',
+      typeUtilisateur: 'Universite',
       email: utilisateur.emailUtilisateur
     });
 
@@ -81,7 +81,7 @@ export async function POST(req) {
           nomUniversite: universite.nomUniversite,
           sigleUniversitaire: universite.sigleUniversitaire,
           email: utilisateur.emailUtilisateur,
-          typeUtilisateur: 'Université',
+          typeUtilisateur: 'Universite',
         }
       },
       { status: 200 }

@@ -38,7 +38,7 @@ export default function UniversiteProfilPage() {
   }, [])
 
   const estMonProfil =
-    utilisateurConnecte?.typeUtilisateur === 'Université' &&
+    utilisateurConnecte?.typeUtilisateur === 'Universite' &&
     parseInt(utilisateurConnecte?.idUniversite) === parseInt(idUniversite)
 
   useEffect(() => {

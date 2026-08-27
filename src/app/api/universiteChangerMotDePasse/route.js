@@ -10,7 +10,7 @@ export async function PATCH(req) {
     const token = authHeader?.replace('Bearer ', '');
     const payload = verifyToken(token);
 
-    if (!payload || payload.typeUtilisateur !== 'Université') {
+    if (!payload || payload.typeUtilisateur !== 'Universite') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
