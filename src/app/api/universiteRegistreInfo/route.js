@@ -1,6 +1,7 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { normalizeName } from '@/lib/normalize';
 
 export async function POST(req){
     const client = await pool.connect();
@@ -53,7 +54,7 @@ export async function POST(req){
 
         const idUtilisateur = utilisateurResult.rows[0].idUtilisateur;
         // 2. Insertion dans universite
-        await client.query(
+        const universiteResult = await client.query(
         `INSERT INTO universite (
             "idUtilisateur",
             "nomUniversite",
@@ -66,7 +67,8 @@ export async function POST(req){
             "dateInscription",
             "estVerifie",
             "dateVerification"
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING "idUniversite"`,
         [
             idUtilisateur,
             nomUniversite,
@@ -82,11 +84,47 @@ export async function POST(req){
         ]
         );
 
+        const idUniversite = universiteResult.rows[0].idUniversite;
+
+        /* 3. Rattachement des étudiants en attente
+           Des étudiants ont pu s'inscrire avant que leur université ne soit
+           présente sur la plateforme : leur idUniversite est resté NULL et
+           seul le nom saisi a été conservé. On les rattache ici, en comparant
+           les noms normalisés (sans accents, sans ponctuation, sans casse).
+
+           Le rattachement est cree "En attente" : c'est l'universite qui
+           confirmera, elle seule sait qui sont reellement ses etudiants. */
+        const nomNormalise = normalizeName(nomUniversite);
+
+        const rattachement = await client.query(`
+            UPDATE etudiant
+            SET "idUniversite" = $1,
+                "statutRattachement" = 'En attente',
+                "dateRattachement" = now()
+            WHERE "idUniversite" IS NULL
+              AND "statutRattachement" IS NULL
+              AND "nomUniversiteSaisi" IS NOT NULL
+              AND LOWER(
+                regexp_replace(
+                  translate("nomUniversiteSaisi", 'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ', 'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC'),
+                  '[^a-zA-Z0-9]+', ' ', 'g'
+                )
+              ) = $2
+            RETURNING "idEtudiant"
+        `, [idUniversite, nomNormalise]);
+
+        const nombreEtudiantsRattaches = rattachement.rows.length;
+
         // Validation de la transaction
         await client.query('COMMIT');
 
         return NextResponse.json(
-            { message: 'Enregistrement réussi', idUtilisateur },
+            {
+                message: 'Enregistrement réussi',
+                idUtilisateur,
+                idUniversite,
+                nombreEtudiantsRattaches
+            },
             { status: 201 }
         );
     }catch(error){

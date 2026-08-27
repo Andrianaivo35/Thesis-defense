@@ -154,8 +154,10 @@ export async function POST(req) {
         "specialisation",
         "niveauAcademique",
         "dateInscription",
-        "estActif"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        "estActif",
+        "statutRattachement",
+        "dateRattachement"
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING "idEtudiant"`,
       [
         idUtilisateur,
@@ -173,7 +175,11 @@ export async function POST(req) {
         specialisation,
         niveauAcademique,
         dateInscription,
-        estActif
+        estActif,
+        // Le rattachement est une simple déclaration de l'étudiant : il reste
+        // en attente tant que l'université ne l'a pas validé.
+        idUniversiteMatched ? 'En attente' : null,
+        idUniversiteMatched ? new Date() : null
       ]
     );
 
@@ -284,8 +290,8 @@ export async function POST(req) {
       {
         success: true,
         message: idUniversiteMatched
-          ? 'Inscription réussie ! Votre université a été reconnue et rattachée à votre profil.'
-          : 'Inscription réussie ! Votre université sera automatiquement rattachée dès qu\'elle créera son compte sur Stage Share.',
+          ? 'Inscription réussie ! Votre demande de rattachement a été transmise à votre université, qui doit la valider.'
+          : 'Inscription réussie ! Votre université n\'est pas encore inscrite sur Stage Share : vous lui serez rattaché automatiquement dès qu\'elle créera son compte.',
         idEtudiant,
         universiteRattachee: idUniversiteMatched !== null
       },

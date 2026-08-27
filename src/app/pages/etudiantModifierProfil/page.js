@@ -39,12 +39,52 @@ export default function EtudiantModifierProfilPage() {
   // référentiel : sert uniquement de suggestions dans le datalist
   const [referentiel, setReferentiel] = useState([])
 
+  /* === Université ===
+     Même principe qu'à l'inscription : on retient l'identifiant choisi, et
+     non plus seulement un nom que le serveur devrait ensuite rapprocher par
+     comparaison de texte. */
+  const [universites, setUniversites] = useState([])
+  const [rechercheUniversite, setRechercheUniversite] = useState('')
+  const [universiteHorsListe, setUniversiteHorsListe] = useState(false)
+
+  useEffect(() => {
+    const chargerUniversites = async () => {
+      try {
+        const res = await fetch('/api/universiteList')
+        const data = await res.json()
+        if (res.ok) setUniversites(data.universites || [])
+      } catch (err) {
+        console.warn('Universités non chargées :', err.message)
+      }
+    }
+    chargerUniversites()
+  }, [])
+
+  const normaliserTexte = (texte) =>
+    (texte || '')
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+
+  const universitesFiltrees = (() => {
+    const recherche = normaliserTexte(rechercheUniversite)
+    if (!recherche) return universites
+    return universites.filter(u =>
+      normaliserTexte(u.nomUniversite).includes(recherche) ||
+      normaliserTexte(u.sigleUniversitaire).includes(recherche) ||
+      normaliserTexte(u.ville).includes(recherche)
+    )
+  })()
+
   const [formData, setFormData] = useState({
     nomEtudiant: '', prenomEtudiant: '', telephoneEtudiant: '',
     genre: '', adresse: '',
     photoProfil: '', bio: '',
     matricule: '', filiere: '', specialisation: '', niveauAcademique: '',
-    nomUniversite: '',
+    nomUniversite: '', idUniversite: '',
     preferenceStage: {
       villePreferee: '', accepteTeletravail: '', rayonDeplacement: '',
       mobiliteNational: '', typeStagePreferee: '', dureeSouhaitee: '',
@@ -103,6 +143,7 @@ export default function EtudiantModifierProfilPage() {
           specialisation: e.specialisation || '',
           niveauAcademique: e.niveauAcademique || '',
           nomUniversite: e.nomUniversite || e.nomUniversiteSaisi || '',
+          idUniversite: e.idUniversite || '',
           preferenceStage: {
             villePreferee: data.preferenceStage?.villePreferee || '',
             accepteTeletravail: data.preferenceStage?.accepteTeletravail || '',
@@ -389,6 +430,7 @@ export default function EtudiantModifierProfilPage() {
         specialisation: formData.specialisation,
         niveauAcademique: formData.niveauAcademique,
         nomUniversite: formData.nomUniversite,
+        idUniversite: formData.idUniversite || null,
         preferenceStage: formData.preferenceStage,
         parcoursActions: allParcoursActions,
         interetsActions: allInteretsActions,
@@ -578,11 +620,64 @@ export default function EtudiantModifierProfilPage() {
                 <FormColumn>
                   <ContainerLabelInput>
                     <Label>Université</Label>
-                    <Input
-                      value={formData.nomUniversite}
-                      onChange={(e) => updateField('nomUniversite', e.target.value)}
-                      placeholder="Tapez le nom complet de votre université"
-                    />
+
+                    {!universiteHorsListe ? (
+                      <>
+                        <Input
+                          value={rechercheUniversite}
+                          onChange={(e) => setRechercheUniversite(e.target.value)}
+                          placeholder="Rechercher par nom, sigle ou ville (ex : ESPA)"
+                        />
+                        <Select
+                          value={formData.idUniversite || ''}
+                          onChange={(e) => {
+                            const u = universites.find(
+                              x => String(x.idUniversite) === String(e.target.value)
+                            )
+                            updateField('idUniversite', e.target.value)
+                            if (u) updateField('nomUniversite', u.nomUniversite)
+                          }}
+                          style={{ marginTop: '8px' }}
+                        >
+                          <option value="">
+                            {formData.nomUniversite
+                              ? `Actuellement : ${formData.nomUniversite}`
+                              : 'Sélectionner votre université'}
+                          </option>
+                          {universitesFiltrees.map((u) => (
+                            <option key={u.idUniversite} value={u.idUniversite}>
+                              {u.sigleUniversitaire
+                                ? `${u.sigleUniversitaire} — ${u.nomUniversite}`
+                                : u.nomUniversite}
+                              {u.ville ? ` (${u.ville})` : ''}
+                            </option>
+                          ))}
+                        </Select>
+                      </>
+                    ) : (
+                      <Input
+                        value={formData.nomUniversite}
+                        onChange={(e) => {
+                          updateField('nomUniversite', e.target.value)
+                          updateField('idUniversite', '')
+                        }}
+                        placeholder="Tapez le nom complet de votre université"
+                      />
+                    )}
+
+                    <Label style={{ marginTop: '10px', fontWeight: 400 }}>
+                      <input
+                        type="checkbox"
+                        checked={universiteHorsListe}
+                        onChange={(e) => {
+                          setUniversiteHorsListe(e.target.checked)
+                          updateField('idUniversite', '')
+                          setRechercheUniversite('')
+                        }}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Mon université n&apos;est pas dans la liste
+                    </Label>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

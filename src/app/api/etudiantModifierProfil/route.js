@@ -69,6 +69,7 @@ export async function GET(req) {
         e."photoProfil", e."bio",
         e."matricule", e."filiere", e."specialisation", e."niveauAcademique",
         e."idUniversite", e."nomUniversiteSaisi",
+        e."statutRattachement",
         univ."nomUniversite"
       FROM etudiant e
       LEFT JOIN universite univ ON e."idUniversite" = univ."idUniversite"
@@ -143,7 +144,8 @@ export async function PATCH(req) {
     const {
       nomEtudiant, prenomEtudiant, telephoneEtudiant, genre, adresse,
       photoProfil, bio,
-      matricule, filiere, specialisation, niveauAcademique, nomUniversite,
+      matricule, filiere, specialisation, niveauAcademique,
+      nomUniversite, idUniversite,
       preferenceStage,
       parcoursActions,
       interetsActions,
@@ -152,9 +154,23 @@ export async function PATCH(req) {
 
     await client.query('BEGIN');
 
-    // === 1. Mise à jour table etudiant ===
+    /* === 1. Rattachement à une université ===
+       Priorité à l'identifiant choisi dans la liste ; le rapprochement par
+       nom ne sert que de repli lorsque l'étudiant a saisi librement le nom
+       d'un établissement pas encore inscrit. */
     let idUniversiteMatched = null;
-    if (nomUniversite && nomUniversite.trim() !== '') {
+
+    if (idUniversite) {
+      const choisie = await client.query(
+        'SELECT "idUniversite" FROM universite WHERE "idUniversite" = $1',
+        [parseInt(idUniversite, 10)]
+      );
+      if (choisie.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return NextResponse.json({ error: 'Université introuvable' }, { status: 400 });
+      }
+      idUniversiteMatched = choisie.rows[0].idUniversite;
+    } else if (nomUniversite && nomUniversite.trim() !== '') {
       const { normalizeName } = await import('@/lib/normalize');
       const nomNormalise = normalizeName(nomUniversite);
       const matchResult = await client.query(`
@@ -168,6 +184,18 @@ export async function PATCH(req) {
       `, [nomNormalise]);
       idUniversiteMatched = matchResult.rows[0]?.idUniversite || null;
     }
+
+    /* Changer d'université remet le rattachement en attente : c'est au
+       nouvel établissement de confirmer. Le statut n'est pas touché si
+       l'étudiant reste dans la même université. */
+    const rattachementActuel = await client.query(
+      'SELECT "idUniversite" FROM etudiant WHERE "idEtudiant" = $1',
+      [idEtudiant]
+    );
+    const ancienIdUniversite = rattachementActuel.rows[0]?.idUniversite || null;
+    const universiteChangee =
+      idUniversiteMatched !== null &&
+      String(idUniversiteMatched) !== String(ancienIdUniversite);
 
     await client.query(`
       UPDATE etudiant SET
@@ -183,13 +211,16 @@ export async function PATCH(req) {
         "specialisation" = COALESCE($10, "specialisation"),
         "niveauAcademique" = COALESCE($11, "niveauAcademique"),
         "idUniversite" = COALESCE($12, "idUniversite"),
-        "nomUniversiteSaisi" = COALESCE($13, "nomUniversiteSaisi")
-      WHERE "idEtudiant" = $14
+        "nomUniversiteSaisi" = COALESCE($13, "nomUniversiteSaisi"),
+        "statutRattachement" = CASE WHEN $14 THEN 'En attente' ELSE "statutRattachement" END,
+        "dateRattachement" = CASE WHEN $14 THEN now() ELSE "dateRattachement" END
+      WHERE "idEtudiant" = $15
     `, [
       nomEtudiant, prenomEtudiant, telephoneEtudiant, genre, adresse,
       photoProfil || null, bio || null,
       matricule, filiere, specialisation, niveauAcademique,
       idUniversiteMatched, nomUniversite?.trim() || null,
+      universiteChangee,
       idEtudiant
     ]);
 

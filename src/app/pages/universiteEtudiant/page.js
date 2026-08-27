@@ -17,25 +17,50 @@ import {
 export default function UniversiteEtudiants() {
   const router = useRouter()
   const [etudiants, setEtudiants] = useState([])
+  const [demandes, setDemandes] = useState([])
+  const [traitementEnCours, setTraitementEnCours] = useState(null)
+  const [messageDemande, setMessageDemande] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterNiveau, setFilterNiveau] = useState('all')
 
-  useEffect(() => {
-    const fetchEtudiants = async () => {
-      try {
-        const res = await fetchAuth('/api/universiteEtudiant')
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.details || data.error)
-        setEtudiants(data.etudiants)
-      } catch (err) {
-        console.error('Erreur:', err)
-      } finally {
-        setIsLoading(false)
-      }
+  const chargerEtudiants = async () => {
+    try {
+      const res = await fetchAuth('/api/universiteEtudiant')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.details || data.error)
+      setEtudiants(data.etudiants || [])
+      setDemandes(data.demandesRattachement || [])
+    } catch (err) {
+      console.error('Erreur:', err)
+    } finally {
+      setIsLoading(false)
     }
-    fetchEtudiants()
+  }
+
+  useEffect(() => {
+    chargerEtudiants()
   }, [])
+
+  // Valider ou refuser une demande de rattachement
+  const traiterDemande = async (idEtudiant, decision) => {
+    setTraitementEnCours(idEtudiant)
+    setMessageDemande('')
+    try {
+      const res = await fetchAuth('/api/universiteEtudiant', {
+        method: 'PATCH',
+        body: JSON.stringify({ idEtudiant, decision })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur lors du traitement')
+      setMessageDemande(data.message)
+      await chargerEtudiants()
+    } catch (err) {
+      setMessageDemande(err.message)
+    } finally {
+      setTraitementEnCours(null)
+    }
+  }
 
   const niveauxList = useMemo(() => {
     const set = new Set()
@@ -110,6 +135,58 @@ export default function UniversiteEtudiants() {
           <StatLabel>Comptes actifs</StatLabel>
         </StatCard>
       </StatsRow>
+
+      {/* === Demandes de rattachement en attente ===
+          Des étudiants se sont déclarés membres de cet établissement.
+          C'est à l'université de confirmer : elle seule sait qui sont
+          réellement ses étudiants. */}
+      {!isLoading && demandes.length > 0 && (
+        <>
+          <PageTitle>
+            Demandes de rattachement en attente ({demandes.length})
+          </PageTitle>
+          {messageDemande && <EmptyState>{messageDemande}</EmptyState>}
+          <EtudiantsGrid>
+            {demandes.map((d) => (
+              <EtudiantCard key={d.idEtudiant}>
+                <EtudiantHeader>
+                  <EtudiantAvatar>
+                    {d.photoProfil
+                      ? <img src={d.photoProfil} alt="" />
+                      : `${(d.prenomEtudiant || '?')[0]}${(d.nomEtudiant || '?')[0]}`}
+                  </EtudiantAvatar>
+                  <div>
+                    <EtudiantName>{d.prenomEtudiant} {d.nomEtudiant}</EtudiantName>
+                    <EtudiantLevel>{d.niveauAcademique || 'Niveau non précisé'}</EtudiantLevel>
+                  </div>
+                </EtudiantHeader>
+
+                <EtudiantInfo>
+                  <EtudiantInfoItem>Filière : {d.filiere || 'Non précisée'}</EtudiantInfoItem>
+                  <EtudiantInfoItem>Spécialisation : {d.specialisation || 'Non précisée'}</EtudiantInfoItem>
+                  <EtudiantInfoItem>Matricule : {d.matricule || 'Non précisé'}</EtudiantInfoItem>
+                  <EtudiantInfoItem>{d.emailUtilisateur}</EtudiantInfoItem>
+                </EtudiantInfo>
+
+                <EtudiantFooter>
+                  <ViewProfileButton
+                    onClick={() => traiterDemande(d.idEtudiant, 'Valide')}
+                    disabled={traitementEnCours === d.idEtudiant}
+                  >
+                    {traitementEnCours === d.idEtudiant ? 'Traitement...' : 'Valider'}
+                  </ViewProfileButton>
+                  <ViewProfileButton
+                    onClick={() => traiterDemande(d.idEtudiant, 'Refuse')}
+                    disabled={traitementEnCours === d.idEtudiant}
+                  >
+                    Refuser
+                  </ViewProfileButton>
+                </EtudiantFooter>
+              </EtudiantCard>
+            ))}
+          </EtudiantsGrid>
+        </>
+      )}
 
       <PageTitle>Mes étudiants ({etudiantsFiltres.length})</PageTitle>
 

@@ -12,6 +12,10 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./stage_share.sql:/docker-entrypoint-initdb.d/01-stage_share.sql:ro
+      # Les migrations sont rejouees apres le dump (ordre alphabetique), pour
+      # qu'un volume recree parte d'un schema a jour. L'entrypoint PostgreSQL
+      # ne parcourt pas les sous-dossiers : chaque migration est montee ici.
+      - ./scripts/migrations/001-rattachement-universite.sql:/docker-entrypoint-initdb.d/02-001-rattachement-universite.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s
