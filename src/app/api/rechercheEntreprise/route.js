@@ -44,7 +44,7 @@ export async function GET(req) {
   } catch (error) {
     console.error('Erreur liste entreprises:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {

@@ -94,7 +94,7 @@ Bienvenue dans la communauté Stage Share ! 🚀
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Erreur vérification:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {
     client.release();
   }

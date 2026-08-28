@@ -142,7 +142,7 @@ export async function POST(req){
         await client.query('ROLLBACK');
         console.error('Erreur complète:', error);
         return NextResponse.json(
-        { error: 'Erreur serveur', details: error.message },
+        { error: 'Erreur serveur' },
         { status: 500 }
         );
     }finally {

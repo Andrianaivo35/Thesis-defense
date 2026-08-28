@@ -54,7 +54,7 @@ export async function GET(req, { params }) {
 
   } catch (error) {
     console.error('Erreur GET annonce cohorte:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {
     client.release();
   }
@@ -158,7 +158,7 @@ export async function PATCH(req, { params }) {
     await client.query('ROLLBACK');
     console.error('Erreur PATCH annonce cohorte:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour', details: error.message },
+      { error: 'Erreur lors de la mise à jour' },
       { status: 500 }
     );
   } finally {
@@ -198,7 +198,7 @@ export async function DELETE(req, { params }) {
   } catch (error) {
     console.error('Erreur DELETE annonce cohorte:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {

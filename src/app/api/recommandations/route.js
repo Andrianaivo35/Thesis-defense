@@ -498,7 +498,7 @@ export async function GET(req) {
     await client.query('ROLLBACK').catch(() => {});
     console.error('Erreur GET recommandations:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {

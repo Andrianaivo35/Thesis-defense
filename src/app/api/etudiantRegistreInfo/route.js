@@ -314,8 +314,7 @@ export async function POST(req) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Erreur lors de l\'inscription',
-        details: error.message
+        error: 'Erreur lors de l\'inscription'
       },
       { status: 500 }
     );

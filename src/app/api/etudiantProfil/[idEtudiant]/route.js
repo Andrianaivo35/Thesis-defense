@@ -132,7 +132,7 @@ export async function GET(req, { params }) {
   } catch (error) {
     console.error('Erreur profil étudiant:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {

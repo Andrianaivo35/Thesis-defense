@@ -85,7 +85,7 @@ export async function GET(req) {
   } catch (error) {
     console.error('Erreur étudiants université:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {
@@ -156,7 +156,7 @@ export async function PATCH(req) {
   } catch (error) {
     console.error('Erreur traitement rattachement:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {

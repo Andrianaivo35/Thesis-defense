@@ -53,7 +53,7 @@ export async function GET(req, { params }) {
 
   } catch (error) {
     console.error('Erreur GET universiteProfil:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {
     client.release();
   }

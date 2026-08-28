@@ -47,7 +47,7 @@ export async function GET(req) {
 
   } catch (error) {
     console.error('Erreur GET entrepriseModifierProfil:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {
     client.release();
   }
@@ -111,7 +111,7 @@ export async function PATCH(req) {
   } catch (error) {
     console.error('Erreur PATCH entrepriseModifierProfil:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour', details: error.message },
+      { error: 'Erreur lors de la mise à jour' },
       { status: 500 }
     );
   } finally {

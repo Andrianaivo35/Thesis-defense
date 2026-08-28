@@ -31,7 +31,7 @@ export async function GET(req) {
 
   } catch (error) {
     console.error('Erreur GET universiteCohortes:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {
     client.release();
   }
@@ -115,7 +115,7 @@ export async function POST(req) {
     await client.query('ROLLBACK');
     console.error('Erreur POST universiteCohortes:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création', details: error.message },
+      { error: 'Erreur lors de la création' },
       { status: 500 }
     );
   } finally {

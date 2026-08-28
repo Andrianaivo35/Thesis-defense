@@ -63,7 +63,7 @@ export async function PATCH(req) {
   } catch (error) {
     console.error('Erreur changement mot de passe:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {

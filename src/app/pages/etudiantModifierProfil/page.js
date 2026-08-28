@@ -304,6 +304,7 @@ export default function EtudiantModifierProfilPage() {
       competences: [...prev.competences, {
         idCompetenceEtudiant: newId,
         _isNew: true,
+        idCompetenceReference: '',
         nomCompetence: '',
         categorie: '',
         niveau: 'Débutant'
@@ -316,13 +317,14 @@ export default function EtudiantModifierProfilPage() {
       const updated = [...prev.competences]
       updated[idx] = { ...updated[idx], [champ]: valeur, _modified: !updated[idx]._isNew }
 
-      /* Si le nom saisi correspond à une compétence du référentiel,
-         on remplit automatiquement sa catégorie. */
-      if (champ === 'nomCompetence') {
+      /* La compétence est choisie dans le référentiel : nom et catégorie
+         en découlent, ils ne sont plus saisis. */
+      if (champ === 'idCompetenceReference') {
         const trouvee = referentiel.find(
-          r => r.nomCompetenceReference.toLowerCase() === valeur.trim().toLowerCase()
+          r => String(r.idCompetenceReference) === String(valeur)
         )
         if (trouvee) {
+          updated[idx].nomCompetence = trouvee.nomCompetenceReference
           updated[idx].categorie = trouvee.categorieCompetenceReference || ''
         }
       }
@@ -399,25 +401,20 @@ export default function EtudiantModifierProfilPage() {
       const allCompetencesActions = [
         ...competencesActions,
         ...formData.competences
-          .filter(c => c._isNew && c.nomCompetence?.trim())
+          .filter(c => c._isNew && c.idCompetenceReference)
           .map(c => ({
             action: 'create',
             data: {
-              nomCompetence: c.nomCompetence.trim(),
-              categorie: c.categorie,
+              idCompetenceReference: c.idCompetenceReference,
               niveau: c.niveau
             }
           })),
         ...formData.competences
-          .filter(c => !c._isNew && c._modified && c.nomCompetence?.trim())
+          .filter(c => !c._isNew && c._modified)
           .map(c => ({
             action: 'update',
             id: c.idCompetenceEtudiant,
-            data: {
-              nomCompetence: c.nomCompetence.trim(),
-              categorie: c.categorie,
-              niveau: c.niveau
-            }
+            data: { niveau: c.niveau }
           }))
       ]
 
@@ -792,22 +789,23 @@ export default function EtudiantModifierProfilPage() {
                       <FormColumn>
                         <ContainerLabelInput>
                           <Label>Compétence</Label>
-                          <Input
-                            list="liste-competences"
-                            value={c.nomCompetence || ''}
-                            onChange={(e) => modifierCompetence(idx, 'nomCompetence', e.target.value)}
-                            placeholder="Ex : JavaScript, Comptabilité, Soudure..."
-                          />
-                        </ContainerLabelInput>
-
-                        <ContainerLabelInput>
-                          <Label>Catégorie</Label>
-                          <Input
-                            list="liste-categories"
-                            value={c.categorie || ''}
-                            onChange={(e) => modifierCompetence(idx, 'categorie', e.target.value)}
-                            placeholder="Ex : Développement, Gestion, Langue..."
-                          />
+                          {c._isNew ? (
+                            <Select
+                              value={c.idCompetenceReference || ''}
+                              onChange={(e) => modifierCompetence(idx, 'idCompetenceReference', e.target.value)}
+                            >
+                              <option value="">Sélectionner une compétence</option>
+                              {referentiel.map(r => (
+                                <option key={r.idCompetenceReference} value={r.idCompetenceReference}>
+                                  {r.categorieCompetenceReference
+                                    ? `${r.categorieCompetenceReference} — ${r.nomCompetenceReference}`
+                                    : r.nomCompetenceReference}
+                                </option>
+                              ))}
+                            </Select>
+                          ) : (
+                            <Input value={c.nomCompetence || ''} disabled />
+                          )}
                         </ContainerLabelInput>
                       </FormColumn>
 

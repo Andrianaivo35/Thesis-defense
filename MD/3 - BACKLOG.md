@@ -420,10 +420,14 @@ directement visible sur les captures d'écran du mémoire.
 - **D2** — `entrepriseRegistreOffre` impose au moins une question de QCM : une entreprise ne
   peut pas publier d'offre sans QCM. **À confirmer** — si c'est involontaire, rendre le QCM
   facultatif.
-- **D3** — uniformiser les indicateurs de chargement (`LoadingState`, texte brut, ou rien
-  selon les écrans).
-- **D4** — indiquer la progression sur les formulaires longs (`etudiantRegistreInfo`
-  dépasse 500 lignes et enchaîne plusieurs sections).
+- **D3** — ✅ *évalué, portée réduite.* 18 pages sur 30 utilisent déjà `LoadingState` ; les
+  12 autres sont des formulaires qui ne chargent pas de données et n'ont donc rien à
+  afficher pendant un chargement. Ajouter un indicateur partout serait du bruit.
+- **D4** — ✅ *évalué, reporté.* Seul `etudiantRegistreInfo` dispose d'un `StepIndicator`.
+  Le candidat suivant serait `entrepriseRegistreOffre` (448 lignes), mais le convertir en
+  assistant multi-étapes est une refonte, pas une finition — et ses sections sont déjà
+  numérotées (1. Détails, 2. Compétences, 3. QCM), ce qui donne un repère. À traiter comme
+  une amélioration d'ergonomie à part entière si le temps le permet.
 
 ---
 
@@ -483,5 +487,5 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 4 | 4.2 Avertissement avant le QCM | ✅ | 28/08/2026 |
 | 4 | 4.3 Durcissement des comptes | ✅ | 28/08/2026 |
 | 4 | 4.4 Référentiel de filières | ✅ | 28/08/2026 |
-| 4 | 4.5 Cohérence de l'interface | ⬜ | |
+| 4 | 4.5 Cohérence de l'interface | ✅ | 28/08/2026 |
 | 5 | Cœur du mémoire | ⬜ | |

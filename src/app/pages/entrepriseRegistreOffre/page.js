@@ -359,6 +359,16 @@ export default function EntrepriseCreerOffre() {
 
           {/* === SECTION 3 : QCM === */}
           <SectionTitle><h2>3. Questionnaire de pré-sélection (QCM)</h2></SectionTitle>
+          {/* Le QCM conditionne tout le parcours de candidature : sans lui,
+              /api/qcm/[idOffre] renvoie 404 et aucun etudiant ne peut
+              postuler. L'exigence est donc annoncee, plutot que decouverte
+              a la validation du formulaire. */}
+          <Alert $type="info">
+            Au moins une question est requise : les candidats répondent à ce
+            questionnaire au moment de postuler, et leur note figure dans votre
+            liste de candidatures.
+          </Alert>
+
           <FormGrid>
             <ColumnForm>
               <ContainerLabelInput>

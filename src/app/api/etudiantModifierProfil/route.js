@@ -2,52 +2,6 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 
-/* =====================================================================
-   HELPER : trouver ou créer une compétence dans le référentiel
-
-   L'étudiant saisit librement le nom de sa compétence. On cherche
-   d'abord une correspondance insensible à la casse et aux accents.
-   Si rien ne correspond, la compétence est ajoutée au référentiel :
-   celui-ci s'enrichit au fil des inscriptions, tout en gardant une
-   seule ligne par compétence réelle.
-   ===================================================================== */
-async function trouverOuCreerCompetence(client, nomSaisi, categorie = null) {
-  const nom = (nomSaisi || '').trim();
-  if (!nom) return null;
-
-  // Recherche insensible à la casse et aux accents
-  const existante = await client.query(`
-    SELECT "idCompetenceReference"
-    FROM "CompetenceReference"
-    WHERE LOWER(
-      translate("nomCompetenceReference",
-        'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ',
-        'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC')
-    ) = LOWER(
-      translate($1,
-        'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ',
-        'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC')
-    )
-    LIMIT 1
-  `, [nom]);
-
-  if (existante.rows.length > 0) {
-    return existante.rows[0].idCompetenceReference;
-  }
-
-  // Création dans le référentiel
-  const creee = await client.query(`
-    INSERT INTO "CompetenceReference"
-      ("nomCompetenceReference", "categorieCompetenceReference", "description")
-    VALUES ($1, $2, NULL)
-    ON CONFLICT ("nomCompetenceReference") DO UPDATE
-      SET "nomCompetenceReference" = EXCLUDED."nomCompetenceReference"
-    RETURNING "idCompetenceReference"
-  `, [nom, categorie?.trim() || 'Autre']);
-
-  return creee.rows[0].idCompetenceReference;
-}
-
 // === GET : récupérer toutes les infos modifiables de l'étudiant connecté ===
 export async function GET(req) {
   const client = await pool.connect();
@@ -121,7 +75,7 @@ export async function GET(req) {
 
   } catch (error) {
     console.error('Erreur GET etudiantModifierProfil:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {
     client.release();
   }
@@ -311,17 +265,30 @@ export async function PATCH(req) {
       }
     }
 
-    // === 5. Compétences ===
-    // Le front envoie le NOM saisi : on le résout en identifiant,
-    // en créant la compétence dans le référentiel si elle est nouvelle.
+    /* === 5. Compétences ===
+       Le formulaire envoie l'identifiant du référentiel, plus un nom saisi
+       librement. La création à la volée a été supprimée : elle permettait
+       d'introduire des doublons ("JavaScript", "Javascript", "JS") et
+       rendait le référentiel inexploitable — c'est la même correction que
+       celle appliquée à la création d'offre. */
     if (Array.isArray(competencesActions)) {
       for (const a of competencesActions) {
 
-        if (a.action === 'create' && a.data?.nomCompetence?.trim()) {
-          const idRef = await trouverOuCreerCompetence(
-            client, a.data.nomCompetence, a.data.categorie
+        if (a.action === 'create' && a.data?.idCompetenceReference) {
+          const idRef = parseInt(a.data.idCompetenceReference, 10);
+          if (!idRef || isNaN(idRef)) continue;
+
+          const existe = await client.query(
+            'SELECT 1 FROM "CompetenceReference" WHERE "idCompetenceReference" = $1',
+            [idRef]
           );
-          if (!idRef) continue;
+          if (existe.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return NextResponse.json(
+              { error: 'Compétence inconnue dans le référentiel' },
+              { status: 400 }
+            );
+          }
 
           await client.query(`
             INSERT INTO "CompetenceEtudiant" (
@@ -331,33 +298,14 @@ export async function PATCH(req) {
               SET "niveau" = EXCLUDED."niveau"
           `, [idEtudiant, idRef, a.data.niveau || 'Débutant']);
 
-        } else if (a.action === 'update' && a.id && a.data?.nomCompetence?.trim()) {
-          const idRef = await trouverOuCreerCompetence(
-            client, a.data.nomCompetence, a.data.categorie
-          );
-          if (!idRef) continue;
-
-          /* Si la nouvelle compétence est déjà déclarée sur une autre ligne,
-             on supprime la ligne courante plutôt que de violer la contrainte
-             d'unicité. */
-          const doublon = await client.query(`
-            SELECT "idCompetenceEtudiant" FROM "CompetenceEtudiant"
-            WHERE "idEtudiant" = $1 AND "idCompetenceReference" = $2
-              AND "idCompetenceEtudiant" <> $3
-          `, [idEtudiant, idRef, a.id]);
-
-          if (doublon.rows.length > 0) {
-            await client.query(`
-              DELETE FROM "CompetenceEtudiant"
-              WHERE "idCompetenceEtudiant" = $1 AND "idEtudiant" = $2
-            `, [a.id, idEtudiant]);
-          } else {
-            await client.query(`
-              UPDATE "CompetenceEtudiant" SET
-                "idCompetenceReference" = $1, "niveau" = $2
-              WHERE "idCompetenceEtudiant" = $3 AND "idEtudiant" = $4
-            `, [idRef, a.data.niveau || 'Débutant', a.id, idEtudiant]);
-          }
+        } else if (a.action === 'update' && a.id) {
+          /* Seul le niveau de maîtrise est modifiable : changer la
+             compétence elle-même revient à en supprimer une et en ajouter
+             une autre. */
+          await client.query(`
+            UPDATE "CompetenceEtudiant" SET "niveau" = $1
+            WHERE "idCompetenceEtudiant" = $2 AND "idEtudiant" = $3
+          `, [a.data?.niveau || 'Débutant', a.id, idEtudiant]);
 
         } else if (a.action === 'delete' && a.id) {
           await client.query(`
@@ -379,7 +327,7 @@ export async function PATCH(req) {
     await client.query('ROLLBACK');
     console.error('Erreur PATCH etudiantModifierProfil:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour', details: error.message },
+      { error: 'Erreur lors de la mise à jour' },
       { status: 500 }
     );
   } finally {
