@@ -3,7 +3,7 @@
 Date : 27/08/2026
 Périmètre : **amélioration fonctionnelle et ergonomique de l'existant**, avant l'ajout des
 nouvelles fonctionnalités décrites dans [PLAN.md](PLAN.md).
-Les failles de sécurité sont traitées séparément dans [REVUE-CODE.md](REVUE-CODE.md).
+Les failles de sécurité sont traitées séparément dans [REVUE-CODE.md](1%20-%20REVUE-CODE.md).
 
 > **Aucune modification n'a été appliquée.** Ce document est une liste de travail destinée à
 > être implémentée ensuite.
@@ -188,7 +188,7 @@ Pourtant les deux mécanismes existent déjà dans le projet :
 **Amélioration.** Réutiliser `trouverOuCreerConversation` pour envoyer un message interne
 automatique à l'étudiant lors du changement de statut. C'est cohérent avec ce qui est déjà
 fait pour la validation des comptes, et cela ne demande aucune brique nouvelle.
-⚠️ Encadrer par un `SAVEPOINT` — voir [REVUE-CODE.md M1](REVUE-CODE.md), le même piège
+⚠️ Encadrer par un `SAVEPOINT` — voir [REVUE-CODE.md M1](1%20-%20REVUE-CODE.md), le même piège
 s'applique.
 
 ---
@@ -312,7 +312,7 @@ fonctionnalités du PLAN arrivent sur des données déjà propres.
 
 | Sujet | Document |
 |---|---|
-| Failles de sécurité et anomalies bloquantes | [REVUE-CODE.md](REVUE-CODE.md) |
+| Failles de sécurité et anomalies bloquantes | [REVUE-CODE.md](1%20-%20REVUE-CODE.md) |
 | Nouvelles fonctionnalités (OCR, co-occurrence, conseiller) | [PLAN.md](PLAN.md) |
 | Améliorations de l'existant | **ce document** |
 
@@ -321,10 +321,10 @@ fonctionnalités du PLAN arrivent sur des données déjà propres.
   référentiel de compétences propre. À faire avant, pas après.
 - **A3 renforce la *baseline* du [PLAN §7](PLAN.md)** : des champs normalisés rendent la
   comparaison baseline / nouveau moteur plus honnête et plus défendable.
-- **[REVUE-CODE.md E2](REVUE-CODE.md) (stockage des CV cassé en production) doit être traité
+- **[REVUE-CODE.md E2](1%20-%20REVUE-CODE.md) (stockage des CV cassé en production) doit être traité
   en même temps que le multi-CV du [PLAN §5.4](PLAN.md)** — c'est la même refonte.
-- Le mot de passe administrateur ([REVUE-CODE.md C1](REVUE-CODE.md)) est **volontairement
+- Le mot de passe administrateur ([REVUE-CODE.md C1](1%20-%20REVUE-CODE.md)) est **volontairement
   écarté** : environnement de test, changement prévu.
-- ⚠️ En revanche, [REVUE-CODE.md C2/C3](REVUE-CODE.md) (valeur `typeUtilisateur` des
+- ⚠️ En revanche, [REVUE-CODE.md C2/C3](1%20-%20REVUE-CODE.md) (valeur `typeUtilisateur` des
   universités) reste **bloquant** : tant que ce n'est pas corrigé, aucune université ne peut
   s'inscrire puis se connecter, ce qui empêche de tester correctement A1.
