@@ -382,9 +382,12 @@ périmètre : elle suppose un brouillon de candidature, donc un changement de mo
 | Limitation de débit | aucune sur les routes de connexion → force brute possible |
 | Stockage du jeton | `localStorage`, donc lisible par tout script en cas de faille XSS |
 
-Les deux premiers se corrigent sans changement d'architecture. Le troisième — passer à un
-cookie `httpOnly` — touche l'ensemble des appels authentifiés : **à évaluer avant de
-s'engager**, et acceptable en « limites » du mémoire s'il s'avère trop coûteux.
+Les deux premiers ont été corrigés. **Le troisième est écarté après évaluation :** passer à
+un cookie `httpOnly` impose de modifier la lecture du jeton dans les 41 routes, les quatre
+routes de connexion, `fetchAuth`, la déconnexion et le téléchargement de documents — pour un
+risque de régression élevé sur l'ensemble de ce qui a été construit, et un bénéfice
+conditionné à l'existence d'une faille XSS par ailleurs. Le rapport coût/bénéfice ne le
+justifie pas à ce stade du mémoire : à traiter en « limites et perspectives ».
 
 ⚠️ Le mot de passe administrateur ([REVUE-CODE C1](1%20-%20REVUE-CODE.md)) reste hors périmètre :
 environnement de test, changement déjà prévu de votre côté.
@@ -477,8 +480,8 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 2 | 2.4 `SAVEPOINT` vérification | ✅ | 28/08/2026 |
 | 3 | Refonte stockage CV + multi-CV | ✅ | 28/08/2026 |
 | 4 | 4.1 Pagination et recherche serveur | ✅ | 28/08/2026 |
-| 4 | 4.2 Avertissement avant le QCM | ⬜ | |
-| 4 | 4.3 Durcissement des comptes | ⬜ | |
+| 4 | 4.2 Avertissement avant le QCM | ✅ | 28/08/2026 |
+| 4 | 4.3 Durcissement des comptes | ✅ | 28/08/2026 |
 | 4 | 4.4 Référentiel de filières | ⬜ | |
 | 4 | 4.5 Cohérence de l'interface | ⬜ | |
 | 5 | Cœur du mémoire | ⬜ | |

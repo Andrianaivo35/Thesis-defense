@@ -469,3 +469,57 @@ export const SuccessIcon = styled.div`
     50% { transform: translateY(-6px); }
   }
 `
+/* ===== Avertissement avant demarrage du QCM ===== */
+
+export const AvertissementCard = styled.div`
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-left: 4px solid #d97706;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+`
+
+export const AvertissementTitre = styled.h2`
+  font-size: 17px;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  svg { flex-shrink: 0; }
+`
+
+export const AvertissementListe = styled.ul`
+  margin: 0 0 18px 0;
+  padding-left: 20px;
+  color: #78350f;
+  font-size: 14.5px;
+  line-height: 1.7;
+
+  li { margin-bottom: 6px; }
+  li:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+`
+
+export const CommencerButton = styled.button`
+  padding: 12px 26px;
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(169, 139, 118, 0.45);
+  }
+`

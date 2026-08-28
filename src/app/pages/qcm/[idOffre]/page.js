@@ -5,7 +5,7 @@ import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   CheckCircle2, AlertCircle, ClipboardList, HelpCircle, Clock,
-  Paperclip, FileText, FileEdit, PartyPopper, Send, ArrowLeft
+  Paperclip, FileText, FileEdit, PartyPopper, Send, ArrowLeft, TriangleAlert
 } from 'lucide-react'
 import {
   PageContainer, HeaderCard, CompanyLogo, HeaderInfo, CompanyName, OfferTitle,
@@ -16,7 +16,8 @@ import {
   LoadingState, ErrorCard, ErrorCardIcon,
   FileUploadSection, FileUploadTitle, FileUploadGrid, FileUploadCard,
   FileUploadIcon, FileUploadText, FileUploadHelper, FileInputHidden,
-  FileSelectedName, SuccessCard, SuccessIcon, ErrorBanner, ErrorBannerIcon
+  FileSelectedName, SuccessCard, SuccessIcon, ErrorBanner, ErrorBannerIcon,
+  AvertissementCard, AvertissementTitre, AvertissementListe, CommencerButton
 } from '@/components/styleQCM'
 
 export default function QcmPage() {
@@ -40,6 +41,12 @@ export default function QcmPage() {
   const [idCVChoisi, setIdCVChoisi] = useState('')
   const [nouveauCv, setNouveauCv] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  /* La candidature et le QCM sont indissociables : une fois envoye, la
+     contrainte UNIQUE (idEtudiant, idOffre) interdit toute reprise. Un
+     onglet ferme en cours de route coute donc definitivement l'offre.
+     L'etudiant doit en etre averti avant de commencer. */
+  const [aCommence, setACommence] = useState(false)
   const [success, setSuccess] = useState(null)
 
   useEffect(() => {
@@ -249,6 +256,42 @@ export default function QcmPage() {
           </QcmMeta>
         </QcmInfoCard>
 
+        {/* === Avertissement : tentative unique ===
+            La candidature ne peut pas etre reprise une fois envoyee, et
+            rien ne le signalait a l'etudiant avant qu'il ne commence. */}
+        {!aCommence && !success && (
+          <AvertissementCard>
+            <AvertissementTitre>
+              <TriangleAlert size={19} strokeWidth={2} />
+              À lire avant de commencer
+            </AvertissementTitre>
+            <AvertissementListe>
+              <li>
+                Vous ne disposez que d&apos;<strong>une seule tentative</strong> :
+                une fois le questionnaire envoyé, il ne pourra plus être repassé
+                pour cette offre.
+              </li>
+              <li>
+                Vos réponses <strong>ne sont pas enregistrées au fur et à mesure</strong> :
+                ne fermez pas cette fenêtre et n&apos;actualisez pas la page avant
+                d&apos;avoir envoyé votre candidature.
+              </li>
+              <li>
+                Ce questionnaire comporte <strong>{totalQuestions} question{totalQuestions > 1 ? 's' : ''}</strong>
+                {qcm.duree ? <> et sa durée indicative est de <strong>{qcm.duree} minutes</strong></> : null}.
+              </li>
+              <li>
+                Préparez votre <strong>lettre de motivation au format PDF</strong> :
+                elle vous sera demandée pour finaliser l&apos;envoi.
+              </li>
+            </AvertissementListe>
+            <CommencerButton type="button" onClick={() => setACommence(true)}>
+              <ClipboardList size={16} strokeWidth={2} />
+              J&apos;ai compris, commencer le questionnaire
+            </CommencerButton>
+          </AvertissementCard>
+        )}
+
         {/* === Bannière d'erreur en cours de soumission === */}
         {error && !success && (
           <ErrorBanner>
@@ -274,7 +317,7 @@ export default function QcmPage() {
               Retour à la liste des offres
             </SubmitButton>
           </SuccessCard>
-        ) : (
+        ) : !aCommence ? null : (
           <>
             {/* === Questions === */}
             {questions.map((q, idx) => (

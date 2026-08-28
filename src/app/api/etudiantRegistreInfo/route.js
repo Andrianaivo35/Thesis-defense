@@ -1,6 +1,7 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { validerMotDePasse } from '@/lib/motDePasse';
 import { normalizeName } from '@/lib/normalize';
 
 export async function POST(req) {
@@ -113,6 +114,15 @@ export async function POST(req) {
         { status: 409 }
       );
     }
+
+    const erreurMotDePasse = validerMotDePasse(motDePasse);
+
+    if (erreurMotDePasse) {
+
+      return NextResponse.json({ error: erreurMotDePasse }, { status: 400 });
+
+    }
+
 
     const hashedPassword = await bcrypt.hash(motDePasse, 10);
     const dateInscription = new Date();

@@ -2,6 +2,7 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import bcrypt from 'bcryptjs';
+import { validerMotDePasse } from '@/lib/motDePasse';
 
 export async function PATCH(req) {
   const client = await pool.connect();
@@ -23,11 +24,9 @@ export async function PATCH(req) {
       );
     }
 
-    if (nouveauMotDePasse.length < 6) {
-      return NextResponse.json(
-        { error: 'Le nouveau mot de passe doit contenir au moins 6 caractères' },
-        { status: 400 }
-      );
+    const erreurMotDePasse = validerMotDePasse(nouveauMotDePasse);
+    if (erreurMotDePasse) {
+      return NextResponse.json({ error: erreurMotDePasse }, { status: 400 });
     }
 
     // 1. Récupérer le mot de passe actuel

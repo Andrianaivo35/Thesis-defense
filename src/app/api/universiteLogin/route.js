@@ -2,6 +2,9 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
+import {
+  identifierAppelant, verifierLimite, reinitialiserLimite, messageLimiteAtteinte
+} from '@/lib/limiteDebit';
 
 export async function POST(req) {
   const client = await pool.connect();
@@ -14,6 +17,18 @@ export async function POST(req) {
       return NextResponse.json(
         { error: 'Email et mot de passe requis' },
         { status: 400 }
+      );
+    }
+
+    /* Limitation de debit : la cle combine l'adresse IP et l'e-mail vise,
+       pour bloquer le martelage d'un compte sans penaliser tous les
+       utilisateurs partageant une meme sortie reseau. */
+    const cleLimite = identifierAppelant(req, email);
+    const limite = verifierLimite(cleLimite);
+    if (!limite.autorise) {
+      return NextResponse.json(
+        { error: messageLimiteAtteinte(limite.secondesAttente) },
+        { status: 429 }
       );
     }
 
@@ -60,6 +75,9 @@ export async function POST(req) {
     }
 
     const universite = universiteResult.rows[0];
+
+    // Connexion reussie : seules les tentatives infructueuses doivent peser
+    reinitialiserLimite(cleLimite);
 
     // 4. Générer le JWT
     const token = signToken({
