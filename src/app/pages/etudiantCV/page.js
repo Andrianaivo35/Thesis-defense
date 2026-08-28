@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react'
 import { fetchAuth, getToken } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
-  FileText, Upload, Star, Trash2, Eye, Info, AlertCircle, CheckCircle2
+  FileText, Upload, Star, Trash2, Eye, Info, AlertCircle, CheckCircle2,
+  Sparkles, ScanLine, RefreshCw
 } from 'lucide-react'
+import RevueCompetencesCV from '@/components/revueCompetencesCV'
 import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   CandidatureList, CandidatureCard, CardHeader,
@@ -38,6 +40,10 @@ export default function EtudiantCV() {
   // Formulaire d'ajout
   const [libelle, setLibelle] = useState('')
   const [fichier, setFichier] = useState(null)
+
+  // Revue des compétences détectées : { cv, detections } du CV ouvert
+  const [revue, setRevue] = useState(null)
+  const [analyseEnCours, setAnalyseEnCours] = useState(null)
 
   const charger = async () => {
     try {
@@ -113,6 +119,48 @@ export default function EtudiantCV() {
     } catch (err) { setErreur(err.message) }
   }
 
+  /* Lance la lecture du CV. L'appel est synchrone côté serveur : lire un
+     CV de deux pages demande une à deux secondes, OCR compris. */
+  const analyser = async (idCV) => {
+    setErreur(''); setMessage(''); setAnalyseEnCours(idCV)
+    try {
+      const res = await fetchAuth(`/api/cv/${idCV}/analyse`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Analyse impossible')
+      await charger()
+      await ouvrirRevue(idCV)
+    } catch (err) {
+      setErreur(err.message)
+    } finally {
+      setAnalyseEnCours(null)
+    }
+  }
+
+  const ouvrirRevue = async (idCV) => {
+    setErreur('')
+    try {
+      const res = await fetchAuth(`/api/cv/${idCV}/analyse`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Lecture impossible')
+      setRevue({ cv: data.cv, detections: data.detections })
+    } catch (err) { setErreur(err.message) }
+  }
+
+  const enregistrerCompetences = async (confirmees) => {
+    setErreur(''); setMessage('')
+    try {
+      const res = await fetchAuth(`/api/cv/${revue.cv.idCV}/analyse`, {
+        method: 'PUT',
+        body: JSON.stringify({ confirmees })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Enregistrement impossible')
+      setMessage(data.message)
+      setRevue(null)
+      await charger()
+    } catch (err) { setErreur(err.message) }
+  }
+
   /* Le document n'est plus accessible publiquement : il faut passer par la
      route authentifiée, donc récupérer le fichier avec le jeton puis
      l'ouvrir depuis un blob. */
@@ -152,6 +200,16 @@ export default function EtudiantCV() {
           <EmptyState style={{ marginBottom: 16, borderStyle: 'solid', borderColor: '#d6dcb3' }}>
             <CheckCircle2 size={16} strokeWidth={2} /> {message}
           </EmptyState>
+        )}
+
+        {/* Revue des compétences détectées dans le CV en cours d'examen */}
+        {revue && (
+          <RevueCompetencesCV
+            cv={revue.cv}
+            detections={revue.detections}
+            onEnregistrer={enregistrerCompetences}
+            onFermer={() => setRevue(null)}
+          />
         )}
 
         {/* Formulaire d'ajout */}
@@ -227,7 +285,42 @@ export default function EtudiantCV() {
                       ? 'Jamais envoyé'
                       : `Envoyé à ${cv.nombreCandidatures} offre${Number(cv.nombreCandidatures) > 1 ? 's' : ''}`}
                   </MetaItem>
+                  {cv.statutAnalyse === 'analyse' && (
+                    <MetaItem>
+                      {Number(cv.pagesOcr) > 0
+                        ? <ScanLine size={13} strokeWidth={2} />
+                        : <FileText size={13} strokeWidth={2} />}
+                      {Number(cv.pagesOcr) > 0
+                        ? `${cv.pagesOcr}/${cv.nombrePages} page${Number(cv.nombrePages) > 1 ? 's' : ''} déchiffrée${Number(cv.pagesOcr) > 1 ? 's' : ''} par OCR`
+                        : 'Lu directement'}
+                    </MetaItem>
+                  )}
+                  {Number(cv.competencesConfirmees) > 0 && (
+                    <MetaItem>
+                      <CheckCircle2 size={13} strokeWidth={2} />
+                      {cv.competencesConfirmees} compétence{Number(cv.competencesConfirmees) > 1 ? 's' : ''} au profil
+                    </MetaItem>
+                  )}
                 </CardMeta>
+
+                {/* Le CV a été lu mais l'étudiant n'a pas encore tranché :
+                    c'est le seul cas qui mérite d'attirer son attention. */}
+                {cv.statutAnalyse === 'analyse' && Number(cv.detectionsEnAttente) > 0 && (
+                  <CardMeta>
+                    <MetaItem style={{ fontWeight: 600, color: '#7c3aed' }}>
+                      <Sparkles size={13} strokeWidth={2.5} />
+                      {cv.detectionsEnAttente} compétence{Number(cv.detectionsEnAttente) > 1 ? 's' : ''} détectée{Number(cv.detectionsEnAttente) > 1 ? 's' : ''} en attente de votre confirmation
+                    </MetaItem>
+                  </CardMeta>
+                )}
+                {cv.statutAnalyse === 'echec' && (
+                  <CardMeta>
+                    <MetaItem style={{ color: '#b91c1c' }}>
+                      <AlertCircle size={13} strokeWidth={2} />
+                      {cv.messageAnalyse || "Ce document n'a pas pu être lu."}
+                    </MetaItem>
+                  </CardMeta>
+                )}
 
                 <CardFooter>
                   <span />
@@ -235,6 +328,31 @@ export default function EtudiantCV() {
                     <ActionButton onClick={() => consulter(cv.idCV)}>
                       <Eye size={13} strokeWidth={2} /> Consulter
                     </ActionButton>
+                    {cv.statutAnalyse === 'analyse' ? (
+                      <>
+                        <ActionButton onClick={() => ouvrirRevue(cv.idCV)}>
+                          <Sparkles size={13} strokeWidth={2} />
+                          Voir les compétences trouvées
+                        </ActionButton>
+                        <ActionButton
+                          onClick={() => analyser(cv.idCV)}
+                          disabled={analyseEnCours === cv.idCV}
+                        >
+                          <RefreshCw size={13} strokeWidth={2} />
+                          {analyseEnCours === cv.idCV ? 'Lecture...' : 'Relire'}
+                        </ActionButton>
+                      </>
+                    ) : (
+                      <ActionButton
+                        onClick={() => analyser(cv.idCV)}
+                        disabled={analyseEnCours === cv.idCV}
+                      >
+                        <Sparkles size={13} strokeWidth={2} />
+                        {analyseEnCours === cv.idCV
+                          ? 'Lecture du document...'
+                          : 'Analyser ce CV'}
+                      </ActionButton>
+                    )}
                     {!cv.estPrincipal && (
                       <ActionButton onClick={() => definirPrincipal(cv.idCV)}>
                         <Star size={13} strokeWidth={2} /> Définir principal

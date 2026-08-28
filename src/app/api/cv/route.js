@@ -26,8 +26,18 @@ export async function GET(req) {
       SELECT
         cv."idCV", cv."libelle", cv."nomFichierOriginal", cv."tailleOctets",
         cv."estPrincipal", cv."dateAjout",
+        cv."statutAnalyse", cv."nombrePages", cv."pagesOcr", cv."confianceOcr",
+        cv."dateAnalyse", cv."messageAnalyse",
         (SELECT COUNT(*) FROM "Candidature" c WHERE c."idCV" = cv."idCV")
-          AS "nombreCandidatures"
+          AS "nombreCandidatures",
+        /* Détections en attente d'arbitrage : c'est ce qui justifie
+           d'attirer l'attention de l'étudiant sur ce CV. */
+        (SELECT COUNT(*) FROM "CompetenceDetectee" d
+          WHERE d."idCV" = cv."idCV" AND d."decision" IS NULL)
+          AS "detectionsEnAttente",
+        (SELECT COUNT(*) FROM "CompetenceDetectee" d
+          WHERE d."idCV" = cv."idCV" AND d."decision" = 'confirmee')
+          AS "competencesConfirmees"
       FROM "CV" cv
       WHERE cv."idEtudiant" = $1
       ORDER BY cv."estPrincipal" DESC, cv."dateAjout" DESC

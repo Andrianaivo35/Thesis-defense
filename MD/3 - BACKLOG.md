@@ -528,7 +528,11 @@ Le détail est dans [PLAN.md](PLAN.md). Rappel de l'enchaînement :
 2. **5.2** Correspondance bidirectionnelle (offre → candidats), qui découle de la matrice.
 3. **5.3** Conseiller contrefactuel ([PLAN §4](PLAN.md)) — réutilise le scoreur, sans
    nouvel algorithme.
-4. **5.4** Ingestion de CV : OCR + extraction ([PLAN §5](PLAN.md)).
+4. ✅ **5.4** Ingestion de CV : OCR + extraction ([PLAN §5](PLAN.md)) — **terminé**.
+   Détail complet dans [5 - INGESTION-CV.md](5%20-%20INGESTION-CV.md).
+   Routage page par page (natif / OCR / mixte), OCR Tesseract derrière un
+   adaptateur, appariement flou au référentiel, confirmation par l'étudiant.
+   Mesuré sur 41 CV : routage 41/41, précision 98,8 %, rappel 96,0 %, F1 97,4 %.
 5. **5.5** Évaluation ([PLAN §7](PLAN.md)) — **à mener en parallèle de 5.1 et 5.2**, pas à la
    fin : il faut journaliser les prédictions au fil de l'eau.
 

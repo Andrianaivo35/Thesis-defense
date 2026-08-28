@@ -150,7 +150,8 @@ async function enregistrerDetections(idCV, detections) {
         `INSERT INTO "CompetenceDetectee"
            ("idCV", "idCompetenceReference", "termeDetecte", "methode",
             "confiance", "page", "section", "contexte", "decision", "dateDecision")
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CASE WHEN $9::text IS NULL THEN NULL ELSE now() END)`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::text,
+                 CASE WHEN $9::text IS NULL THEN NULL ELSE now() END)`,
         [idCV, d.idCompetenceReference, d.termeDetecte, d.methode,
          d.confiance, d.page, d.section, d.contexte, decision]
       );
