@@ -372,5 +372,5 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 2 | 2.2 Notification de statut | ✅ | 28/08/2026 |
 | 2 | 2.3 Indicateur « déjà postulé » | ✅ | 28/08/2026 |
 | 2 | 2.4 `SAVEPOINT` vérification | ✅ | 28/08/2026 |
-| 3 | Refonte stockage CV + multi-CV | ⬜ | |
+| 3 | Refonte stockage CV + multi-CV | ✅ | 28/08/2026 |
 | 4 | Cœur du mémoire | ⬜ | |
