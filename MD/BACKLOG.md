@@ -368,9 +368,9 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 1 | 1.2 Sélecteur d'université | ✅ | 27/08/2026 |
 | 1 | 1.2b Rattachement validé par l'université | ✅ | 27/08/2026 |
 | 1 | 1.3 Listes fermées niveau/ville/durée | ✅ | 27/08/2026 |
-| 2 | 2.1 Page « Mes candidatures » | ⬜ | |
-| 2 | 2.2 Notification de statut | ⬜ | |
-| 2 | 2.3 Indicateur « déjà postulé » | ⬜ | |
-| 2 | 2.4 `SAVEPOINT` vérification | ⬜ | |
+| 2 | 2.1 Page « Mes candidatures » | ✅ | 28/08/2026 |
+| 2 | 2.2 Notification de statut | ✅ | 28/08/2026 |
+| 2 | 2.3 Indicateur « déjà postulé » | ✅ | 28/08/2026 |
+| 2 | 2.4 `SAVEPOINT` vérification | ✅ | 28/08/2026 |
 | 3 | Refonte stockage CV + multi-CV | ⬜ | |
 | 4 | Cœur du mémoire | ⬜ | |
