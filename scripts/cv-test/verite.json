@@ -1,9 +1,10 @@
 {
-  "genereLe": "2026-08-28T17:59:22.328Z",
+  "genereLe": "2026-08-28T18:17:35.025Z",
   "cvs": [
     {
-      "fichier": "cv-natif-fetra-randriamiharisoa.pdf",
+      "fichier": "cv-natif-classique-fetra-randriamiharisoa.pdf",
       "nature": "natif",
+      "maquette": "classique",
       "idEtudiant": 30,
       "nom": "Fetra Randriamiharisoa",
       "filiere": "Agro-industrie et Agronomie",
@@ -19,11 +20,32 @@
           "nom": "Agronomie",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Zoom",
+          "Notion",
+          "WordPress"
+        ],
+        "qualites": [
+          "Rigueur",
+          "Esprit d'initiative",
+          "Autonomie"
+        ],
+        "loisirs": [
+          "Bénévolat associatif",
+          "Voyages",
+          "Photographie"
+        ],
+        "certifications": [
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-tsiory-razafindravao.pdf",
+      "fichier": "cv-scanne-deux-colonnes-tsiory-razafindravao.pdf",
       "nature": "scanne",
+      "maquette": "deux-colonnes",
       "idEtudiant": 34,
       "nom": "Tsiory Razafindravao",
       "filiere": "Communication et Médias",
@@ -44,11 +66,36 @@
           "nom": "Anglais professionnel",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "AutoCAD",
+          "Figma",
+          "Photoshop",
+          "Notion"
+        ],
+        "qualites": [
+          "Autonomie",
+          "Curiosité intellectuelle",
+          "Sens du relationnel",
+          "Sens de l'organisation"
+        ],
+        "loisirs": [
+          "Basket-ball",
+          "Randonnée",
+          "Jardinage",
+          "Cinéma"
+        ],
+        "certifications": [
+          "TOEIC — score 785",
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-hanta-rasoarimalala.pdf",
+      "fichier": "cv-natif-bandeau-hanta-rasoarimalala.pdf",
       "nature": "natif",
+      "maquette": "bandeau",
       "idEtudiant": 50,
       "nom": "Hanta Rasoarimalala",
       "filiere": "Communication et Médias",
@@ -69,11 +116,36 @@
           "nom": "Malagasy",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Notion",
+          "Figma",
+          "Slack",
+          "Zoom"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Autonomie",
+          "Sens de l'organisation"
+        ],
+        "loisirs": [
+          "Échecs",
+          "Basket-ball",
+          "Jardinage",
+          "Photographie",
+          "Randonnée"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-miora-ravaomanana.pdf",
+      "fichier": "cv-scanne-compacte-miora-ravaomanana.pdf",
       "nature": "scanne",
+      "maquette": "compacte",
       "idEtudiant": 11,
       "nom": "Miora Ravaomanana",
       "filiere": "Gestion et Commerce",
@@ -99,11 +171,34 @@
           "nom": "Communication",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Canva",
+          "AutoCAD",
+          "Slack"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Rigueur",
+          "Capacité d'adaptation",
+          "Autonomie"
+        ],
+        "loisirs": [
+          "Randonnée",
+          "Échecs",
+          "Jardinage"
+        ],
+        "certifications": [
+          "Certification Google Analytics",
+          "TOEIC — score 785"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-vonjy-rasoanaivo.pdf",
+      "fichier": "cv-mixte-classique-vonjy-rasoanaivo.pdf",
       "nature": "mixte",
+      "maquette": "classique",
       "idEtudiant": 13,
       "nom": "Vonjy Rasoanaivo",
       "filiere": "Gestion et Commerce",
@@ -129,11 +224,34 @@
           "nom": "Communication",
           "niveau": "Débutant"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Microsoft Teams",
+          "WordPress",
+          "AutoCAD",
+          "Zoom"
+        ],
+        "qualites": [
+          "Curiosité intellectuelle",
+          "Travail en équipe",
+          "Autonomie"
+        ],
+        "loisirs": [
+          "Cinéma",
+          "Photographie",
+          "Randonnée",
+          "Lecture"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-mamy-zafindraibe.pdf",
+      "fichier": "cv-natif-deux-colonnes-mamy-zafindraibe.pdf",
       "nature": "natif",
+      "maquette": "deux-colonnes",
       "idEtudiant": 16,
       "nom": "Mamy Zafindraibe",
       "filiere": "Gestion et Commerce",
@@ -154,11 +272,38 @@
           "nom": "Communication",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "Figma",
+          "Slack",
+          "Microsoft Teams",
+          "Trello"
+        ],
+        "qualites": [
+          "Ponctualité",
+          "Esprit d'initiative",
+          "Sens du relationnel",
+          "Travail en équipe"
+        ],
+        "loisirs": [
+          "Jardinage",
+          "Football",
+          "Course à pied",
+          "Natation",
+          "Voyages"
+        ],
+        "certifications": [
+          "Attestation de secourisme",
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-tahiry-rasolofoson.pdf",
+      "fichier": "cv-scanne-bandeau-tahiry-rasolofoson.pdf",
       "nature": "scanne",
+      "maquette": "bandeau",
       "idEtudiant": 17,
       "nom": "Tahiry Rasolofoson",
       "filiere": "Gestion et Commerce",
@@ -179,11 +324,32 @@
           "nom": "Actuariat",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Notion",
+          "Figma"
+        ],
+        "qualites": [
+          "Sens de l'organisation",
+          "Ponctualité",
+          "Rigueur"
+        ],
+        "loisirs": [
+          "Bénévolat associatif",
+          "Course à pied",
+          "Cinéma"
+        ],
+        "certifications": [
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-voahangy-andriamahefa.pdf",
+      "fichier": "cv-natif-compacte-voahangy-andriamahefa.pdf",
       "nature": "natif",
+      "maquette": "compacte",
       "idEtudiant": 22,
       "nom": "Voahangy Andriamahefa",
       "filiere": "Gestion et Commerce",
@@ -204,11 +370,36 @@
           "nom": "Communication",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Figma",
+          "Photoshop",
+          "Zoom",
+          "Trello"
+        ],
+        "qualites": [
+          "Curiosité intellectuelle",
+          "Sens du relationnel",
+          "Rigueur",
+          "Capacité d'adaptation"
+        ],
+        "loisirs": [
+          "Photographie",
+          "Jardinage",
+          "Cuisine",
+          "Football"
+        ],
+        "certifications": [
+          "Certificat de formation aux premiers secours",
+          "Habilitation électrique B1V"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-lova-razanadrakoto.pdf",
+      "fichier": "cv-scanne-classique-lova-razanadrakoto.pdf",
       "nature": "scanne",
+      "maquette": "classique",
       "idEtudiant": 23,
       "nom": "Lova Razanadrakoto",
       "filiere": "Gestion et Commerce",
@@ -229,11 +420,36 @@
           "nom": "Audit financier",
           "niveau": "Débutant"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Zoom",
+          "Slack",
+          "Figma",
+          "Canva",
+          "Photoshop"
+        ],
+        "qualites": [
+          "Esprit d'initiative",
+          "Autonomie",
+          "Ponctualité"
+        ],
+        "loisirs": [
+          "Voyages",
+          "Basket-ball",
+          "Football",
+          "Photographie",
+          "Lecture"
+        ],
+        "certifications": [
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-nomena-andriatsimialona.pdf",
+      "fichier": "cv-mixte-deux-colonnes-nomena-andriatsimialona.pdf",
       "nature": "mixte",
+      "maquette": "deux-colonnes",
       "idEtudiant": 25,
       "nom": "Nomena Andriatsimialona",
       "filiere": "Gestion et Commerce",
@@ -254,11 +470,34 @@
           "nom": "Anglais professionnel",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Slack",
+          "Zoom",
+          "Canva"
+        ],
+        "qualites": [
+          "Sens de l'organisation",
+          "Travail en équipe",
+          "Ponctualité",
+          "Rigueur"
+        ],
+        "loisirs": [
+          "Photographie",
+          "Musique traditionnelle",
+          "Course à pied"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B",
+          "Habilitation électrique B1V"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-ndrina-rakotozafy.pdf",
+      "fichier": "cv-natif-bandeau-ndrina-rakotozafy.pdf",
       "nature": "natif",
+      "maquette": "bandeau",
       "idEtudiant": 28,
       "nom": "Ndrina Rakotozafy",
       "filiere": "Gestion et Commerce",
@@ -279,11 +518,34 @@
           "nom": "Anglais professionnel",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Microsoft Teams",
+          "Canva",
+          "Zoom"
+        ],
+        "qualites": [
+          "Curiosité intellectuelle",
+          "Travail en équipe",
+          "Rigueur"
+        ],
+        "loisirs": [
+          "Lecture",
+          "Cinéma",
+          "Voyages",
+          "Jardinage"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-onja-razafimahatratra.pdf",
+      "fichier": "cv-scanne-compacte-onja-razafimahatratra.pdf",
       "nature": "scanne",
+      "maquette": "compacte",
       "idEtudiant": 29,
       "nom": "Onja Razafimahatratra",
       "filiere": "Gestion et Commerce",
@@ -304,11 +566,38 @@
           "nom": "Gestion de stocks",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Photoshop",
+          "Microsoft Teams",
+          "AutoCAD",
+          "Canva",
+          "Figma"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Sens du relationnel",
+          "Autonomie",
+          "Sens de l'organisation"
+        ],
+        "loisirs": [
+          "Lecture",
+          "Cuisine",
+          "Photographie",
+          "Football",
+          "Course à pied"
+        ],
+        "certifications": [
+          "Attestation de secourisme",
+          "Certificat de formation aux premiers secours"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-malala-rakotoarivelo.pdf",
+      "fichier": "cv-natif-classique-malala-rakotoarivelo.pdf",
       "nature": "natif",
+      "maquette": "classique",
       "idEtudiant": 33,
       "nom": "Malala Rakotoarivelo",
       "filiere": "Gestion et Commerce",
@@ -329,11 +618,32 @@
           "nom": "Microfinance",
           "niveau": "Débutant"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Canva",
+          "Slack",
+          "Photoshop"
+        ],
+        "qualites": [
+          "Capacité d'adaptation",
+          "Autonomie",
+          "Ponctualité"
+        ],
+        "loisirs": [
+          "Musique traditionnelle",
+          "Jardinage",
+          "Natation"
+        ],
+        "certifications": [
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-mparany-rakotondramanana.pdf",
+      "fichier": "cv-scanne-deux-colonnes-mparany-rakotondramanana.pdf",
       "nature": "scanne",
+      "maquette": "deux-colonnes",
       "idEtudiant": 37,
       "nom": "Mparany Rakotondramanana",
       "filiere": "Gestion et Commerce",
@@ -354,11 +664,36 @@
           "nom": "Anglais professionnel",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Zoom",
+          "Canva",
+          "Microsoft Teams",
+          "Figma"
+        ],
+        "qualites": [
+          "Rigueur",
+          "Esprit d'initiative",
+          "Sens du relationnel",
+          "Sens de l'organisation"
+        ],
+        "loisirs": [
+          "Cinéma",
+          "Natation",
+          "Musique traditionnelle",
+          "Course à pied"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V",
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-koto-andrianina.pdf",
+      "fichier": "cv-mixte-bandeau-koto-andrianina.pdf",
       "nature": "mixte",
+      "maquette": "bandeau",
       "idEtudiant": 51,
       "nom": "Koto Andrianina",
       "filiere": "Gestion et Commerce",
@@ -379,11 +714,36 @@
           "nom": "Communication",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Trello",
+          "Notion",
+          "Photoshop",
+          "Zoom",
+          "Figma"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Capacité d'adaptation",
+          "Travail en équipe"
+        ],
+        "loisirs": [
+          "Course à pied",
+          "Bénévolat associatif",
+          "Musique traditionnelle",
+          "Randonnée",
+          "Football"
+        ],
+        "certifications": [
+          "TOEIC — score 785"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-solofo-rakotoniaina.pdf",
+      "fichier": "cv-natif-compacte-solofo-rakotoniaina.pdf",
       "nature": "natif",
+      "maquette": "compacte",
       "idEtudiant": 26,
       "nom": "Solofo Rakotoniaina",
       "filiere": "Génie Civil et BTP",
@@ -404,11 +764,34 @@
           "nom": "Contrôle qualité",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Photoshop",
+          "Microsoft Teams",
+          "Zoom"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Ponctualité",
+          "Sens de l'organisation",
+          "Autonomie"
+        ],
+        "loisirs": [
+          "Football",
+          "Course à pied",
+          "Jardinage"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B",
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-ainatiana-ravelojaona.pdf",
+      "fichier": "cv-scanne-classique-ainatiana-ravelojaona.pdf",
       "nature": "scanne",
+      "maquette": "classique",
       "idEtudiant": 36,
       "nom": "Ainatiana Ravelojaona",
       "filiere": "Génie Civil et BTP",
@@ -429,11 +812,34 @@
           "nom": "Contrôle qualité",
           "niveau": "Débutant"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Microsoft Teams",
+          "Figma",
+          "Zoom",
+          "AutoCAD"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Curiosité intellectuelle",
+          "Esprit d'initiative"
+        ],
+        "loisirs": [
+          "Cinéma",
+          "Échecs",
+          "Course à pied",
+          "Randonnée"
+        ],
+        "certifications": [
+          "TOEIC — score 785"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-fanomezana-andrianjafy.pdf",
+      "fichier": "cv-natif-deux-colonnes-fanomezana-andrianjafy.pdf",
       "nature": "natif",
+      "maquette": "deux-colonnes",
       "idEtudiant": 14,
       "nom": "Fanomezana Andrianjafy",
       "filiere": "Génie Industriel et Énergie",
@@ -459,11 +865,38 @@
           "nom": "Sécurité minière",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Canva",
+          "Microsoft Teams",
+          "Figma",
+          "Photoshop",
+          "AutoCAD"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Sens de l'organisation",
+          "Sens du relationnel",
+          "Curiosité intellectuelle"
+        ],
+        "loisirs": [
+          "Musique traditionnelle",
+          "Basket-ball",
+          "Photographie",
+          "Lecture",
+          "Jardinage"
+        ],
+        "certifications": [
+          "Certificat de formation aux premiers secours",
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-toky-randrianasolo.pdf",
+      "fichier": "cv-scanne-bandeau-toky-randrianasolo.pdf",
       "nature": "scanne",
+      "maquette": "bandeau",
       "idEtudiant": 19,
       "nom": "Toky Randrianasolo",
       "filiere": "Génie Industriel et Énergie",
@@ -484,11 +917,32 @@
           "nom": "Contrôle qualité",
           "niveau": "Débutant"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "Figma",
+          "Canva"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Curiosité intellectuelle",
+          "Rigueur"
+        ],
+        "loisirs": [
+          "Jardinage",
+          "Course à pied",
+          "Échecs"
+        ],
+        "certifications": [
+          "Certificat de formation aux premiers secours"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-fenohasina-andriamandimbisoa.pdf",
+      "fichier": "cv-mixte-compacte-fenohasina-andriamandimbisoa.pdf",
       "nature": "mixte",
+      "maquette": "compacte",
       "idEtudiant": 32,
       "nom": "Fenohasina Andriamandimbisoa",
       "filiere": "Génie Industriel et Énergie",
@@ -509,11 +963,36 @@
           "nom": "Énergies renouvelables",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Zoom",
+          "Microsoft Teams",
+          "Figma",
+          "Photoshop"
+        ],
+        "qualites": [
+          "Autonomie",
+          "Sens de l'organisation",
+          "Sens du relationnel",
+          "Ponctualité"
+        ],
+        "loisirs": [
+          "Basket-ball",
+          "Photographie",
+          "Musique traditionnelle",
+          "Bénévolat associatif"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B",
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-lalaina-ratsimba.pdf",
+      "fichier": "cv-natif-classique-lalaina-ratsimba.pdf",
       "nature": "natif",
+      "maquette": "classique",
       "idEtudiant": 52,
       "nom": "Lalaina Ratsimba",
       "filiere": "Génie Industriel et Énergie",
@@ -534,11 +1013,36 @@
           "nom": "Contrôle qualité",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "Photoshop",
+          "AutoCAD",
+          "Figma",
+          "WordPress"
+        ],
+        "qualites": [
+          "Ponctualité",
+          "Autonomie",
+          "Sens du relationnel"
+        ],
+        "loisirs": [
+          "Voyages",
+          "Jardinage",
+          "Football",
+          "Basket-ball",
+          "Cuisine"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-fanomezantsoa-andrianaivo.pdf",
+      "fichier": "cv-scanne-deux-colonnes-fanomezantsoa-andrianaivo.pdf",
       "nature": "scanne",
+      "maquette": "deux-colonnes",
       "idEtudiant": 5,
       "nom": "Fanomezantsoa Andrianaivo",
       "filiere": "Informatique et Numérique",
@@ -549,11 +1053,34 @@
           "nom": "Javascript",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Zoom",
+          "Trello",
+          "Figma"
+        ],
+        "qualites": [
+          "Sens de l'organisation",
+          "Capacité d'adaptation",
+          "Autonomie",
+          "Esprit d'initiative"
+        ],
+        "loisirs": [
+          "Course à pied",
+          "Randonnée",
+          "Cuisine"
+        ],
+        "certifications": [
+          "Certification Google Analytics",
+          "TOEIC — score 785"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-rakoto-rakoto.pdf",
+      "fichier": "cv-natif-bandeau-rakoto-rakoto.pdf",
       "nature": "natif",
+      "maquette": "bandeau",
       "idEtudiant": 6,
       "nom": "rakoto Rakoto",
       "filiere": "Informatique et Numérique",
@@ -574,11 +1101,34 @@
           "nom": "SQL",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Figma",
+          "Microsoft Teams",
+          "WordPress",
+          "Photoshop"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Autonomie",
+          "Sens du relationnel"
+        ],
+        "loisirs": [
+          "Bénévolat associatif",
+          "Basket-ball",
+          "Musique traditionnelle",
+          "Cuisine"
+        ],
+        "certifications": [
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-eddy-rafanomezana.pdf",
+      "fichier": "cv-scanne-compacte-eddy-rafanomezana.pdf",
       "nature": "scanne",
+      "maquette": "compacte",
       "idEtudiant": 7,
       "nom": "Eddy RAFANOMEZANA",
       "filiere": "Informatique et Numérique",
@@ -589,11 +1139,38 @@
           "nom": "React",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Canva",
+          "AutoCAD",
+          "Slack",
+          "Microsoft Teams",
+          "WordPress"
+        ],
+        "qualites": [
+          "Ponctualité",
+          "Sens de l'organisation",
+          "Sens du relationnel",
+          "Curiosité intellectuelle"
+        ],
+        "loisirs": [
+          "Natation",
+          "Voyages",
+          "Football",
+          "Course à pied",
+          "Lecture"
+        ],
+        "certifications": [
+          "TOEIC — score 785",
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-njaka-rakotomalala.pdf",
+      "fichier": "cv-mixte-classique-njaka-rakotomalala.pdf",
       "nature": "mixte",
+      "maquette": "classique",
       "idEtudiant": 8,
       "nom": "Njaka Rakotomalala",
       "filiere": "Informatique et Numérique",
@@ -619,11 +1196,32 @@
           "nom": "SQL",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Microsoft Teams",
+          "WordPress",
+          "Trello"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Ponctualité",
+          "Esprit d'initiative"
+        ],
+        "loisirs": [
+          "Photographie",
+          "Basket-ball",
+          "Musique traditionnelle"
+        ],
+        "certifications": [
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-fenosoa-andriamampianina.pdf",
+      "fichier": "cv-natif-deux-colonnes-fenosoa-andriamampianina.pdf",
       "nature": "natif",
+      "maquette": "deux-colonnes",
       "idEtudiant": 9,
       "nom": "Fenosoa Andriamampianina",
       "filiere": "Informatique et Numérique",
@@ -654,11 +1252,36 @@
           "nom": "Power BI",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Trello",
+          "AutoCAD",
+          "WordPress",
+          "Microsoft Teams"
+        ],
+        "qualites": [
+          "Rigueur",
+          "Ponctualité",
+          "Sens du relationnel",
+          "Sens de l'organisation"
+        ],
+        "loisirs": [
+          "Musique traditionnelle",
+          "Cuisine",
+          "Voyages",
+          "Natation"
+        ],
+        "certifications": [
+          "Permis de conduire catégorie B",
+          "Certification Google Analytics"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-hery-randriamampionona.pdf",
+      "fichier": "cv-scanne-bandeau-hery-randriamampionona.pdf",
       "nature": "scanne",
+      "maquette": "bandeau",
       "idEtudiant": 12,
       "nom": "Hery Randriamampionona",
       "filiere": "Informatique et Numérique",
@@ -684,11 +1307,36 @@
           "nom": "Cybersécurité",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Slack",
+          "Figma",
+          "Trello",
+          "Microsoft Teams"
+        ],
+        "qualites": [
+          "Sens de l'organisation",
+          "Capacité d'adaptation",
+          "Rigueur"
+        ],
+        "loisirs": [
+          "Basket-ball",
+          "Musique traditionnelle",
+          "Cinéma",
+          "Bénévolat associatif",
+          "Randonnée"
+        ],
+        "certifications": [
+          "Certificat de formation aux premiers secours"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-ny-aina-ratovoson.pdf",
+      "fichier": "cv-natif-compacte-ny-aina-ratovoson.pdf",
       "nature": "natif",
+      "maquette": "compacte",
       "idEtudiant": 15,
       "nom": "Ny Aina Ratovoson",
       "filiere": "Informatique et Numérique",
@@ -719,11 +1367,34 @@
           "nom": "Git",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "AutoCAD",
+          "Canva"
+        ],
+        "qualites": [
+          "Rigueur",
+          "Sens du relationnel",
+          "Esprit d'initiative",
+          "Travail en équipe"
+        ],
+        "loisirs": [
+          "Football",
+          "Musique traditionnelle",
+          "Jardinage"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V",
+          "Certificat de formation aux premiers secours"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-fitia-rakotoarisoa.pdf",
+      "fichier": "cv-scanne-classique-fitia-rakotoarisoa.pdf",
       "nature": "scanne",
+      "maquette": "classique",
       "idEtudiant": 18,
       "nom": "Fitia Rakotoarisoa",
       "filiere": "Informatique et Numérique",
@@ -754,11 +1425,34 @@
           "nom": "PostgreSQL",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "AutoCAD",
+          "Figma",
+          "Canva",
+          "Microsoft Teams"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Capacité d'adaptation",
+          "Autonomie"
+        ],
+        "loisirs": [
+          "Voyages",
+          "Lecture",
+          "Cuisine",
+          "Randonnée"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-sitraka-rabemananjara.pdf",
+      "fichier": "cv-mixte-deux-colonnes-sitraka-rabemananjara.pdf",
       "nature": "mixte",
+      "maquette": "deux-colonnes",
       "idEtudiant": 20,
       "nom": "Sitraka Rabemananjara",
       "filiere": "Informatique et Numérique",
@@ -784,11 +1478,38 @@
           "nom": "Machine Learning",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Microsoft Teams",
+          "Slack",
+          "Figma",
+          "Photoshop"
+        ],
+        "qualites": [
+          "Esprit d'initiative",
+          "Travail en équipe",
+          "Autonomie",
+          "Capacité d'adaptation"
+        ],
+        "loisirs": [
+          "Randonnée",
+          "Cuisine",
+          "Cinéma",
+          "Photographie",
+          "Football"
+        ],
+        "certifications": [
+          "Certificat de formation aux premiers secours",
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-jaona-ranaivoson.pdf",
+      "fichier": "cv-natif-bandeau-jaona-ranaivoson.pdf",
       "nature": "natif",
+      "maquette": "bandeau",
       "idEtudiant": 24,
       "nom": "Jaona Ranaivoson",
       "filiere": "Informatique et Numérique",
@@ -814,11 +1535,32 @@
           "nom": "SQL",
           "niveau": "Débutant"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Slack",
+          "Figma",
+          "Notion"
+        ],
+        "qualites": [
+          "Sens de l'organisation",
+          "Rigueur",
+          "Sens du relationnel"
+        ],
+        "loisirs": [
+          "Voyages",
+          "Échecs",
+          "Football"
+        ],
+        "certifications": [
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-iavotiana-rabearison.pdf",
+      "fichier": "cv-scanne-compacte-iavotiana-rabearison.pdf",
       "nature": "scanne",
+      "maquette": "compacte",
       "idEtudiant": 35,
       "nom": "Iavotiana Rabearison",
       "filiere": "Informatique et Numérique",
@@ -839,11 +1581,36 @@
           "nom": "Machine Learning",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Microsoft Teams",
+          "Figma",
+          "Trello",
+          "Notion"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Sens de l'organisation",
+          "Curiosité intellectuelle",
+          "Rigueur"
+        ],
+        "loisirs": [
+          "Échecs",
+          "Natation",
+          "Lecture",
+          "Football"
+        ],
+        "certifications": [
+          "TOEIC — score 785",
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-mialy-rakotobe.pdf",
+      "fichier": "cv-natif-classique-mialy-rakotobe.pdf",
       "nature": "natif",
+      "maquette": "classique",
       "idEtudiant": 45,
       "nom": "Mialy Rakotobe",
       "filiere": "Informatique et Numérique",
@@ -869,11 +1636,36 @@
           "nom": "Git",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "Zoom",
+          "Figma",
+          "Slack",
+          "AutoCAD"
+        ],
+        "qualites": [
+          "Esprit d'initiative",
+          "Capacité d'adaptation",
+          "Sens de l'organisation"
+        ],
+        "loisirs": [
+          "Musique traditionnelle",
+          "Basket-ball",
+          "Lecture",
+          "Voyages",
+          "Cinéma"
+        ],
+        "certifications": [
+          "Certificat de formation aux premiers secours"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-rado-andriantsoa.pdf",
+      "fichier": "cv-scanne-deux-colonnes-rado-andriantsoa.pdf",
       "nature": "scanne",
+      "maquette": "deux-colonnes",
       "idEtudiant": 46,
       "nom": "Rado Andriantsoa",
       "filiere": "Informatique et Numérique",
@@ -899,11 +1691,34 @@
           "nom": "Git",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Microsoft Teams",
+          "Trello",
+          "Notion"
+        ],
+        "qualites": [
+          "Autonomie",
+          "Rigueur",
+          "Capacité d'adaptation",
+          "Sens du relationnel"
+        ],
+        "loisirs": [
+          "Football",
+          "Lecture",
+          "Voyages"
+        ],
+        "certifications": [
+          "Certification Google Analytics",
+          "TOEIC — score 785"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-faniry-ravoninahitra.pdf",
+      "fichier": "cv-mixte-bandeau-faniry-ravoninahitra.pdf",
       "nature": "mixte",
+      "maquette": "bandeau",
       "idEtudiant": 47,
       "nom": "Faniry Ravoninahitra",
       "filiere": "Informatique et Numérique",
@@ -929,11 +1744,34 @@
           "nom": "MySQL",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Photoshop",
+          "Slack",
+          "Zoom"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Autonomie",
+          "Ponctualité"
+        ],
+        "loisirs": [
+          "Natation",
+          "Bénévolat associatif",
+          "Voyages",
+          "Musique traditionnelle"
+        ],
+        "certifications": [
+          "TOEIC — score 785"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-tsiky-rakotoson.pdf",
+      "fichier": "cv-natif-compacte-tsiky-rakotoson.pdf",
       "nature": "natif",
+      "maquette": "compacte",
       "idEtudiant": 48,
       "nom": "Tsiky Rakotoson",
       "filiere": "Informatique et Numérique",
@@ -959,11 +1797,38 @@
           "nom": "Cloud (AWS/Azure)",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "AutoCAD",
+          "Canva",
+          "Figma",
+          "Slack"
+        ],
+        "qualites": [
+          "Rigueur",
+          "Autonomie",
+          "Ponctualité",
+          "Travail en équipe"
+        ],
+        "loisirs": [
+          "Jardinage",
+          "Voyages",
+          "Cuisine",
+          "Musique traditionnelle",
+          "Cinéma"
+        ],
+        "certifications": [
+          "Certification Google Analytics",
+          "Certificat de formation aux premiers secours"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-haja-randriamanana.pdf",
+      "fichier": "cv-scanne-classique-haja-randriamanana.pdf",
       "nature": "scanne",
+      "maquette": "classique",
       "idEtudiant": 49,
       "nom": "Haja Randriamanana",
       "filiere": "Informatique et Numérique",
@@ -984,11 +1849,32 @@
           "nom": "Linux",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "AutoCAD",
+          "Slack",
+          "Microsoft Teams"
+        ],
+        "qualites": [
+          "Capacité d'adaptation",
+          "Sens de l'organisation",
+          "Ponctualité"
+        ],
+        "loisirs": [
+          "Jardinage",
+          "Basket-ball",
+          "Randonnée"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-tantely-rasamimanana.pdf",
+      "fichier": "cv-natif-deux-colonnes-tantely-rasamimanana.pdf",
       "nature": "natif",
+      "maquette": "deux-colonnes",
       "idEtudiant": 31,
       "nom": "Tantely Rasamimanana",
       "filiere": "Pêche et Ressources Marines",
@@ -1009,11 +1895,36 @@
           "nom": "Aquaculture",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Canva",
+          "WordPress",
+          "Trello",
+          "Zoom"
+        ],
+        "qualites": [
+          "Esprit d'initiative",
+          "Capacité d'adaptation",
+          "Rigueur",
+          "Ponctualité"
+        ],
+        "loisirs": [
+          "Bénévolat associatif",
+          "Photographie",
+          "Musique traditionnelle",
+          "Randonnée"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V",
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-scanne-herimalala-andriamanjato.pdf",
+      "fichier": "cv-scanne-bandeau-herimalala-andriamanjato.pdf",
       "nature": "scanne",
+      "maquette": "bandeau",
       "idEtudiant": 27,
       "nom": "Herimalala Andriamanjato",
       "filiere": "Tourisme et Hôtellerie",
@@ -1034,11 +1945,36 @@
           "nom": "Anglais professionnel",
           "niveau": "Avancé"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Notion",
+          "Photoshop",
+          "Figma",
+          "Microsoft Teams",
+          "Canva"
+        ],
+        "qualites": [
+          "Travail en équipe",
+          "Sens de l'organisation",
+          "Autonomie"
+        ],
+        "loisirs": [
+          "Photographie",
+          "Basket-ball",
+          "Cuisine",
+          "Natation",
+          "Cinéma"
+        ],
+        "certifications": [
+          "Attestation de secourisme"
+        ]
+      }
     },
     {
-      "fichier": "cv-mixte-tojo-razafindrakoto.pdf",
+      "fichier": "cv-mixte-compacte-tojo-razafindrakoto.pdf",
       "nature": "mixte",
+      "maquette": "compacte",
       "idEtudiant": 10,
       "nom": "Tojo Razafindrakoto",
       "filiere": "Télécommunications",
@@ -1064,11 +2000,34 @@
           "nom": "Anglais professionnel",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "WordPress",
+          "Microsoft Teams",
+          "Slack"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Ponctualité",
+          "Curiosité intellectuelle",
+          "Travail en équipe"
+        ],
+        "loisirs": [
+          "Lecture",
+          "Photographie",
+          "Échecs"
+        ],
+        "certifications": [
+          "Habilitation électrique B1V",
+          "Permis de conduire catégorie B"
+        ]
+      }
     },
     {
-      "fichier": "cv-natif-andry-rakotondrabe.pdf",
+      "fichier": "cv-natif-classique-andry-rakotondrabe.pdf",
       "nature": "natif",
+      "maquette": "classique",
       "idEtudiant": 21,
       "nom": "Andry Rakotondrabe",
       "filiere": "Télécommunications",
@@ -1089,7 +2048,29 @@
           "nom": "Télécommunications",
           "niveau": "Intermédiaire"
         }
-      ]
+      ],
+      "termesParasites": {
+        "logiciels": [
+          "Photoshop",
+          "Canva",
+          "AutoCAD",
+          "Trello"
+        ],
+        "qualites": [
+          "Sens du relationnel",
+          "Capacité d'adaptation",
+          "Esprit d'initiative"
+        ],
+        "loisirs": [
+          "Natation",
+          "Course à pied",
+          "Cinéma",
+          "Basket-ball"
+        ],
+        "certifications": [
+          "Certification Google Analytics"
+        ]
+      }
     }
   ]
 }
