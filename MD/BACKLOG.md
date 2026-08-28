@@ -32,12 +32,13 @@ Sources : [REVUE-CODE.md](REVUE-CODE.md) (anomalies) · [AMELIORATIONS.md](AMELI
 | Lot | Objet | Pourquoi maintenant |
 |---|---|---|
 | **0** | Déblocage et nettoyage | Rien d'autre n'est testable ni fiable avant |
-| **1** | Structuration de la saisie | Socle de données propre exigé par le Lot 4 |
+| **1** | Structuration de la saisie | Socle de données propre exigé par le Lot 5 |
 | **2** | Fermeture de la boucle fonctionnelle | Rend l'application cohérente pour la démonstration |
 | **3** | Refonte du stockage des CV | Prépare l'ingestion de CV du mémoire |
-| **4** | Cœur du mémoire (co-occurrence) | Arrive sur des données déjà normalisées |
+| **4** | Passage à l'échelle et finitions | Reprend les points d'abord écartés ; prépare le Lot 5 |
+| **5** | Cœur du mémoire (co-occurrence) | Arrive sur des données déjà normalisées |
 
-**Principe de séquencement :** chaque lot prépare le suivant. Le Lot 4 — la contribution
+**Principe de séquencement :** chaque lot prépare le suivant. Le Lot 5 — la contribution
 scientifique — doit s'exécuter sur des données propres et structurées, sinon les métriques
 d'évaluation ne voudront rien dire. C'est toute la raison de cet ordre.
 
@@ -47,7 +48,7 @@ d'évaluation ne voudront rien dire. C'est toute la raison de cet ordre.
 
 > **Pourquoi ce lot d'abord :** il lève un verrou fonctionnel total (aucune université ne
 > peut s'inscrire puis se connecter) et supprime des données parasites qui, laissées en
-> place, fausseraient la matrice de co-occurrence du Lot 4. Le faire maintenant évite de
+> place, fausseraient la matrice de co-occurrence du Lot 5. Le faire maintenant évite de
 > devoir relancer l'évaluation plus tard.
 
 ## 0.1 ⬜ Unifier la valeur de `typeUtilisateur` pour les universités
@@ -106,7 +107,7 @@ atterrit sur `/` au lieu de `/pages/adminLogin`.
 
 **Pourquoi.** [AMELIORATIONS D5](AMELIORATIONS.md). Ces valeurs parasites polluent le
 référentiel de compétences et les champs sur lesquels le moteur calcule ses scores. Elles
-doivent disparaître **avant** le Lot 4, sous peine de fausser la matrice de co-occurrence et
+doivent disparaître **avant** le Lot 5, sous peine de fausser la matrice de co-occurrence et
 les métriques d'évaluation. Elles apparaîtraient aussi sur les captures d'écran du mémoire.
 
 **Prérequis.** Aucun.
@@ -222,7 +223,7 @@ deviner. Constat en base : `'Licence 3'`, `'Master 1'`, `'Master 2'` … et `'ma
 **Gain pour le mémoire :** une *baseline* plus solide rend le gain mesuré du nouveau moteur
 ([PLAN §7](PLAN.md)) plus crédible, pas moins.
 
-**Prérequis.** Aucun technique, mais à faire avant le Lot 4.
+**Prérequis.** Aucun technique, mais à faire avant le Lot 5.
 
 **Décision de périmètre.** On traite **niveau, ville, durée** (listes courtes et évidentes).
 **La filière est volontairement reportée** : elle demande un vrai travail de taxonomie, et
@@ -300,7 +301,7 @@ vérification est perdue, alors que l'API répond « Statut mis à jour ».
 > **Pourquoi ce lot :** [REVUE-CODE E2](REVUE-CODE.md) et [PLAN §5.4](PLAN.md) sont **le même
 > chantier**. Les traiter séparément reviendrait à écrire deux fois la couche de stockage.
 >
-> **Prérequis :** Lot 0. À faire avant le Lot 4 si l'ingestion de CV est retenue.
+> **Prérequis :** Lot 0. À faire avant le Lot 5 si l'ingestion de CV est retenue.
 
 **Constat prouvé.** Les CV sont écrits dans `public/uploads/candidatures/`. Or Next.js ne
 sert `public/` que d'après son état **au moment du build** : un fichier ajouté à chaud
@@ -318,24 +319,129 @@ monté, donc chaque reconstruction d'image détruit les CV déposés.
 
 ---
 
-# LOT 4 — Cœur du mémoire
+# LOT 4 — Passage à l'échelle et finitions
 
-> **Prérequis impératifs :** 0.3 (référentiel nettoyé) et 1.1 (plus de compétences créées à
+> **Pourquoi ce lot :** ces tâches avaient été volontairement écartées du périmètre initial,
+> au motif qu'elles n'apportaient pas de points au mémoire. Décision revue : elles sont
+> reprises ici, avant le cœur du mémoire.
+>
+> Deux d'entre elles ont un intérêt direct pour le Lot 5 : la pagination et la recherche
+> côté serveur (4.1) deviennent nécessaires dès que les recommandations bidirectionnelles
+> produiront des listes de candidats, et le référentiel de filières (4.4) est le dernier
+> champ libre qui alimente encore le calcul de score.
+>
+> **Prérequis global :** Lots 0 à 3 terminés.
+
+## 4.1 ⬜ Pagination et recherche côté serveur
+
+**Pourquoi.** [AMELIORATIONS C1/C2](AMELIORATIONS.md). Aucune clause `LIMIT`/`OFFSET` sur
+`listeOffre`, `rechercheCandidat`, `rechercheEntreprise`, `listeEntreprises` et
+`messages/utilisateurs`. `GET /api/listeOffre` renvoie déjà 47 Ko pour 51 offres, et la
+recherche d'offres s'effectue entièrement dans le navigateur — sur des données toutes
+téléchargées, et **sans porter sur les compétences**, pourtant le critère le plus pertinent.
+
+Le motif existe déjà dans le projet : `universiteEtudiant` et `admin/donnees` paginent.
+
+**À faire.**
+1. Pagination côté serveur sur les cinq routes, en reprenant le motif existant.
+2. Déplacer la recherche d'offres côté serveur et **inclure les compétences** dans les
+   champs interrogés.
+3. Conserver le score de recommandation sur les résultats de recherche
+   ([AMELIORATIONS C3](AMELIORATIONS.md)) : aujourd'hui le bloc de recommandations
+   disparaît dès que l'étudiant tape un caractère, c'est-à-dire au moment précis où il
+   cherche activement.
+
+**Vérification.** Une réponse paginée reste de taille constante quel que soit le nombre
+d'offres ; une recherche par nom de compétence retourne les offres correspondantes.
+
+---
+
+## 4.2 ⬜ Avertissement avant le QCM
+
+**Pourquoi.** [AMELIORATIONS B4](AMELIORATIONS.md). La candidature et le QCM sont
+indissociables : une fois envoyé, la contrainte `UNIQUE (idEtudiant, idOffre)` interdit
+toute reprise. Un problème réseau ou une fermeture d'onglet en cours de QCM coûte donc
+définitivement l'offre à l'étudiant, sans qu'il en ait été prévenu.
+
+**À faire.** Avertir explicitement avant de démarrer : tentative unique, durée, ne pas
+fermer la fenêtre.
+
+**Périmètre.** La sauvegarde des réponses en cours (reprise après interruption) reste hors
+périmètre : elle suppose un brouillon de candidature, donc un changement de modèle.
+À mentionner en « perspectives » du mémoire.
+
+---
+
+## 4.3 ⬜ Durcissement des comptes
+
+**Pourquoi.** [REVUE-CODE F2/F3/F4](REVUE-CODE.md).
+
+| Point | État actuel |
+|---|---|
+| Politique de mot de passe | minimum 6 caractères, aucune exigence de complexité |
+| Limitation de débit | aucune sur les routes de connexion → force brute possible |
+| Stockage du jeton | `localStorage`, donc lisible par tout script en cas de faille XSS |
+
+Les deux premiers se corrigent sans changement d'architecture. Le troisième — passer à un
+cookie `httpOnly` — touche l'ensemble des appels authentifiés : **à évaluer avant de
+s'engager**, et acceptable en « limites » du mémoire s'il s'avère trop coûteux.
+
+⚠️ Le mot de passe administrateur ([REVUE-CODE C1](REVUE-CODE.md)) reste hors périmètre :
+environnement de test, changement déjà prévu de votre côté.
+
+---
+
+## 4.4 ⬜ Référentiel de filières
+
+**Pourquoi.** [AMELIORATIONS A3](AMELIORATIONS.md), volet reporté au Lot 1. La filière, la
+spécialisation et le domaine restent saisis en texte libre, alors que `scoreFiliere()` les
+compare par recouvrement de mots. C'est **le dernier champ libre qui alimente encore le
+calcul de score**, et il sera aussi utilisé au Lot 5.
+
+**Pourquoi c'était reporté.** Contrairement au niveau ou à la ville, une taxonomie de
+filières demande un vrai travail de conception : granularité, regroupements, cas non
+prévus. À traiter maintenant, mais sans sous-estimer cette part de réflexion.
+
+**À faire.** Référentiel léger sur le modèle de `CompetenceReference`, avec « Autre » et
+précision libre pour ne jamais bloquer un cas non anticipé. Normaliser les valeurs
+existantes.
+
+---
+
+## 4.5 ⬜ Cohérence de l'interface
+
+**Pourquoi.** [AMELIORATIONS D1 à D4](AMELIORATIONS.md). Sans effet sur les données, mais
+directement visible sur les captures d'écran du mémoire.
+
+- **D1** — uniformiser le vocabulaire des messages d'erreur entre les 41 routes.
+- **D2** — `entrepriseRegistreOffre` impose au moins une question de QCM : une entreprise ne
+  peut pas publier d'offre sans QCM. **À confirmer** — si c'est involontaire, rendre le QCM
+  facultatif.
+- **D3** — uniformiser les indicateurs de chargement (`LoadingState`, texte brut, ou rien
+  selon les écrans).
+- **D4** — indiquer la progression sur les formulaires longs (`etudiantRegistreInfo`
+  dépasse 500 lignes et enchaîne plusieurs sections).
+
+---
+
+# LOT 5 — Cœur du mémoire
+
+> **Prérequis impératifs :** Lot 4 terminé, ainsi que 0.3 (référentiel nettoyé) et 1.1 (plus de compétences créées à
 > la volée). Sans eux, la matrice de co-occurrence est calculée sur un vocabulaire pollué et
 > l'évaluation ne veut rien dire.
 
 Le détail est dans [PLAN.md](PLAN.md). Rappel de l'enchaînement :
 
-1. **1.4** Matrice de co-occurrence des compétences ([PLAN §3](PLAN.md)) — calculable
+1. **5.1** Matrice de co-occurrence des compétences ([PLAN §3](PLAN.md)) — calculable
    immédiatement sur les 51 offres existantes.
-2. **4.2** Correspondance bidirectionnelle (offre → candidats), qui découle de la matrice.
-3. **4.3** Conseiller contrefactuel ([PLAN §4](PLAN.md)) — réutilise le scoreur, sans
+2. **5.2** Correspondance bidirectionnelle (offre → candidats), qui découle de la matrice.
+3. **5.3** Conseiller contrefactuel ([PLAN §4](PLAN.md)) — réutilise le scoreur, sans
    nouvel algorithme.
-4. **4.4** Ingestion de CV : OCR + extraction ([PLAN §5](PLAN.md)).
-5. **4.5** Évaluation ([PLAN §7](PLAN.md)) — **à mener en parallèle de 4.1 et 4.2**, pas à la
+4. **5.4** Ingestion de CV : OCR + extraction ([PLAN §5](PLAN.md)).
+5. **5.5** Évaluation ([PLAN §7](PLAN.md)) — **à mener en parallèle de 5.1 et 5.2**, pas à la
    fin : il faut journaliser les prédictions au fil de l'eau.
 
-Avant 4.1, trancher **[REVUE-CODE M5](REVUE-CODE.md)** : la colonne `Candidature.scoreMatching`
+Avant 5.1, trancher **[REVUE-CODE M5](REVUE-CODE.md)** : la colonne `Candidature.scoreMatching`
 contient en réalité la **note au QCM**. Deux notions distinctes ne peuvent pas cohabiter sous
 un nom ambigu → renommer l'existante `noteQCM` et réserver `scoreMatching` au score
 d'adéquation.
@@ -348,12 +454,9 @@ Nommé ici pour que le périmètre ne dérive pas.
 
 | Écarté | Raison |
 |---|---|
-| **C1/C2/C3** — pagination, recherche serveur | À 51 offres, ce n'est pas un problème réel et cela n'apporte aucun point au mémoire. Relève des « perspectives ». |
-| **B4** — reprise du QCM en cours | On se limite à un **avertissement clair** avant de démarrer. |
-| **D1 à D4** — finitions d'interface | À traiter seulement s'il reste du temps. |
-| **A3 (filière)** | Reporté : demande un vrai travail de taxonomie ; `scoreFiliere()` tolère déjà l'à-peu-près. |
-| **F2, F3, F4** — politique de mot de passe, limitation de débit, stockage du jeton | Durcissement de production ; leur place est dans « limites et perspectives ». |
-| **[REVUE-CODE C1](REVUE-CODE.md)** — mot de passe admin | Écarté à la demande : environnement de test, changement déjà prévu. |
+| **[REVUE-CODE C1](REVUE-CODE.md)** — mot de passe admin | Écarté à votre demande : environnement de test, changement déjà prévu. |
+| **Reprise d'un QCM interrompu** | Suppose un brouillon de candidature, donc un changement de modèle. Voir 4.2 : on se limite à l'avertissement. Relève des « perspectives ». |
+| **Validation du rattachement par l'université** | ✅ Finalement implémenté au Lot 1.2b. |
 
 ---
 
@@ -373,4 +476,9 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 2 | 2.3 Indicateur « déjà postulé » | ✅ | 28/08/2026 |
 | 2 | 2.4 `SAVEPOINT` vérification | ✅ | 28/08/2026 |
 | 3 | Refonte stockage CV + multi-CV | ✅ | 28/08/2026 |
-| 4 | Cœur du mémoire | ⬜ | |
+| 4 | 4.1 Pagination et recherche serveur | ⬜ | |
+| 4 | 4.2 Avertissement avant le QCM | ⬜ | |
+| 4 | 4.3 Durcissement des comptes | ⬜ | |
+| 4 | 4.4 Référentiel de filières | ⬜ | |
+| 4 | 4.5 Cohérence de l'interface | ⬜ | |
+| 5 | Cœur du mémoire | ⬜ | |
