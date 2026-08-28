@@ -532,10 +532,11 @@ Le détail est dans [PLAN.md](PLAN.md). Rappel de l'enchaînement :
 5. **5.5** Évaluation ([PLAN §7](PLAN.md)) — **à mener en parallèle de 5.1 et 5.2**, pas à la
    fin : il faut journaliser les prédictions au fil de l'eau.
 
-Avant 5.1, trancher **[REVUE-CODE M5](1%20-%20REVUE-CODE.md)** : la colonne `Candidature.scoreMatching`
-contient en réalité la **note au QCM**. Deux notions distinctes ne peuvent pas cohabiter sous
-un nom ambigu → renommer l'existante `noteQCM` et réserver `scoreMatching` au score
-d'adéquation.
+✅ **[REVUE-CODE M5](1%20-%20REVUE-CODE.md) tranché** (migration 004, 28/08/2026) :
+`Candidature.scoreMatching` contenait en réalité la note au QCM. La colonne a été renommée
+`noteQCM`. Le score d'adéquation n'a pas été ajouté sur `Candidature` : il vit déjà dans la
+table `recommandation`, sa place naturelle puisqu'il se recalcule indépendamment des
+candidatures.
 
 ---
 

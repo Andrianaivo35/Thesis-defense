@@ -58,7 +58,7 @@ export async function GET(req) {
     const candidatures = await client.query(`
       SELECT
         c."idCandidature", c."dateCandidature", c."statut",
-        c."scoreMatching" AS "noteQCM",
+        c."noteQCM",
         e."idEtudiant", e."nomEtudiant", e."prenomEtudiant",
         o."titre" AS "titreOffre"
       FROM "Candidature" c

@@ -160,7 +160,7 @@ export async function POST(req) {
       });
     }
 
-    const scoreMatching = totalPoints > 0
+    const noteQCM = totalPoints > 0
       ? ((earnedPoints / totalPoints) * 100).toFixed(2)
       : 0;
 
@@ -194,10 +194,10 @@ export async function POST(req) {
       candidatureResult = await client.query(`
         INSERT INTO "Candidature" (
           "idEtudiant", "idOffre", "idCV", "nomFichierLettre",
-          "dateCandidature", "statut", "scoreMatching"
+          "dateCandidature", "statut", "noteQCM"
         ) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6)
         RETURNING "idCandidature"
-      `, [idEtudiant, idOffre, idCV, nomFichierLettre, 'En attente', scoreMatching]);
+      `, [idEtudiant, idOffre, idCV, nomFichierLettre, 'En attente', noteQCM]);
     } catch (insertError) {
       if (insertError.code === '23505') {  // UNIQUE violation
         await client.query('ROLLBACK');
@@ -229,7 +229,7 @@ export async function POST(req) {
       success: true,
       message: 'Candidature envoyée avec succès',
       idCandidature,
-      scoreMatching,
+      noteQCM,
       earnedPoints,
       totalPoints
     }, { status: 201 });

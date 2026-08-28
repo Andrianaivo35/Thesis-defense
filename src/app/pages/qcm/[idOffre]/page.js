@@ -309,7 +309,7 @@ export default function QcmPage() {
             <h2>Candidature envoyée !</h2>
             <p>Votre candidature a bien été enregistrée auprès de <strong>{offre.nomEntreprise}</strong>.</p>
             <p>
-              <strong>Votre score : {success.scoreMatching}%</strong>
+              <strong>Votre note : {success.noteQCM}%</strong>
               {' '}({success.earnedPoints}/{success.totalPoints} points)
             </p>
             <SubmitButton onClick={() => router.push('/pages/listeOffre')}>

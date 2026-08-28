@@ -24,17 +24,12 @@ export async function GET(req) {
 
     const idEtudiant = payload.idEtudiant;
 
-    /* Note : la colonne "scoreMatching" contient en réalité la note obtenue
-       au QCM, et non un score d'adéquation profil/offre. Elle est exposée
-       ici sous le nom "noteQCM", plus fidèle à son contenu.
-       Voir REVUE-CODE.md M5 : le renommage en base est prévu avant
-       l'introduction du véritable score d'adéquation. */
     const result = await client.query(`
       SELECT
         c."idCandidature",
         c."dateCandidature",
         c."statut",
-        c."scoreMatching" AS "noteQCM",
+        c."noteQCM",
         o."idOffre",
         o."titre"        AS "titreOffre",
         o."domaine",

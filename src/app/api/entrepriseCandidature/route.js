@@ -23,7 +23,7 @@ export async function GET(req) {
         c."idCandidature",
         c."dateCandidature",
         c."statut",
-        c."scoreMatching",
+        c."noteQCM",
         c."cv",
         c."lettreMotivation",
         e."idEtudiant",
@@ -45,7 +45,7 @@ export async function GET(req) {
       LEFT JOIN universite univ ON e."idUniversite" = univ."idUniversite"
       INNER JOIN offre o ON c."idOffre" = o."idOffre"
       WHERE o."idEntreprise" = $1
-      ORDER BY c."scoreMatching" DESC NULLS LAST, c."dateCandidature" DESC
+      ORDER BY c."noteQCM" DESC NULLS LAST, c."dateCandidature" DESC
     `, [idEntreprise]);
 
     return NextResponse.json(

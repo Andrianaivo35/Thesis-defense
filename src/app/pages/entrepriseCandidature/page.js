@@ -113,7 +113,7 @@ export default function EntrepriseCandidatures() {
 
     const sorted = [...filtered]
     if (sortBy === 'score') {
-      sorted.sort((a, b) => (parseFloat(b.scoreMatching) || 0) - (parseFloat(a.scoreMatching) || 0))
+      sorted.sort((a, b) => (parseFloat(b.noteQCM) || 0) - (parseFloat(a.noteQCM) || 0))
     } else if (sortBy === 'date') {
       sorted.sort((a, b) => new Date(b.dateCandidature) - new Date(a.dateCandidature))
     } else if (sortBy === 'nom') {
@@ -127,7 +127,7 @@ export default function EntrepriseCandidatures() {
     if (candidaturesFiltrees.length === 0) {
       return { total: 0, average: 0, max: 0, recrutes: 0 }
     }
-    const scores = candidaturesFiltrees.map(c => parseFloat(c.scoreMatching) || 0)
+    const scores = candidaturesFiltrees.map(c => parseFloat(c.noteQCM) || 0)
     return {
       total: candidaturesFiltrees.length,
       average: (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1),
@@ -317,8 +317,8 @@ export default function EntrepriseCandidatures() {
                 </CandidatMiddle>
 
                 <CandidatRight>
-                  <ScoreCircle $color={getScoreColor(c.scoreMatching)}>
-                    {parseFloat(c.scoreMatching || 0).toFixed(0)}%
+                  <ScoreCircle $color={getScoreColor(c.noteQCM)}>
+                    {parseFloat(c.noteQCM || 0).toFixed(0)}%
                   </ScoreCircle>
                   <ScoreLabel>Score QCM</ScoreLabel>
                 </CandidatRight>
