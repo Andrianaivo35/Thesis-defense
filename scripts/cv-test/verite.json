@@ -1,0 +1,1095 @@
+{
+  "genereLe": "2026-08-28T17:59:22.328Z",
+  "cvs": [
+    {
+      "fichier": "cv-natif-fetra-randriamiharisoa.pdf",
+      "nature": "natif",
+      "idEtudiant": 30,
+      "nom": "Fetra Randriamiharisoa",
+      "filiere": "Agro-industrie et Agronomie",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 53,
+          "nom": "Agronomie",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-tsiory-razafindravao.pdf",
+      "nature": "scanne",
+      "idEtudiant": 34,
+      "nom": "Tsiory Razafindravao",
+      "filiere": "Communication et Médias",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 34,
+          "nom": "Marketing digital",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-hanta-rasoarimalala.pdf",
+      "nature": "natif",
+      "idEtudiant": 50,
+      "nom": "Hanta Rasoarimalala",
+      "filiere": "Communication et Médias",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 42,
+          "nom": "Français rédactionnel",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 41,
+          "nom": "Malagasy",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-miora-ravaomanana.pdf",
+      "nature": "scanne",
+      "idEtudiant": 11,
+      "nom": "Miora Ravaomanana",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 33,
+          "nom": "Comptabilité",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 37,
+          "nom": "Audit financier",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-vonjy-rasoanaivo.pdf",
+      "nature": "mixte",
+      "idEtudiant": 13,
+      "nom": "Vonjy Rasoanaivo",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 33,
+          "nom": "Comptabilité",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 37,
+          "nom": "Audit financier",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Débutant"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-mamy-zafindraibe.pdf",
+      "nature": "natif",
+      "idEtudiant": 16,
+      "nom": "Mamy Zafindraibe",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 34,
+          "nom": "Marketing digital",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-tahiry-rasolofoson.pdf",
+      "nature": "scanne",
+      "idEtudiant": 17,
+      "nom": "Tahiry Rasolofoson",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 27,
+          "nom": "Statistiques",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 38,
+          "nom": "Actuariat",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-voahangy-andriamahefa.pdf",
+      "nature": "natif",
+      "idEtudiant": 22,
+      "nom": "Voahangy Andriamahefa",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 32,
+          "nom": "Gestion de projet",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 36,
+          "nom": "Ressources humaines",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-lova-razanadrakoto.pdf",
+      "nature": "scanne",
+      "idEtudiant": 23,
+      "nom": "Lova Razanadrakoto",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 33,
+          "nom": "Comptabilité",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 37,
+          "nom": "Audit financier",
+          "niveau": "Débutant"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-nomena-andriatsimialona.pdf",
+      "nature": "mixte",
+      "idEtudiant": 25,
+      "nom": "Nomena Andriatsimialona",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 34,
+          "nom": "Marketing digital",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-ndrina-rakotozafy.pdf",
+      "nature": "natif",
+      "idEtudiant": 28,
+      "nom": "Ndrina Rakotozafy",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 32,
+          "nom": "Gestion de projet",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 57,
+          "nom": "Logistique",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-onja-razafimahatratra.pdf",
+      "nature": "scanne",
+      "idEtudiant": 29,
+      "nom": "Onja Razafimahatratra",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 56,
+          "nom": "Merchandising",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 55,
+          "nom": "Gestion de stocks",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-malala-rakotoarivelo.pdf",
+      "nature": "natif",
+      "idEtudiant": 33,
+      "nom": "Malala Rakotoarivelo",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 33,
+          "nom": "Comptabilité",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 37,
+          "nom": "Audit financier",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 49,
+          "nom": "Microfinance",
+          "niveau": "Débutant"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-mparany-rakotondramanana.pdf",
+      "nature": "scanne",
+      "idEtudiant": 37,
+      "nom": "Mparany Rakotondramanana",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 32,
+          "nom": "Gestion de projet",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 57,
+          "nom": "Logistique",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-koto-andrianina.pdf",
+      "nature": "mixte",
+      "idEtudiant": 51,
+      "nom": "Koto Andrianina",
+      "filiere": "Gestion et Commerce",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 36,
+          "nom": "Ressources humaines",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-solofo-rakotoniaina.pdf",
+      "nature": "natif",
+      "idEtudiant": 26,
+      "nom": "Solofo Rakotoniaina",
+      "filiere": "Génie Civil et BTP",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 44,
+          "nom": "Génie civil",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-ainatiana-ravelojaona.pdf",
+      "nature": "scanne",
+      "idEtudiant": 36,
+      "nom": "Ainatiana Ravelojaona",
+      "filiere": "Génie Civil et BTP",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 25,
+          "nom": "Excel avancé",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 44,
+          "nom": "Génie civil",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Débutant"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-fanomezana-andrianjafy.pdf",
+      "nature": "natif",
+      "idEtudiant": 14,
+      "nom": "Fanomezana Andrianjafy",
+      "filiere": "Génie Industriel et Énergie",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 45,
+          "nom": "Génie des procédés",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 46,
+          "nom": "Sécurité minière",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-toky-randrianasolo.pdf",
+      "nature": "scanne",
+      "idEtudiant": 19,
+      "nom": "Toky Randrianasolo",
+      "filiere": "Génie Industriel et Énergie",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 47,
+          "nom": "Génie mécanique",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 45,
+          "nom": "Génie des procédés",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Débutant"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-fenohasina-andriamandimbisoa.pdf",
+      "nature": "mixte",
+      "idEtudiant": 32,
+      "nom": "Fenohasina Andriamandimbisoa",
+      "filiere": "Génie Industriel et Énergie",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 43,
+          "nom": "Génie électrique",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 50,
+          "nom": "Énergies renouvelables",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-lalaina-ratsimba.pdf",
+      "nature": "natif",
+      "idEtudiant": 52,
+      "nom": "Lalaina Ratsimba",
+      "filiere": "Génie Industriel et Énergie",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 47,
+          "nom": "Génie mécanique",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 51,
+          "nom": "Génie textile",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-fanomezantsoa-andrianaivo.pdf",
+      "nature": "scanne",
+      "idEtudiant": 5,
+      "nom": "Fanomezantsoa Andrianaivo",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 1,
+          "nom": "Javascript",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-rakoto-rakoto.pdf",
+      "nature": "natif",
+      "idEtudiant": 6,
+      "nom": "rakoto Rakoto",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 1,
+          "nom": "Javascript",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 3,
+          "nom": "React",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 4,
+          "nom": "SQL",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-eddy-rafanomezana.pdf",
+      "nature": "scanne",
+      "idEtudiant": 7,
+      "nom": "Eddy RAFANOMEZANA",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 3,
+          "nom": "React",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-njaka-rakotomalala.pdf",
+      "nature": "mixte",
+      "idEtudiant": 8,
+      "nom": "Njaka Rakotomalala",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 1,
+          "nom": "Javascript",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 3,
+          "nom": "React",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 4,
+          "nom": "SQL",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-fenosoa-andriamampianina.pdf",
+      "nature": "natif",
+      "idEtudiant": 9,
+      "nom": "Fenosoa Andriamampianina",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 9,
+          "nom": "Python",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 4,
+          "nom": "SQL",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 23,
+          "nom": "Analyse de données",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 26,
+          "nom": "Machine Learning",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 24,
+          "nom": "Power BI",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-hery-randriamampionona.pdf",
+      "nature": "scanne",
+      "idEtudiant": 12,
+      "nom": "Hery Randriamampionona",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 19,
+          "nom": "Linux",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 28,
+          "nom": "Administration réseau",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 29,
+          "nom": "Cybersécurité",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-ny-aina-ratovoson.pdf",
+      "nature": "natif",
+      "idEtudiant": 15,
+      "nom": "Ny Aina Ratovoson",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 1,
+          "nom": "Javascript",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 3,
+          "nom": "React",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 5,
+          "nom": "HTML/CSS",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 7,
+          "nom": "Node.js",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-fitia-rakotoarisoa.pdf",
+      "nature": "scanne",
+      "idEtudiant": 18,
+      "nom": "Fitia Rakotoarisoa",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 2",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 3,
+          "nom": "React",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 7,
+          "nom": "Node.js",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 18,
+          "nom": "Docker",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 21,
+          "nom": "PostgreSQL",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-sitraka-rabemananjara.pdf",
+      "nature": "mixte",
+      "idEtudiant": 20,
+      "nom": "Sitraka Rabemananjara",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 9,
+          "nom": "Python",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 4,
+          "nom": "SQL",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 27,
+          "nom": "Statistiques",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 26,
+          "nom": "Machine Learning",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-jaona-ranaivoson.pdf",
+      "nature": "natif",
+      "idEtudiant": 24,
+      "nom": "Jaona Ranaivoson",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 6,
+          "nom": "TypeScript",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 10,
+          "nom": "Java",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 4,
+          "nom": "SQL",
+          "niveau": "Débutant"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-iavotiana-rabearison.pdf",
+      "nature": "scanne",
+      "idEtudiant": 35,
+      "nom": "Iavotiana Rabearison",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 2",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 9,
+          "nom": "Python",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 18,
+          "nom": "Docker",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 26,
+          "nom": "Machine Learning",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-mialy-rakotobe.pdf",
+      "nature": "natif",
+      "idEtudiant": 45,
+      "nom": "Mialy Rakotobe",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 1,
+          "nom": "Javascript",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 12,
+          "nom": "Vue.js",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 5,
+          "nom": "HTML/CSS",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-rado-andriantsoa.pdf",
+      "nature": "scanne",
+      "idEtudiant": 46,
+      "nom": "Rado Andriantsoa",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 6,
+          "nom": "TypeScript",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 13,
+          "nom": "Angular",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 5,
+          "nom": "HTML/CSS",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-faniry-ravoninahitra.pdf",
+      "nature": "mixte",
+      "idEtudiant": 47,
+      "nom": "Faniry Ravoninahitra",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 8,
+          "nom": "PHP",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 15,
+          "nom": "Symfony",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 20,
+          "nom": "MySQL",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-tsiky-rakotoson.pdf",
+      "nature": "natif",
+      "idEtudiant": 48,
+      "nom": "Tsiky Rakotoson",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 17,
+          "nom": "Git",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 18,
+          "nom": "Docker",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 19,
+          "nom": "Linux",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 30,
+          "nom": "Cloud (AWS/Azure)",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-haja-randriamanana.pdf",
+      "nature": "scanne",
+      "idEtudiant": 49,
+      "nom": "Haja Randriamanana",
+      "filiere": "Informatique et Numérique",
+      "niveauAcademique": "Master 2",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 9,
+          "nom": "Python",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 11,
+          "nom": "C++",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 19,
+          "nom": "Linux",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-tantely-rasamimanana.pdf",
+      "nature": "natif",
+      "idEtudiant": 31,
+      "nom": "Tantely Rasamimanana",
+      "filiere": "Pêche et Ressources Marines",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 27,
+          "nom": "Statistiques",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 48,
+          "nom": "Contrôle qualité",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 52,
+          "nom": "Aquaculture",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-scanne-herimalala-andriamanjato.pdf",
+      "nature": "scanne",
+      "idEtudiant": 27,
+      "nom": "Herimalala Andriamanjato",
+      "filiere": "Tourisme et Hôtellerie",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 35,
+          "nom": "Communication",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 54,
+          "nom": "Hôtellerie et Tourisme",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Avancé"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-mixte-tojo-razafindrakoto.pdf",
+      "nature": "mixte",
+      "idEtudiant": 10,
+      "nom": "Tojo Razafindrakoto",
+      "filiere": "Télécommunications",
+      "niveauAcademique": "Master 1",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 28,
+          "nom": "Administration réseau",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 29,
+          "nom": "Cybersécurité",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 31,
+          "nom": "Télécommunications",
+          "niveau": "Avancé"
+        },
+        {
+          "idCompetenceReference": 40,
+          "nom": "Anglais professionnel",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    },
+    {
+      "fichier": "cv-natif-andry-rakotondrabe.pdf",
+      "nature": "natif",
+      "idEtudiant": 21,
+      "nom": "Andry Rakotondrabe",
+      "filiere": "Télécommunications",
+      "niveauAcademique": "Licence 3",
+      "competencesAttendues": [
+        {
+          "idCompetenceReference": 19,
+          "nom": "Linux",
+          "niveau": "Débutant"
+        },
+        {
+          "idCompetenceReference": 28,
+          "nom": "Administration réseau",
+          "niveau": "Intermédiaire"
+        },
+        {
+          "idCompetenceReference": 31,
+          "nom": "Télécommunications",
+          "niveau": "Intermédiaire"
+        }
+      ]
+    }
+  ]
+}
