@@ -647,6 +647,15 @@ async function main() {
       ORDER BY e."filiere", e."idEtudiant"
     `);
 
+    /* Le référentiel, indexé par nom : sert à savoir lesquelles des
+       langues écrites sur le CV sont de véritables compétences. */
+    const referentiel = await client.query(
+      'SELECT "idCompetenceReference", "nomCompetenceReference" FROM "CompetenceReference"'
+    );
+    const referentielParNom = new Map(
+      referentiel.rows.map(c => [c.nomCompetenceReference.toLowerCase(), c])
+    );
+
     const verite = [];
     let index = 0;
 
@@ -729,11 +738,34 @@ async function main() {
         nom: profil.nomComplet,
         filiere: etu.filiere,
         niveauAcademique: etu.niveauAcademique,
-        // Ce que l'extraction DOIT retrouver
-        competencesAttendues: competences.rows.map(c => ({
-          idCompetenceReference: c.idCompetenceReference,
-          nom: c.nom, niveau: c.niveau
-        })),
+        /* Ce que l'extraction DOIT retrouver.
+
+           Les compétences du profil, plus les LANGUES effectivement
+           écrites sur le CV qui figurent au référentiel.
+
+           Cette seconde part avait été omise, et l'omission a faussé la
+           première mesure : « Malagasy » est écrit sur chaque CV et
+           existe au référentiel, donc l'extraction le retrouvait — et
+           était comptée en faux positif quarante fois pour avoir eu
+           raison. La précision affichée tombait à 75 % au lieu de 98 %.
+
+           Une vérité terrain incomplète ne rend pas la mesure sévère,
+           elle la rend fausse. */
+        competencesAttendues: [
+          ...competences.rows.map(c => ({
+            idCompetenceReference: c.idCompetenceReference,
+            nom: c.nom, niveau: c.niveau
+          })),
+          ...profil.langues
+            .map(([lg]) => referentielParNom.get(lg.toLowerCase()))
+            .filter(Boolean)
+            .filter(c => !competences.rows.some(
+              x => x.idCompetenceReference === c.idCompetenceReference))
+            .map(c => ({
+              idCompetenceReference: c.idCompetenceReference,
+              nom: c.nomCompetenceReference, niveau: null
+            }))
+        ],
         /* Ce que l'extraction ne doit PAS retenir comme compétence du
            référentiel. Mesure la précision : sans ces termes, on ne
            mesurerait que le rappel. */
