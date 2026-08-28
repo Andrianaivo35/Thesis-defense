@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { getUtilisateur, logout } from '@/lib/auth'
 import Image from 'next/image'
 import {
-  Briefcase, Inbox, UserSearch, MessageCircle, User, LogOut, Menu, X
+  LayoutDashboard, Briefcase, Inbox, UserSearch, MessageCircle, User, LogOut, Menu, X
 } from 'lucide-react'
 import {
   MobileHeader, MobileLogoArea, MobileLogoMark, MobileLogoText, HamburgerButton,
@@ -58,7 +58,7 @@ export default function EntrepriseNavbar() {
         <HamburgerButton onClick={() => setIsOpen(true)} aria-label="Ouvrir le menu">
           <Menu size={22} strokeWidth={2} />
         </HamburgerButton>
-        <MobileLogoArea onClick={() => router.push('/pages/entrepriseOffre')}>
+        <MobileLogoArea onClick={() => router.push('/pages/entrepriseDashboard')}>
           <MobileLogoMark>SS</MobileLogoMark>
           <MobileLogoText>Stage Share</MobileLogoText>
         </MobileLogoArea>
@@ -69,7 +69,7 @@ export default function EntrepriseNavbar() {
 
       {/* === SIDEBAR === */}
       <CompanySidebar $isOpen={isOpen}>
-        <SidebarLogoArea onClick={() => navigate('/pages/entrepriseOffre')}>
+        <SidebarLogoArea onClick={() => navigate('/pages/entrepriseDashboard')}>
           <Image
             src="/images/14.png"
             width={100}
@@ -84,6 +84,14 @@ export default function EntrepriseNavbar() {
         </SidebarCloseButton>
 
         <CompanyMenu>
+          <CompanyMenuLink
+            $active={isActive('/pages/entrepriseDashboard')}
+            onClick={() => navigate('/pages/entrepriseDashboard')}
+          >
+            <LayoutDashboard size={18} strokeWidth={2} />
+            Tableau de bord
+          </CompanyMenuLink>
+
           <CompanyMenuLink
             $active={isActive('/pages/listeOffre')}
             onClick={() => navigate('/pages/listeOffre')}

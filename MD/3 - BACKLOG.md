@@ -37,6 +37,7 @@ Sources : [REVUE-CODE.md](1%20-%20REVUE-CODE.md) (anomalies) · [AMELIORATIONS.m
 | **3** | Refonte du stockage des CV | Prépare l'ingestion de CV du mémoire |
 | **4** | Passage à l'échelle et finitions | Reprend les points d'abord écartés ; prépare le Lot 5 |
 | **5** | Cœur du mémoire (co-occurrence) | Arrive sur des données déjà normalisées |
+| **6** | Gestion des étudiants par l'université | Valeur produit, hors contribution scientifique : après le Lot 5 |
 
 **Principe de séquencement :** chaque lot prépare le suivant. Le Lot 5 — la contribution
 scientifique — doit s'exécuter sur des données propres et structurées, sinon les métriques
@@ -431,6 +432,89 @@ directement visible sur les captures d'écran du mémoire.
 
 ---
 
+## Extensions du Lot 4 — pages manquantes et liens morts
+
+> **Origine :** audit des pages incomplètes mené avant d'engager le Lot 5. Rien de tout
+> cela ne bloquait le moteur de recommandation, mais plusieurs de ces défauts cassent un
+> parcours nominal — donc se verraient en démonstration.
+
+## 4.6 ⬜ Tableau de bord entreprise
+
+**Pourquoi.** Il existe un `adminDashboard` et un `universiteDashboard`, mais **aucun
+`entrepriseDashboard`** — alors que l'entreprise est le rôle le plus actif. Cette absence
+provoque directement **deux liens morts vérifiés (HTTP 404)** :
+
+- `entrepriseRegistreOffre` redirige vers `/pages/entrepriseDashboard` après publication :
+  l'entreprise voit « Offre publiée avec succès », puis atterrit sur une page inexistante
+  deux secondes plus tard ;
+- le **logo du menu entreprise** (version mobile et barre latérale) pointe vers
+  `/pages/entrepriseOffre`, qui n'existe pas non plus.
+
+**À faire.** Créer le tableau de bord : offres publiées, candidatures reçues, accès rapides.
+Rediriger les deux liens morts vers cette page.
+
+---
+
+## 4.7 ⬜ Page « Toutes les entreprises »
+
+**Pourquoi.** `/api/listeEntreprises` est la **seule route API sans aucun consommateur**.
+Elle a pourtant été paginée et nettoyée de son `SELECT *` au Lot 4.1 — une route améliorée
+que personne n'appelle. Le menu étudiant référence par ailleurs `/pages/listeEntreprises`
+dans son test d'état actif, alors que la page n'existe pas.
+
+**À faire.** Créer la page qui consomme cette route, et corriger le menu étudiant.
+
+---
+
+## 4.8 ⬜ Page « À propos »
+
+**Pourquoi.** Le pied de page de l'accueil pointe vers `/pages/aPropos` → **404**.
+
+**À faire.** Page de présentation de la plateforme.
+
+---
+
+## 4.9 ⬜ Ajout d'un étudiant par l'université
+
+**Pourquoi.** `universiteAjoutEtudiant` est une **coquille vide** : 8 lignes retournant un
+fragment vide, et **orpheline** — aucun lien ne pointe vers elle.
+
+**Périmètre volontairement restreint.** On implémente l'ajout **d'un seul étudiant**.
+L'import de masse relève du [Lot 6.3](#63--import-csv--excel-avec-prévisualisation) : les
+deux se complètent, une université ajoutant ponctuellement un étudiant isolé après un
+import de promotion.
+
+**À faire.** Formulaire de création d'un compte étudiant rattaché à l'université connectée,
+avec rattachement directement `Valide` — c'est l'université elle-même qui le crée, elle n'a
+pas à valider sa propre demande.
+
+---
+
+## 4.10 ⬜ Statistiques du tableau de bord université
+
+**Pourquoi.** `universiteDashboard` affiche explicitement « Statistiques détaillées à
+venir » : la page existe, mais son contenu principal est un encart d'attente, avec un seul
+accès rapide.
+
+**À faire.** Remplacer l'encart par de vraies statistiques : effectifs, rattachements en
+attente, candidatures, placements.
+
+---
+
+## 4.11 ⬜ Retirer le faux assistant conversationnel
+
+**Pourquoi.** L'écran de messagerie contient un « Assistant Stage Share » codé en dur, qui
+répond *« je ne peux pas encore te répondre intelligemment, mais bientôt je serai connecté
+à une IA »*. C'est une promesse non tenue affichée à l'utilisateur.
+
+Le [PLAN §9](PLAN.md) écarte par ailleurs explicitement tout assistant conversationnel du
+périmètre du mémoire. Laisser cette amorce visible en soutenance inviterait une question
+sur une fonctionnalité qu'on a justement décidé de ne pas traiter.
+
+**À faire.** Retirer l'assistant. Le mentionner en « perspectives » du mémoire si souhaité.
+
+---
+
 # LOT 5 — Cœur du mémoire
 
 > **Prérequis impératifs :** Lot 4 terminé, ainsi que 0.3 (référentiel nettoyé) et 1.1 (plus de compétences créées à
@@ -452,6 +536,154 @@ Avant 5.1, trancher **[REVUE-CODE M5](1%20-%20REVUE-CODE.md)** : la colonne `Can
 contient en réalité la **note au QCM**. Deux notions distinctes ne peuvent pas cohabiter sous
 un nom ambigu → renommer l'existante `noteQCM` et réserver `scoreMatching` au score
 d'adéquation.
+
+---
+
+# LOT 6 — Gestion des étudiants par l'université
+
+> **Pourquoi ce lot :** une université ne s'inscrira jamais sur la plateforme si elle doit
+> créer 300 comptes à la main. Aujourd'hui, `universiteAjoutEtudiant` est une **coquille
+> vide** — la page existe mais ne fait aucun appel API. Et sans cycle de vie, une université
+> traîne au bout de trois ans des centaines d'étudiants qui ont quitté l'établissement.
+>
+> **Pourquoi après le Lot 5 :** c'est de la valeur produit, pas de la contribution
+> scientifique. Le Lot 5 est ce qui porte le mémoire. Ce lot garde néanmoins un intérêt en
+> soutenance : à la question « comment une université intègre-t-elle 300 étudiants ? »,
+> répondre « un par un » est faible.
+>
+> **Prérequis global :** Lots 0 à 5 terminés.
+
+## Principe directeur : la promotion, pas l'étudiant
+
+Une université ne raisonne pas en individus mais en **promotions**. « La L3 Informatique
+2026 est diplômée » doit être une action en un geste, pas quatre-vingts.
+
+Toute la conception en découle : l'import crée une promotion, les actions de cycle de vie
+s'appliquent à une promotion entière (avec exclusion possible de quelques individus), et
+l'écran université s'organise par promotion plutôt qu'en une liste de plusieurs centaines
+de noms.
+
+---
+
+## 6.1 ⬜ Contrainte d'unicité sur l'e-mail — **prérequis strict**
+
+**Pourquoi.** [REVUE-CODE E3](1%20-%20REVUE-CODE.md). Il n'existe **aucune contrainte
+`UNIQUE`** sur `utilisateur."emailUtilisateur"`, et les routes d'inscription font
+« vérifier puis insérer » sans verrou.
+
+Ce défaut est aujourd'hui théorique. Avec un import de masse, il devient **garanti** : un
+double import créerait des centaines de comptes en double, et la connexion — qui fait
+`rows[0]` — deviendrait arbitraire.
+
+**À faire.** `ALTER TABLE utilisateur ADD CONSTRAINT ... UNIQUE ("emailUtilisateur")`, et
+gérer le code `23505` dans les routes d'inscription (le motif existe déjà dans
+`candidature/route.js`). Ajouter également `UNIQUE ("idUtilisateur")` sur `etudiant`,
+`entreprise` et `universite` — seule la table `admin` la possède.
+
+⚠️ **Rien de ce lot ne doit être commencé avant cette tâche.**
+
+---
+
+## 6.2 ⬜ Jetons à usage unique : activation et réinitialisation
+
+**Pourquoi.** Deux besoins, une seule mécanique. Plutôt qu'un mot de passe temporaire envoyé
+en clair, l'étudiant reçoit un **lien d'activation à usage unique** :
+
+- aucun mot de passe ne circule dans un e-mail qui restera dans la boîte de réception ;
+- l'étudiant choisit son mot de passe, donc il respecte la politique posée au Lot 4.3 ;
+- c'est **exactement le même mécanisme que la réinitialisation** que doit pouvoir demander
+  un étudiant. On construit une fois, on utilise deux fois.
+
+**À faire.**
+- Table de jetons : `idUtilisateur`, type (`activation` / `reinitialisation`), jeton
+  **haché** (jamais en clair en base), date d'expiration, date d'utilisation.
+- Usage unique et expiration courte (24 h pour l'activation, 1 h pour la réinitialisation).
+- Route de demande de réinitialisation qui **ne révèle pas si l'e-mail existe** — sinon elle
+  devient un outil d'énumération de comptes.
+- Réutiliser la limitation de débit du Lot 4.3 sur ces routes.
+
+**Vérification.** Un jeton ne fonctionne qu'une fois ; un jeton expiré est refusé ; une
+demande sur un e-mail inexistant renvoie la même réponse qu'un e-mail valide.
+
+---
+
+## 6.3 ⬜ Import CSV / Excel avec prévisualisation
+
+**Pourquoi.** C'est la fonctionnalité qui rend la plateforme adoptable par un établissement.
+
+**À faire.**
+1. **Prévisualisation obligatoire.** Le fichier est d'abord entièrement validé, puis un
+   récapitulatif est affiché — « 287 comptes seront créés, 11 e-mails déjà existants,
+   2 niveaux inconnus » — avant toute écriture. Un import qui échoue à la ligne 47 sans
+   prévisualisation laisse l'université dans un état qu'elle ne comprend pas.
+2. Création **en une transaction** après confirmation.
+3. Colonnes attendues : nom, prénom, e-mail, matricule, niveau, filière, spécialisation.
+   Les trois derniers sont validés contre les référentiels des Lots 1.3 et 4.4.
+4. **CSV en priorité** ; le format XLSX impose une dépendance de parsing supplémentaire, à
+   n'ajouter que si le besoin est confirmé.
+
+⚠️ **Point de performance.** bcrypt au coût 10, multiplié par 300 étudiants, représente 15 à
+30 secondes dans une seule requête HTTP. Il faut traiter par lots ou en tâche de fond, sinon
+la requête expire.
+
+---
+
+## 6.4 ⬜ Promotions
+
+**Pourquoi.** Unité de gestion (voir le principe directeur). Sans elle, les actions du 6.5
+sont inutilisables à l'échelle réelle.
+
+**À faire.** Rattacher chaque étudiant importé à une promotion (libellé + année), et
+organiser l'écran université par promotion.
+
+**À trancher pendant la conception :** l'articulation avec `AnnonceCohorte` et
+`EtudiantExterne`, qui constituent aujourd'hui une **seconde notion parallèle** d'étudiant
+rattaché à une université (3 lignes en base, sans compte, avec CV). Soit la promotion les
+remplace, soit les deux cohabitent avec un rôle clairement distinct — mais laisser deux
+mécanismes concurrents sans arbitrage serait une dette.
+
+---
+
+## 6.5 ⬜ Cycle de vie du rattachement
+
+**Pourquoi.** Une université doit pouvoir signaler qu'un étudiant a terminé ses études, ou
+qu'il a quitté l'établissement. Sans cela, sa liste ne cesse de croître.
+
+**À faire.** Étendre `statutRattachement`, créé au Lot 1.2b :
+
+| Statut | Effet |
+|---|---|
+| `En attente`, `Valide`, `Refuse` | existants |
+| `Diplome` | **conserve** `idUniversite` — l'étudiant reste sur la plateforme, affiché « Ancien étudiant de X » |
+| `Sorti` | détache : départ ou exclusion |
+
+Un diplômé continue de recevoir des recommandations et de candidater : c'est l'intention.
+L'écran université sépare les étudiants actifs des anciens, et les statistiques les comptent
+distinctement.
+
+Actions applicables à une promotion entière, avec exclusion possible de quelques individus.
+Notifier l'étudiant du changement, en réutilisant la messagerie interne du Lot 2.2.
+
+---
+
+## 6.6 ⬜ Intégration de l'envoi d'e-mails — **en dernier**
+
+**Pourquoi en dernier.** C'est une intégration technique, pas une conception : elle n'apporte
+aucune décision structurante et peut être branchée à la fin.
+
+**État actuel.** `src/lib/mail.js` existe et contient déjà un modèle de message (validation de
+compte), mais **l'envoi n'a jamais fonctionné** : `EMAIL_USER` et `EMAIL_PASSWORD` sont vides
+dans `.env`. Aucun e-mail n'a donc jamais été émis par l'application.
+
+**Ce qui peut être préparé en amont, sans attendre l'intégration :**
+- les **modèles de messages** (activation, réinitialisation, bienvenue après import,
+  notification de diplomation), sur le modèle de `envoyerEmailValidation` déjà écrit ;
+- une **couche d'envoi neutre** qui journalise le message en développement et l'envoie
+  réellement en production, pour que tout le reste du lot soit testable sans serveur SMTP.
+
+**Ce qui reste à l'intégration finale :** configurer un compte d'envoi réel (Gmail exige un
+mot de passe d'application, pas le mot de passe du compte), et gérer l'envoi **par lots** —
+300 e-mails synchrones dans une requête expireraient.
 
 ---
 
@@ -488,4 +720,16 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 4 | 4.3 Durcissement des comptes | ✅ | 28/08/2026 |
 | 4 | 4.4 Référentiel de filières | ✅ | 28/08/2026 |
 | 4 | 4.5 Cohérence de l'interface | ✅ | 28/08/2026 |
+| 4 | 4.6 Tableau de bord entreprise | ✅ | 28/08/2026 |
+| 4 | 4.7 Page « Toutes les entreprises » | ✅ | 28/08/2026 |
+| 4 | 4.8 Page « À propos » | ✅ | 28/08/2026 |
+| 4 | 4.9 Ajout d'un étudiant par l'université | ✅ | 28/08/2026 |
+| 4 | 4.10 Statistiques tableau de bord université | ✅ | 28/08/2026 |
+| 4 | 4.11 Retrait du faux assistant | ✅ | 28/08/2026 |
 | 5 | Cœur du mémoire | ⬜ | |
+| 6 | 6.1 Unicité de l'e-mail (prérequis) | ⬜ | |
+| 6 | 6.2 Jetons activation / réinitialisation | ⬜ | |
+| 6 | 6.3 Import CSV avec prévisualisation | ⬜ | |
+| 6 | 6.4 Promotions | ⬜ | |
+| 6 | 6.5 Cycle de vie du rattachement | ⬜ | |
+| 6 | 6.6 Intégration e-mail | ⬜ | |

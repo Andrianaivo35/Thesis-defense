@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { fetchAuth, getUtilisateur } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
-  MessageSquare, PenSquare, Bot, Search, Send, MessageSquareDashed
+  MessageSquare, PenSquare, Search, Send, MessageSquareDashed
 } from 'lucide-react'
 import {
   MessagesContainer,
@@ -18,7 +18,6 @@ import {
   LoadingText, EmptyText,
   TabsRow, TabButton,
   UserItem, UserAvatar, UserName, UserType,
-  PinnedConversation, BotAvatar, BotBadge,
   SearchUsersWrapper, SearchUsersIcon, SearchUsersInput
 } from '@/components/styleMessages'
 
@@ -50,7 +49,7 @@ function MessagesPageInner() {
   }, [])
 
   const fetchThread = useCallback(async (id) => {
-    if (!id || id === 'chatbot') return
+    if (!id) return
     try {
       const res = await fetchAuth(`/api/messages/${id}`)
       const data = await res.json()
@@ -73,27 +72,11 @@ function MessagesPageInner() {
   }, [activeTab, fetchUtilisateurs])
 
   useEffect(() => {
-    if (activeId && activeId !== 'chatbot') fetchThread(activeId)
+    if (activeId) fetchThread(activeId)
   }, [activeId, fetchThread])
 
   useEffect(() => {
-    if (activeId === 'chatbot') {
-      setThread({
-        destinataire: { nomAffichage: 'Assistant Stage Share', typeUtilisateur: 'Chatbot' },
-        messages: [
-          {
-            idMessage: 0,
-            idExpediteur: 'bot',
-            contenu: "Salut ! Je suis l'Assistant Stage Share. Pour l'instant je ne suis pas encore très intelligent, mais bientôt je pourrai t'aider à naviguer la plateforme, comprendre les offres et te guider dans tes candidatures. Écris-moi quand même, j'apprends !",
-            dateEnvoi: new Date().toISOString()
-          }
-        ]
-      })
-    }
-  }, [activeId])
-
-  useEffect(() => {
-    if (!activeId || activeId === 'chatbot') return
+    if (!activeId) return
     const interval = setInterval(() => {
       fetchThread(activeId)
       fetchConversations()
@@ -111,37 +94,10 @@ function MessagesPageInner() {
     setSearchUser('')
   }
 
-  const ouvrirChatbot = () => {
-    setActiveId('chatbot')
-    setActiveTab('conversations')
-  }
-
   const handleSend = async () => {
     if (!nouveauMessage.trim() || !activeId) return
     setIsSending(true)
     try {
-      if (activeId === 'chatbot') {
-        const messageEnvoye = {
-          idMessage: Date.now(),
-          idExpediteur: moi,
-          contenu: nouveauMessage,
-          dateEnvoi: new Date().toISOString()
-        }
-        const reponseBot = {
-          idMessage: Date.now() + 1,
-          idExpediteur: 'bot',
-          contenu: "Merci pour ton message ! Je ne peux pas encore te répondre intelligemment, mais bientôt je serai connecté à une IA pour t'aider sur la plateforme. Reviens vite !",
-          dateEnvoi: new Date(Date.now() + 500).toISOString()
-        }
-        setThread(prev => ({
-          ...prev,
-          messages: [...(prev?.messages || []), messageEnvoye, reponseBot]
-        }))
-        setNouveauMessage('')
-        setIsSending(false)
-        return
-      }
-
       const res = await fetchAuth('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -174,7 +130,6 @@ function MessagesPageInner() {
     const s = searchUser.toLowerCase().trim()
     return (
       u.nomAffichage?.toLowerCase().includes(s) ||
-      u.emailUtilisateur?.toLowerCase().includes(s) ||
       u.typeUtilisateur?.toLowerCase().includes(s)
     )
   })
@@ -212,9 +167,6 @@ function MessagesPageInner() {
           {/* ----- Onglet : Conversations ----- */}
           {activeTab === 'conversations' ? (
             <ConversationsList>
-              {/* Assistant Stage Share épinglé en haut */}
-              
-
               {/* Liste des conversations classiques */}
               {isLoadingConvs ? (
                 <LoadingText>Chargement...</LoadingText>
@@ -253,7 +205,7 @@ function MessagesPageInner() {
                   <Search size={15} strokeWidth={2} />
                 </SearchUsersIcon>
                 <SearchUsersInput
-                  placeholder="Rechercher par nom, email, type..."
+                  placeholder="Rechercher par nom ou type..."
                   value={searchUser}
                   onChange={(e) => setSearchUser(e.target.value)}
                 />
@@ -297,9 +249,7 @@ function MessagesPageInner() {
                 {thread?.destinataire && (
                   <>
                     <ChatHeaderAvatar>
-                      {thread.destinataire.typeUtilisateur === 'Chatbot'
-                        ? <Bot size={20} strokeWidth={2} />
-                        : thread.destinataire.nomAffichage?.charAt(0).toUpperCase() || '?'}
+                      {thread.destinataire.nomAffichage?.charAt(0).toUpperCase() || '?'}
                     </ChatHeaderAvatar>
                     <ChatHeaderInfo>
                       <ChatHeaderName>{thread.destinataire.nomAffichage}</ChatHeaderName>
