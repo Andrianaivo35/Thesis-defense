@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
-import { VILLES } from '@/lib/referentiels'
+import { VILLES, LIBELLES_DOMAINES } from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import {
   ArrowLeft, Pencil, Sparkles, ClipboardList, Users, Plus,
@@ -298,11 +298,13 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
           <Grid2Cols>
             <FieldGroup>
               <Label>Filière concernée</Label>
-              <Input
+              <Select
                 value={formData.filiereConcernee}
                 onChange={(e) => updateField('filiereConcernee', e.target.value)}
-                placeholder="Ex: Informatique, Génie civil..."
-              />
+              >
+                <option value="">— Sélectionner —</option>
+                {LIBELLES_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+              </Select>
             </FieldGroup>
             <FieldGroup>
               <Label>Niveau académique</Label>
@@ -326,7 +328,7 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
             <Input
               value={formData.domainesRecherche}
               onChange={(e) => updateField('domainesRecherche', e.target.value)}
-              placeholder="Ex: Développement web, IA, DevOps..."
+              placeholder="Précisions libres : technologies, missions recherchées..."
             />
           </FieldGroup>
 

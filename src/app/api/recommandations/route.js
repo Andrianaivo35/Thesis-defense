@@ -1,7 +1,7 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
-import { VALEUR_NIVEAU, DUREE_EN_MOIS } from '@/lib/referentiels';
+import { VALEUR_NIVEAU, DUREE_EN_MOIS, domaineDeLaFiliere } from '@/lib/referentiels';
 
 /* =====================================================================
    NOMS RÉELS UTILISÉS DANS CETTE ROUTE
@@ -145,10 +145,35 @@ function scoreCompetence(competencesOffre, competencesEtudiant) {
   };
 }
 
+/* Domaine et filière proviennent désormais du même référentiel
+   hiérarchique : la comparaison peut être exacte, et le fait qu'une
+   spécialisation appartienne au domaine de l'offre devient exploitable.
+
+   Trois situations sont distinguées, là où le recouvrement de mots ne
+   donnait qu'un continuum flou :
+     - la filière de l'étudiant est le domaine de l'offre
+     - sa spécialisation appartient à ce domaine
+     - aucun rapport
+
+   L'analyse textuelle est conservée en repli, pour les profils saisis
+   avant la normalisation et pour les centres d'intérêt, qui restent en
+   texte libre. */
 function scoreFiliere(offre, etudiant, centresInteret) {
   const domaine = offre.domaine || offre.titre || '';
   if (!normaliser(domaine)) return { score: 50, detail: null };
 
+  // 1. Correspondance exacte sur le domaine
+  if (etudiant.filiere && etudiant.filiere === offre.domaine) {
+    return { score: 100, detail: { viaFiliere: true, correspondanceExacte: true } };
+  }
+
+  // 2. La spécialisation de l'étudiant relève du domaine de l'offre
+  if (etudiant.specialisation &&
+      domaineDeLaFiliere(etudiant.specialisation) === offre.domaine) {
+    return { score: 92, detail: { viaSpecialisation: true, correspondanceExacte: true } };
+  }
+
+  // 3. Repli textuel : anciennes saisies et centres d'intérêt
   const parFiliere = recouvrement(domaine, etudiant.filiere);
   const parSpecialisation = recouvrement(domaine, etudiant.specialisation);
   const parInterets = centresInteret.length > 0
@@ -262,7 +287,13 @@ function construireRaisons(scores, details) {
 
   const f = details.filiere;
   if (f && scores.filiere >= 55) {
-    if (f.viaFiliere) raisons.push({ texte: 'Correspond à votre filière', fort: true });
+    if (f.correspondanceExacte && f.viaFiliere) {
+      raisons.push({ texte: 'Exactement votre filière', fort: true });
+    }
+    else if (f.correspondanceExacte && f.viaSpecialisation) {
+      raisons.push({ texte: 'Correspond à votre spécialisation', fort: true });
+    }
+    else if (f.viaFiliere) raisons.push({ texte: 'Correspond à votre filière', fort: true });
     else if (f.viaSpecialisation) raisons.push({ texte: 'Correspond à votre spécialisation', fort: true });
     else if (f.viaInteret) raisons.push({ texte: "Dans vos centres d'intérêt" });
   }

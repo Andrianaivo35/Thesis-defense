@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
-import { NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE } from '@/lib/referentiels'
+import {
+  NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE, LIBELLES_DOMAINES
+} from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import {
   PageContainer, BackButton,
@@ -429,7 +431,10 @@ export default function EntrepriseModifierOffrePage() {
                 <FormColumn>
                   <ContainerLabelInput>
                     <Label>Domaine</Label>
-                    <Input value={formData.domaine} onChange={(e) => updateField('domaine', e.target.value)} />
+                    <Select value={formData.domaine} onChange={(e) => updateField('domaine', e.target.value)}>
+                      <option value="">Sélectionner un domaine</option>
+                      {LIBELLES_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

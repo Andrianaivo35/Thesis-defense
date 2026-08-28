@@ -1,7 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE } from '@/lib/referentiels'
+import {
+  NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE,
+  LIBELLES_DOMAINES, filieresDuDomaine
+} from '@/lib/referentiels'
 import {
   User, GraduationCap, MapPin, Target, Briefcase, Heart, Wrench,
   Plus, Trash2, Info, Check, Sparkles,
@@ -391,7 +394,17 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Spécialisation <span>*</span></Label>
-                    <Input type="text" value={specialisation} onChange={(e) => setSpecialisation(e.target.value)} placeholder="Ex : Informatique, Gestion" required />
+                    <Select
+                      value={specialisation}
+                      onChange={(e) => setSpecialisation(e.target.value)}
+                      disabled={!filiere}
+                      required
+                    >
+                      <option value="">
+                        {filiere ? 'Sélectionner votre spécialisation' : "Choisissez d'abord une filière"}
+                      </option>
+                      {filieresDuDomaine(filiere).map(f => <option key={f} value={f}>{f}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>
@@ -499,7 +512,14 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Filière <span>*</span></Label>
-                    <Input type="text" value={filiere} onChange={(e) => setFiliere(e.target.value)} placeholder="Votre filière d'études" required />
+                    <Select
+                      value={filiere}
+                      onChange={(e) => { setFiliere(e.target.value); setSpecialisation('') }}
+                      required
+                    >
+                      <option value="">Sélectionner votre filière</option>
+                      {LIBELLES_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

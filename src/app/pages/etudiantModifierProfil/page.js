@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
-import { NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE } from '@/lib/referentiels'
+import {
+  NIVEAUX_ACADEMIQUES, VILLES, DUREES_STAGE,
+  LIBELLES_DOMAINES, filieresDuDomaine
+} from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import ChangerMotDePasseModal from '@/components/changerMotDePasseModal'
 import {
@@ -691,14 +694,29 @@ export default function EtudiantModifierProfilPage() {
 
                   <ContainerLabelInput>
                     <Label>Filière</Label>
-                    <Input value={formData.filiere} onChange={(e) => updateField('filiere', e.target.value)} />
+                    <Select
+                      value={formData.filiere}
+                      onChange={(e) => { updateField('filiere', e.target.value); updateField('specialisation', '') }}
+                    >
+                      <option value="">Sélectionner votre filière</option>
+                      {LIBELLES_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+                    </Select>
                   </ContainerLabelInput>
                 </FormColumn>
 
                 <FormColumn>
                   <ContainerLabelInput>
                     <Label>Spécialisation</Label>
-                    <Input value={formData.specialisation} onChange={(e) => updateField('specialisation', e.target.value)} />
+                    <Select
+                      value={formData.specialisation}
+                      onChange={(e) => updateField('specialisation', e.target.value)}
+                      disabled={!formData.filiere}
+                    >
+                      <option value="">
+                        {formData.filiere ? 'Sélectionner votre spécialisation' : "Choisissez d'abord une filière"}
+                      </option>
+                      {filieresDuDomaine(formData.filiere).map(f => <option key={f} value={f}>{f}</option>)}
+                    </Select>
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

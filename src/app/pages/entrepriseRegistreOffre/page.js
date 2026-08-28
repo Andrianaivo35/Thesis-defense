@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
-import { VILLES, DUREES_STAGE } from '@/lib/referentiels'
+import { VILLES, DUREES_STAGE, LIBELLES_DOMAINES } from '@/lib/referentiels'
 import {
   PageContainer, ContainerForm, ContainerTexte, FormGrid, ColumnForm,
   SectionTitle, Label, Input, Select, ContainerLabelInput,
@@ -211,7 +211,10 @@ export default function EntrepriseCreerOffre() {
 
               <ContainerLabelInput>
                 <Label>Domaine</Label>
-                <Input type="text" value={domaine} onChange={(e) => setDomaine(e.target.value)} placeholder="Ex: Informatique, Marketing..." />
+                <Select value={domaine} onChange={(e) => setDomaine(e.target.value)}>
+                  <option value="">Sélectionner un domaine</option>
+                  {LIBELLES_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+                </Select>
               </ContainerLabelInput>
 
               <ContainerLabelInput>

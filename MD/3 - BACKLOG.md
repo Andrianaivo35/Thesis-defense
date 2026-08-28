@@ -482,6 +482,6 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 4 | 4.1 Pagination et recherche serveur | ✅ | 28/08/2026 |
 | 4 | 4.2 Avertissement avant le QCM | ✅ | 28/08/2026 |
 | 4 | 4.3 Durcissement des comptes | ✅ | 28/08/2026 |
-| 4 | 4.4 Référentiel de filières | ⬜ | |
+| 4 | 4.4 Référentiel de filières | ✅ | 28/08/2026 |
 | 4 | 4.5 Cohérence de l'interface | ⬜ | |
 | 5 | Cœur du mémoire | ⬜ | |
