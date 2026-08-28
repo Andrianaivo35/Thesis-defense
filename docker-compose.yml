@@ -16,6 +16,7 @@ services:
       # qu'un volume recree parte d'un schema a jour. L'entrypoint PostgreSQL
       # ne parcourt pas les sous-dossiers : chaque migration est montee ici.
       - ./scripts/migrations/001-rattachement-universite.sql:/docker-entrypoint-initdb.d/02-001-rattachement-universite.sql:ro
+      - ./scripts/migrations/002-bibliotheque-cv.sql:/docker-entrypoint-initdb.d/02-002-bibliotheque-cv.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s
@@ -39,9 +40,16 @@ services:
       DB_NAME: ${DB_NAME:-stage-share}
     ports:
       - "3000:3000"
+    volumes:
+      # Fichiers televerses (CV, lettres). Hors de public/ : Next.js ne sert
+      # ce dossier que dans l'etat ou il etait au moment du build, donc un
+      # fichier ajoute a chaud y renvoyait 404. Un volume nomme garantit
+      # aussi que les depots survivent a une reconstruction de l'image.
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db_data:
+  uploads_data:

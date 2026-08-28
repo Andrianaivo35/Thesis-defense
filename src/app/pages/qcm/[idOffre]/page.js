@@ -32,8 +32,34 @@ export default function QcmPage() {
 
   const [cv, setCv] = useState(null)
   const [lettreMotivation, setLettreMotivation] = useState(null)
+
+  /* Bibliotheque de CV : l'etudiant choisit un CV deja enregistre plutot
+     que de le redeposer a chaque candidature. Le televersement reste
+     possible et alimente alors la bibliotheque. */
+  const [cvsDisponibles, setCvsDisponibles] = useState([])
+  const [idCVChoisi, setIdCVChoisi] = useState('')
+  const [nouveauCv, setNouveauCv] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(null)
+
+  useEffect(() => {
+    const chargerCvs = async () => {
+      try {
+        const res = await fetchAuth('/api/cv')
+        const d = await res.json()
+        if (res.ok) {
+          const liste = d.cvs || []
+          setCvsDisponibles(liste)
+          const principal = liste.find(c => c.estPrincipal) || liste[0]
+          if (principal) setIdCVChoisi(String(principal.idCV))
+          else setNouveauCv(true)
+        }
+      } catch {
+        setNouveauCv(true)
+      }
+    }
+    chargerCvs()
+  }, [])
 
   useEffect(() => {
     const fetchQcm = async () => {
@@ -83,7 +109,8 @@ export default function QcmPage() {
   }
 
   const handleSubmit = async () => {
-    if (!toutesRepondues || !cv || !lettreMotivation) return
+    const cvFourni = nouveauCv ? !!cv : !!idCVChoisi
+    if (!toutesRepondues || !cvFourni || !lettreMotivation) return
 
     setSubmitting(true)
     setError('')
@@ -91,7 +118,8 @@ export default function QcmPage() {
     try {
       const formData = new FormData()
       formData.append('idOffre', idOffre)
-      formData.append('cv', cv)
+      if (nouveauCv && cv) formData.append('cv', cv)
+      else formData.append('idCV', idCVChoisi)
       formData.append('lettreMotivation', lettreMotivation)
       formData.append('reponses', JSON.stringify(responses))
 
@@ -282,7 +310,39 @@ export default function QcmPage() {
                 <Paperclip size={16} strokeWidth={2} />
                 Documents requis
               </FileUploadTitle>
+              {/* Choix du CV dans la bibliotheque, ou televersement */}
+              {cvsDisponibles.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600,
+                                  color: '#475569', marginBottom: 6 }}>
+                    Quel CV souhaitez-vous envoyer ?
+                  </label>
+                  <select
+                    value={nouveauCv ? '__nouveau__' : idCVChoisi}
+                    onChange={(e) => {
+                      if (e.target.value === '__nouveau__') {
+                        setNouveauCv(true)
+                      } else {
+                        setNouveauCv(false)
+                        setIdCVChoisi(e.target.value)
+                      }
+                    }}
+                    style={{ width: '100%', padding: '11px 14px', fontSize: 14,
+                             border: '1.5px solid #e2e8f0', borderRadius: 9,
+                             background: 'white', outline: 'none' }}
+                  >
+                    {cvsDisponibles.map(c => (
+                      <option key={c.idCV} value={c.idCV}>
+                        {c.libelle}{c.estPrincipal ? ' (principal)' : ''}
+                      </option>
+                    ))}
+                    <option value="__nouveau__">Téléverser un nouveau CV...</option>
+                  </select>
+                </div>
+              )}
+
               <FileUploadGrid>
+                {(nouveauCv || cvsDisponibles.length === 0) && (
                 <FileUploadCard $selected={!!cv}>
                   <FileInputHidden
                     type="file"
@@ -306,6 +366,7 @@ export default function QcmPage() {
                     )}
                   </label>
                 </FileUploadCard>
+                )}
 
                 <FileUploadCard $selected={!!lettreMotivation}>
                   <FileInputHidden

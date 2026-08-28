@@ -1,14 +1,14 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
-import { writeFile, mkdir } from 'fs/promises';
-import { randomUUID } from 'crypto';
-import path from 'path';
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+import {
+  enregistrerFichier, validerFichierPdf, supprimerFichier
+} from '@/lib/stockage';
 
 export async function POST(req) {
   const client = await pool.connect();
+  // Suivi des fichiers ecrits, pour pouvoir les effacer en cas d'echec
+  const fichiersEcrits = [];
 
   try {
     // === Auth ===
@@ -22,48 +22,87 @@ export async function POST(req) {
 
     const idEtudiant = payload.idEtudiant;
 
-    // === Parse multipart/form-data ===
+    /* === Lecture du dossier ===
+       Le CV provient désormais de la bibliothèque de l'étudiant (idCV).
+       Un fichier peut aussi être envoyé directement : il est alors ajouté
+       à la bibliothèque, pour que l'étudiant n'ait pas à le redéposer à
+       chaque candidature. */
     const formData = await req.formData();
     const idOffre = formData.get('idOffre');
+    const idCVChoisi = formData.get('idCV');
     const cv = formData.get('cv');
     const lettreMotivation = formData.get('lettreMotivation');
     const reponsesJson = formData.get('reponses');
 
-    if (!idOffre || !cv || !lettreMotivation || !reponsesJson) {
+    if (!idOffre || !reponsesJson) {
       return NextResponse.json(
-        { error: 'Données manquantes (idOffre, cv, lettre, réponses requis)' },
+        { error: 'Données manquantes (offre et réponses au QCM requises)' },
+        { status: 400 }
+      );
+    }
+    if (!idCVChoisi && !cv) {
+      return NextResponse.json(
+        { error: 'Veuillez sélectionner un CV ou en téléverser un' },
         { status: 400 }
       );
     }
 
-    // === Validation fichiers ===
-    if (cv.type !== 'application/pdf') {
-      return NextResponse.json({ error: 'Le CV doit être au format PDF' }, { status: 400 });
+    const erreurLettre = validerFichierPdf(lettreMotivation, 'La lettre de motivation');
+    if (erreurLettre) {
+      return NextResponse.json({ error: erreurLettre }, { status: 400 });
     }
-    if (lettreMotivation.type !== 'application/pdf') {
-      return NextResponse.json({ error: 'La lettre doit être au format PDF' }, { status: 400 });
+    if (cv) {
+      const erreurCv = validerFichierPdf(cv, 'Le CV');
+      if (erreurCv) return NextResponse.json({ error: erreurCv }, { status: 400 });
     }
-    if (cv.size > MAX_FILE_SIZE || lettreMotivation.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'Fichier trop volumineux (max 5 Mo)' }, { status: 400 });
+
+    /* === Vérification de l'offre ===
+       Rien n'empêchait auparavant de candidater à une offre clôturée ou
+       dont la date limite était dépassée. */
+    const offreResult = await client.query(`
+      SELECT "idOffre", "statut", "dateLimites"
+      FROM offre WHERE "idOffre" = $1
+    `, [idOffre]);
+
+    if (offreResult.rows.length === 0) {
+      return NextResponse.json({ error: 'Offre introuvable' }, { status: 404 });
+    }
+    const offre = offreResult.rows[0];
+    if (offre.statut && offre.statut !== 'Active') {
+      return NextResponse.json(
+        { error: "Cette offre n'accepte plus de candidatures" },
+        { status: 400 }
+      );
+    }
+    if (offre.dateLimites && new Date(offre.dateLimites) < new Date(new Date().toDateString())) {
+      return NextResponse.json(
+        { error: 'La date limite de candidature est dépassée' },
+        { status: 400 }
+      );
+    }
+
+    // Si un CV existant est choisi, il doit appartenir à l'étudiant
+    if (idCVChoisi) {
+      const verif = await client.query(
+        'SELECT 1 FROM "CV" WHERE "idCV" = $1 AND "idEtudiant" = $2',
+        [idCVChoisi, idEtudiant]
+      );
+      if (verif.rows.length === 0) {
+        return NextResponse.json({ error: 'CV introuvable' }, { status: 400 });
+      }
     }
 
     const reponses = JSON.parse(reponsesJson); // { idQuestion: idChoix, ... }
 
-    // === Sauvegarde des fichiers sur disque ===
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'candidatures');
-    await mkdir(uploadDir, { recursive: true });
+    // === Écriture des fichiers sur le volume dédié ===
+    const nomFichierLettre = await enregistrerFichier('lettres', lettreMotivation, 'lettre');
+    fichiersEcrits.push(['lettres', nomFichierLettre]);
 
-    const cvFilename = `cv-${randomUUID()}.pdf`;
-    const lettreFilename = `lettre-${randomUUID()}.pdf`;
-
-    const cvBuffer = Buffer.from(await cv.arrayBuffer());
-    const lettreBuffer = Buffer.from(await lettreMotivation.arrayBuffer());
-
-    await writeFile(path.join(uploadDir, cvFilename), cvBuffer);
-    await writeFile(path.join(uploadDir, lettreFilename), lettreBuffer);
-
-    const cvUrl = `/uploads/candidatures/${cvFilename}`;
-    const lettreUrl = `/uploads/candidatures/${lettreFilename}`;
+    let nomFichierCv = null;
+    if (cv) {
+      nomFichierCv = await enregistrerFichier('cv', cv, 'cv');
+      fichiersEcrits.push(['cv', nomFichierCv]);
+    }
 
     // === Transaction ===
     await client.query('BEGIN');
@@ -125,19 +164,44 @@ export async function POST(req) {
       ? ((earnedPoints / totalPoints) * 100).toFixed(2)
       : 0;
 
-    // 3. Insérer la candidature
+    /* 3. Si un nouveau CV a été téléversé, il rejoint la bibliothèque :
+          l'étudiant n'aura plus à le redéposer pour la prochaine offre. */
+    let idCV = idCVChoisi ? parseInt(idCVChoisi, 10) : null;
+
+    if (!idCV && nomFichierCv) {
+      const nbCv = await client.query(
+        'SELECT COUNT(*)::int AS total FROM "CV" WHERE "idEtudiant" = $1',
+        [idEtudiant]
+      );
+      const nouveauCv = await client.query(`
+        INSERT INTO "CV" (
+          "idEtudiant", "libelle", "nomFichier", "nomFichierOriginal",
+          "tailleOctets", "estPrincipal"
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING "idCV"
+      `, [
+        idEtudiant,
+        cv.name?.replace(/\.pdf$/i, '').slice(0, 150) || 'CV',
+        nomFichierCv, cv.name || null, cv.size,
+        nbCv.rows[0].total === 0
+      ]);
+      idCV = nouveauCv.rows[0].idCV;
+    }
+
+    // 4. Insérer la candidature
     let candidatureResult;
     try {
       candidatureResult = await client.query(`
         INSERT INTO "Candidature" (
-          "idEtudiant", "idOffre", "lettreMotivation", "cv",
+          "idEtudiant", "idOffre", "idCV", "nomFichierLettre",
           "dateCandidature", "statut", "scoreMatching"
         ) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6)
         RETURNING "idCandidature"
-      `, [idEtudiant, idOffre, lettreUrl, cvUrl, 'En attente', scoreMatching]);
+      `, [idEtudiant, idOffre, idCV, nomFichierLettre, 'En attente', scoreMatching]);
     } catch (insertError) {
       if (insertError.code === '23505') {  // UNIQUE violation
         await client.query('ROLLBACK');
+        for (const [cat, nom] of fichiersEcrits) await supprimerFichier(cat, nom);
         return NextResponse.json(
           { error: 'Vous avez déjà postulé à cette offre' },
           { status: 409 }
@@ -148,7 +212,7 @@ export async function POST(req) {
 
     const idCandidature = candidatureResult.rows[0].idCandidature;
 
-    // 4. Insérer les réponses étudiant
+    // 5. Insérer les réponses étudiant
     for (let i = 0; i < reponsesACreer.length; i++) {
       const r = reponsesACreer[i];
       await client.query(`
@@ -171,10 +235,12 @@ export async function POST(req) {
     }, { status: 201 });
 
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch(() => {});
+    // Pas de fichier orphelin sur le volume si la candidature a échoué
+    for (const [cat, nom] of fichiersEcrits) await supprimerFichier(cat, nom);
     console.error('Erreur candidature:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   } finally {
