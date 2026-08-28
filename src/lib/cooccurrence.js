@@ -111,6 +111,35 @@ const CONSTANTE_AMORTISSEMENT = 5;
    co-occurrence directe. */
 const POIDS_COMPLEMENTARITE = 0.8;
 
+/* Poids du signal textuel dans la similarite finale.
+
+   La co-occurrence seule ne peut pas resoudre deux situations :
+
+     - une competence qu'aucune offre n'exige encore (Vue.js, Angular)
+       n'a aucun voisin, donc aucune similarite mesurable ;
+     - deux competences systematiquement exigees ensemble (Git et SQL)
+       sont indiscernables de deux competences interchangeables, puisque
+       aucun decompte de contextes ne les separe.
+
+   La description du referentiel apporte un signal independant. Git et SQL
+   ne partagent aucun terme (« versions du code source » contre « bases de
+   donnees relationnelles »), la ou React et Vue.js partagent presque tout
+   leur vocabulaire. Ce signal est en outre dense : il ne depend pas du
+   nombre d'offres publiees.
+
+   Poids majoritaire assume : a l'echelle actuelle du corpus, la
+   description est plus fiable que 141 paires observees. Le rapport
+   s'inversera naturellement quand la plateforme aura assez d'offres. */
+const POIDS_TEXTE = 0.6;
+
+/* Mots vides francais : trop frequents pour porter du sens, ils
+   rapprocheraient artificiellement toutes les descriptions. */
+const MOTS_VIDES = new Set([
+  'de', 'des', 'du', 'la', 'le', 'les', 'un', 'une', 'et', 'ou', 'au',
+  'aux', 'sur', 'pour', 'par', 'dans', 'avec', 'sans', 'leur', 'leurs',
+  'ce', 'ces', 'son', 'ses', 'est', 'sont'
+]);
+
 /* Durée de vie du cache. La matrice ne change qu'avec les compétences
    déclarées : la recalculer à chaque requête serait inutile. */
 const DUREE_CACHE_MS = 5 * 60 * 1000;
@@ -146,6 +175,84 @@ async function lireContextes(client) {
   return [...parContexte.values()].filter(s => s.size >= 2);
 }
 
+/* Decoupe une description en termes significatifs : sans accents, sans
+   mots vides, sans termes trop courts. */
+function termes(texte) {
+  if (!texte) return [];
+  return texte
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(' ')
+    .filter(m => m.length > 2 && !MOTS_VIDES.has(m))
+    .map(racine);
+}
+
+/* Racinisation minimale du francais.
+
+   Sans elle, « industrielle » et « industrielles » sont deux termes
+   distincts : « Genie mecanique » et « Genie des procedes » ne
+   partageaient donc aucun mot alors que leurs descriptions evoquent
+   toutes deux la production industrielle.
+
+   Volontairement conservatrice — on retire les marques de pluriel et de
+   feminin les plus regulieres, sans chercher a lemmatiser. Une
+   racinisation agressive rapprocherait des termes sans rapport, ce qui
+   serait pire que le probleme initial. */
+function racine(mot) {
+  if (mot.length <= 4) return mot;
+  return mot
+    .replace(/(aux|eaux)$/, 'al')
+    .replace(/(elles|elle)$/, 'el')
+    .replace(/(ives|ive)$/, 'if')
+    .replace(/s$/, '')
+    .replace(/e$/, '');
+}
+
+/* Vecteurs TF-IDF des descriptions.
+
+   L'IDF est indispensable : sans lui, « pour » ou « applications »
+   pesueraient autant que « relationnelles ». Ce sont precisement les
+   termes rares qui distinguent une competence d'une autre. */
+function construireVecteursTexte(competences) {
+  const documents = new Map();
+  const frequenceDocumentaire = new Map();
+
+  for (const [id, infos] of competences) {
+    const mots = termes(infos.description);
+    if (mots.length === 0) continue;
+
+    const comptes = new Map();
+    for (const m of mots) comptes.set(m, (comptes.get(m) || 0) + 1);
+    documents.set(id, comptes);
+
+    for (const m of comptes.keys()) {
+      frequenceDocumentaire.set(m, (frequenceDocumentaire.get(m) || 0) + 1);
+    }
+  }
+
+  const nombreDocuments = documents.size || 1;
+  const vecteurs = new Map();
+  const normes = new Map();
+
+  for (const [id, comptes] of documents) {
+    const vecteur = new Map();
+    let sommeCarres = 0;
+    for (const [mot, tf] of comptes) {
+      const idf = Math.log(nombreDocuments / (frequenceDocumentaire.get(mot) || 1)) + 1;
+      const poids = tf * idf;
+      vecteur.set(mot, poids);
+      sommeCarres += poids * poids;
+    }
+    vecteurs.set(id, vecteur);
+    normes.set(id, Math.sqrt(sommeCarres));
+  }
+
+  return { vecteurs, normes };
+}
+
 /* ---------------------------------------------------------------------
    Construction de la matrice
    ------------------------------------------------------------------ */
@@ -155,13 +262,19 @@ export async function construireMatrice(client) {
   const referentiel = await client.query(`
     SELECT "idCompetenceReference" AS id,
            "nomCompetenceReference" AS nom,
-           "categorieCompetenceReference" AS categorie
+           "categorieCompetenceReference" AS categorie,
+           "description"
     FROM "CompetenceReference"
   `);
 
   const competences = new Map(
-    referentiel.rows.map(r => [Number(r.id), { nom: r.nom, categorie: r.categorie }])
+    referentiel.rows.map(r => [
+      Number(r.id),
+      { nom: r.nom, categorie: r.categorie, description: r.description }
+    ])
   );
+
+  const texte = construireVecteursTexte(competences);
 
   /* 1. Comptage des co-occurrences. cooc.get(a).get(b) = nombre de
         contextes où a et b apparaissent ensemble. Matrice symétrique. */
@@ -203,6 +316,7 @@ export async function construireMatrice(client) {
     normes,
     occurrences,
     competences,
+    texte,
     calculeeLe: Date.now(),
     /* Statistiques exposées pour le chapitre évaluation du mémoire :
        elles documentent la densité réelle du corpus. */
@@ -210,7 +324,8 @@ export async function construireMatrice(client) {
       nombreContextes: contextes.length,
       nombreCompetences: competences.size,
       pairesObservees: [...cooc.values()].reduce((n, m) => n + m.size, 0) / 2,
-      pairesPossibles: (competences.size * (competences.size - 1)) / 2
+      pairesPossibles: (competences.size * (competences.size - 1)) / 2,
+      competencesDecrites: texte.vecteurs.size
     }
   };
 }
@@ -237,6 +352,25 @@ function cosinusContexte(matrice, a, b) {
     if (autre) produit += valeur * autre;
   }
 
+  return produit / (na * nb);
+}
+
+/* Cosinus entre les vecteurs TF-IDF des descriptions. */
+function cosinusTexte(matrice, a, b) {
+  const va = matrice.texte.vecteurs.get(a);
+  const vb = matrice.texte.vecteurs.get(b);
+  if (!va || !vb) return 0;
+
+  const na = matrice.texte.normes.get(a) || 0;
+  const nb = matrice.texte.normes.get(b) || 0;
+  if (na === 0 || nb === 0) return 0;
+
+  const [petit, grand] = va.size <= vb.size ? [va, vb] : [vb, va];
+  let produit = 0;
+  for (const [mot, poids] of petit) {
+    const autre = grand.get(mot);
+    if (autre) produit += poids * autre;
+  }
   return produit / (na * nb);
 }
 
@@ -279,7 +413,18 @@ export function similarite(matrice, idA, idB) {
      observation, c'est précisément son rôle de combler leur absence. */
   const apriori = aprioriCategorie(matrice, a, b);
 
-  const melange = (1 - POIDS_APRIORI) * observee + POIDS_APRIORI * apriori;
+  const textuelle = cosinusTexte(matrice, a, b);
+
+  /* Trois signaux complementaires :
+       - la description, dense et disponible meme sans aucune offre ;
+       - la co-occurrence observee, precise mais rare ;
+       - la categorie, qui n'oriente qu'en dernier recours. */
+  const poidsObservation = 1 - POIDS_TEXTE - POIDS_APRIORI;
+  const melange =
+    POIDS_TEXTE * textuelle +
+    poidsObservation * observee +
+    POIDS_APRIORI * apriori;
+
   return melange < SEUIL_SIMILARITE ? 0 : Math.min(1, melange);
 }
 
