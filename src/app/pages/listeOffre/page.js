@@ -27,6 +27,9 @@ import {
   MetaItem,
   ViewButton,
   OwnOfferBadge,
+  PaginationBar,
+  PaginationButton,
+  PaginationInfo,
   EmptyState,
   LoadingState
 } from '@/components/styleListeOffre'
@@ -37,6 +40,8 @@ export default function ListeOffre() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedOffre, setSelectedOffre] = useState(null)
+  const [pagination, setPagination] = useState(null)
+  const [page, setPage] = useState(1)
 
   // lu apres le montage : localStorage n'existe pas cote serveur
   const [user, setUser] = useState(null)
@@ -50,35 +55,38 @@ export default function ListeOffre() {
   const estEntreprise = user?.typeUtilisateur === 'Entreprise'
   const idEntreprise = user?.idEntreprise
 
+  /* La recherche et la pagination sont desormais faites par le serveur :
+     on ne telecharge plus la totalite des offres pour filtrer ensuite dans
+     le navigateur. Un anti-rebond evite une requete a chaque frappe. */
   useEffect(() => {
-    const fetchOffres = async () => {
+    const minuteur = setTimeout(async () => {
+      setIsLoading(true)
       try {
+        const params = new URLSearchParams({ page: String(page), taille: '20' })
+        if (searchTerm.trim()) params.set('recherche', searchTerm.trim())
+
         // fetchAuth transmet le jeton s'il existe : la route reste accessible
         // sans authentification, mais renvoie alors dejaPostule = false.
-        const res = await fetchAuth('/api/listeOffre')
+        const res = await fetchAuth(`/api/listeOffre?${params}`)
         const data = await res.json()
-        if (!res.ok) throw new Error(data.details || data.error)
+        if (!res.ok) throw new Error(data.error)
         setOffres(data.offres)
+        setPagination(data.pagination)
       } catch (err) {
         console.error('Erreur:', err)
       } finally {
         setIsLoading(false)
       }
-    }
-    fetchOffres()
-  }, [])
+    }, searchTerm ? 350 : 0)
 
-  const offresFiltrees = offres.filter(offre => {
-    const search = searchTerm.toLowerCase().trim()
-    if (!search) return true
-    return (
-      offre.titre?.toLowerCase().includes(search) ||
-      offre.description?.toLowerCase().includes(search) ||
-      offre.nomEntreprise?.toLowerCase().includes(search) ||
-      offre.ville?.toLowerCase().includes(search) ||
-      offre.domaine?.toLowerCase().includes(search)
-    )
-  })
+    return () => clearTimeout(minuteur)
+  }, [page, searchTerm])
+
+  // Toute nouvelle recherche renvoie a la premiere page
+  useEffect(() => { setPage(1) }, [searchTerm])
+
+  // Le filtrage est fait par le serveur : offres contient deja le resultat
+  const offresFiltrees = offres
 
   const formatDate = (date) => {
     if (!date) return 'Non spécifiée'
@@ -143,8 +151,11 @@ export default function ListeOffre() {
           </SearchBarWrapper>
         </HeaderSection>
 
-        {/* === RECOMMANDATIONS : etudiants uniquement, et pas pendant une recherche === */}
-        {estEtudiant && !searchTerm && (
+        {/* === RECOMMANDATIONS : etudiants uniquement ===
+            Elles restent affichees pendant une recherche : les masquer
+            privait l'etudiant de la fonctionnalite au moment precis ou il
+            cherchait activement une offre. */}
+        {estEtudiant && (
           <Recommandations
             onVoirDetails={(offre) => setSelectedOffre(offre)}
             onCompleterProfil={() =>
@@ -153,7 +164,10 @@ export default function ListeOffre() {
           />
         )}
 
-        <PageTitle>Toutes les offres</PageTitle>
+        <PageTitle>
+          {searchTerm ? 'Résultats de la recherche' : 'Toutes les offres'}
+          {pagination ? ` (${pagination.total})` : ''}
+        </PageTitle>
 
         {isLoading ? (
           <LoadingState>Chargement des offres...</LoadingState>
@@ -215,6 +229,26 @@ export default function ListeOffre() {
               </OfferCard>
             ))}
           </OffersList>
+        )}
+
+        {pagination && pagination.nombrePages > 1 && (
+          <PaginationBar>
+            <PaginationButton
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={!pagination.aPrecedent}
+            >
+              Précédent
+            </PaginationButton>
+            <PaginationInfo>
+              Page {pagination.page} sur {pagination.nombrePages}
+            </PaginationInfo>
+            <PaginationButton
+              onClick={() => setPage(p => p + 1)}
+              disabled={!pagination.aSuivant}
+            >
+              Suivant
+            </PaginationButton>
+          </PaginationBar>
         )}
 
         {selectedOffre && (

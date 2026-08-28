@@ -314,3 +314,41 @@ export const LoadingState = styled.div`
   color: #64748b;
   font-size: 15px;
 `
+/* ===== Pagination ===== */
+
+export const PaginationBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+`
+
+export const PaginationButton = styled.button`
+  padding: 9px 18px;
+  background: white;
+  color: #A98B76;
+  border: 1.5px solid #d4b89d;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f5f3eb;
+    border-color: #A98B76;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`
+
+export const PaginationInfo = styled.span`
+  font-size: 13.5px;
+  color: #64748b;
+  font-weight: 600;
+`
