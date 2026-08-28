@@ -297,6 +297,54 @@ contrôle.
 
 ---
 
+## 7bis. Le conseiller contrefactuel — un quatrieme echec instructif
+
+Le conseiller (`/api/conseiller`, PLAN §4) simule l'ajout d'une competence au profil et
+mesure l'ecart. Il ne contient **aucun algorithme nouveau** : il rejoue `evaluerCouple` sur
+un profil hypothetique. C'est cette reutilisation qui rend le conseil credible — la
+recommandation affichee et la simulation reposent sur exactement la meme mesure.
+
+### Echec — le critere de classement favorisait les competences generiques
+
+**Constat.** Premiere suggestion faite a une developpeuse web : *« Apprendre Communication
+→ +5 offres »*. Or son score moyen **baissait** (57 → 55), et l'offre debloquee etait
+« Stagiaire Gestion Sinistres (38) » — de la gestion de sinistres pour une developpeuse web.
+
+**Diagnostic.** Deux erreurs de mesure combinees :
+
+1. **Compter les offres franchissant le seuil d'affichage (35).** Ce seuil signifie « pas
+   totalement hors sujet », pas « opportunite reelle ». Les competences generiques
+   (Communication, Relation client) font franchir ce seuil bas a de nombreuses offres sans
+   rapport avec le profil.
+2. **Mesurer la progression sur la moyenne de toutes les offres eligibles.** Ajouter des
+   offres faibles *dilue* cette moyenne : un bon conseil pouvait donc afficher une
+   regression.
+
+**Correction.**
+
+| Avant | Apres |
+|---|---|
+| Offres franchissant 35 | Offres atteignant **60** (`SEUIL_OPPORTUNITE`) |
+| Moyenne de toutes les offres eligibles | Moyenne des **10 meilleures** (`CIBLES_REALISTES`) — les cibles realistes de l'etudiant |
+
+**Resultat.** Les conseils deviennent alignes sur le profil, et toutes les progressions sont
+desormais positives :
+
+| Etudiant | Conseil | Offres debloquees | Cibles |
+|---|---|---|---|
+| Developpeuse web | **SQL** | 5 | 77 → **84** |
+| Etudiante BTP | **Genie textile** | 3 | 61 → **66** |
+| Etudiant actuariat | **Communication** | 8 | 74 → **79** |
+
+**Enseignement transposable.** Un seuil concu pour l'affichage ne convient pas a la
+decision. Les deux usages appellent deux seuils distincts, et les confondre produit des
+resultats techniquement exacts mais concretement inutiles.
+
+**Performance mesuree :** 65 a 143 ms pour ~50 competences simulees x 65 offres, soit environ
+3 000 evaluations par requete. La force brute est suffisante a cette echelle.
+
+---
+
 ## 8. Limites assumées
 
 À mentionner explicitement dans le mémoire — un jury valorise davantage une section de
@@ -314,7 +362,10 @@ limites honnête que des résultats surestimés.
    bénéficient pas des correspondances approchées.
 4. **Racinisation approximative.** Elle traite les pluriels et féminins réguliers, pas les
    formes irrégulières ni la lemmatisation.
-5. **Corpus de démonstration.** Les données restent fabriquées ; les métriques du chapitre
+5. **Seuils du conseiller calibres sur ce corpus.** `SEUIL_OPPORTUNITE = 60` et
+   `CIBLES_REALISTES = 10` conviennent a 65 offres. Sur un corpus dix fois plus grand, ces
+   valeurs demanderaient un reglage.
+6. **Corpus de démonstration.** Les données restent fabriquées ; les métriques du chapitre
    évaluation seront bruitées à cette échelle et doivent être présentées comme telles.
 
 ---
