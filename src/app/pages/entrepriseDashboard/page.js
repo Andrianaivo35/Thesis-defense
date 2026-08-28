@@ -156,12 +156,20 @@ export default function EntrepriseDashboard() {
                     </CardMeta>
                     <CardFooter>
                       <span />
-                      <ActionButton
-                        onClick={() => router.push(`/pages/entrepriseModifierOffre/${o.idOffre}`)}
-                      >
-                        Gérer cette offre
-                        <ArrowRight size={13} strokeWidth={2.5} />
-                      </ActionButton>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <ActionButton
+                          onClick={() => router.push(`/pages/offreCandidats/${o.idOffre}`)}
+                        >
+                          <Search size={13} strokeWidth={2} />
+                          Candidats suggérés
+                        </ActionButton>
+                        <ActionButton
+                          onClick={() => router.push(`/pages/entrepriseModifierOffre/${o.idOffre}`)}
+                        >
+                          Gérer cette offre
+                          <ArrowRight size={13} strokeWidth={2.5} />
+                        </ActionButton>
+                      </div>
                     </CardFooter>
                   </CandidatureCard>
                 ))}

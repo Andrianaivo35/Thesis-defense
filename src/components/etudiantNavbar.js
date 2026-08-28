@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { getUtilisateur, logout } from '@/lib/auth'
-import { Briefcase, FileText, FolderOpen, MessageCircle, Building2, User, LogOut, Menu, X } from 'lucide-react'
+import { Briefcase, FileText, FolderOpen, Lightbulb, MessageCircle, Building2, User, LogOut, Menu, X } from 'lucide-react'
 import Image from 'next/image'
 import {
   MobileHeader, MobileLogoArea, MobileLogoMark, MobileLogoText, HamburgerButton,
@@ -99,6 +99,14 @@ export default function EtudiantNavbar() {
           >
             <FileText size={18} strokeWidth={2} />
             Mes candidatures
+          </StudentMenuLink>
+
+          <StudentMenuLink
+            $active={isActive('/pages/etudiantConseiller')}
+            onClick={() => navigate('/pages/etudiantConseiller')}
+          >
+            <Lightbulb size={18} strokeWidth={2} />
+            Que puis-je apprendre ?
           </StudentMenuLink>
 
           <StudentMenuLink
