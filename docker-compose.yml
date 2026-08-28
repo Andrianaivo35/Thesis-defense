@@ -19,6 +19,7 @@ services:
       - ./scripts/migrations/002-bibliotheque-cv.sql:/docker-entrypoint-initdb.d/02-002-bibliotheque-cv.sql:ro
       - ./scripts/migrations/003-referentiel-filieres.sql:/docker-entrypoint-initdb.d/02-003-referentiel-filieres.sql:ro
       - ./scripts/migrations/004-renommer-noteqcm.sql:/docker-entrypoint-initdb.d/02-004-renommer-noteqcm.sql:ro
+      - ./scripts/migrations/005-categorie-react.sql:/docker-entrypoint-initdb.d/02-005-categorie-react.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s

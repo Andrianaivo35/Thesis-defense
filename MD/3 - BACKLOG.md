@@ -727,7 +727,11 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 4 | 4.9 Ajout d'un étudiant par l'université | ✅ | 28/08/2026 |
 | 4 | 4.10 Statistiques tableau de bord université | ✅ | 28/08/2026 |
 | 4 | 4.11 Retrait du faux assistant | ✅ | 28/08/2026 |
-| 5 | Cœur du mémoire | ⬜ | |
+| 5 | 5.1 Matrice de co-occurrence | ✅ | 28/08/2026 |
+| 5 | 5.2 Correspondance bidirectionnelle | ⬜ | |
+| 5 | 5.3 Conseiller contrefactuel | ⬜ | |
+| 5 | 5.4 Ingestion de CV (OCR) | ⬜ | |
+| 5 | 5.5 Évaluation | ⬜ | |
 | 6 | 6.1 Unicité de l'e-mail (prérequis) | ⬜ | |
 | 6 | 6.2 Jetons activation / réinitialisation | ⬜ | |
 | 6 | 6.3 Import CSV avec prévisualisation | ⬜ | |

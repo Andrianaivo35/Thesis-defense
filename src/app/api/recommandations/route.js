@@ -2,6 +2,7 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { VALEUR_NIVEAU, DUREE_EN_MOIS, domaineDeLaFiliere } from '@/lib/referentiels';
+import { obtenirMatrice, similarite } from '@/lib/cooccurrence';
 
 /* =====================================================================
    NOMS RÉELS UTILISÉS DANS CETTE ROUTE
@@ -105,7 +106,18 @@ function dureeEnMois(duree) {
    LES CINQ SOUS-SCORES
    ===================================================================== */
 
-function scoreCompetence(competencesOffre, competencesEtudiant) {
+/* Score de compétence, avec correspondances approchées.
+
+   Auparavant la correspondance était strictement exacte : un étudiant
+   maîtrisant React obtenait zéro sur une offre demandant Vue.js, alors
+   qu'un recruteur y verrait une quasi-correspondance.
+
+   La matrice de co-occurrence permet désormais de créditer partiellement
+   une compétence proche. Le crédit est proportionnel à la similarité
+   mesurée, donc borné par la confiance qu'on a dans cette proximité —
+   une compétence approchante ne vaut jamais autant que la compétence
+   exacte. */
+function scoreCompetence(competencesOffre, competencesEtudiant, matrice) {
   if (!competencesOffre || competencesOffre.length === 0) {
     return { score: 60, detail: null };
   }
@@ -117,23 +129,53 @@ function scoreCompetence(competencesOffre, competencesEtudiant) {
   let poidsTotal = 0;
   let poidsObtenu = 0;
   let nbTrouvees = 0;
+  let nbApprochees = 0;
   let nbObligatoiresManquantes = 0;
+  const correspondancesApprochees = [];
 
   for (const co of competencesOffre) {
     const poids = co.estObligatoire ? 2 : 1;
     poidsTotal += poids;
 
     const possedee = parId.get(String(co.idCompetenceReference));
-    if (!possedee) {
-      if (co.estObligatoire) nbObligatoiresManquantes++;
+
+    if (possedee) {
+      nbTrouvees++;
+      // Attention : la colonne s'appelle "niveauSouhaitee" (avec un e final)
+      const attendu = valeurCompetence(co.niveauSouhaitee);
+      const acquis = valeurCompetence(possedee.niveau);
+      poidsObtenu += acquis >= attendu ? poids : poids * 0.75;
       continue;
     }
 
-    nbTrouvees++;
-    // Attention : la colonne s'appelle "niveauSouhaitee" (avec un e final)
-    const attendu = valeurCompetence(co.niveauSouhaitee);
-    const acquis = valeurCompetence(possedee.niveau);
-    poidsObtenu += acquis >= attendu ? poids : poids * 0.75;
+    /* Aucune correspondance exacte : on cherche la compétence de
+       l'étudiant la plus proche de celle exigée. */
+    let meilleure = null;
+    let meilleurScore = 0;
+
+    if (matrice) {
+      for (const ce of competencesEtudiant) {
+        const proximite = similarite(matrice, co.idCompetenceReference, ce.idCompetenceReference);
+        if (proximite > meilleurScore) {
+          meilleurScore = proximite;
+          meilleure = ce;
+        }
+      }
+    }
+
+    if (meilleure) {
+      nbApprochees++;
+      /* Le crédit est le produit du poids par la similarité : une
+         proximité de 0,5 vaut la moitié de la compétence exigée. */
+      poidsObtenu += poids * meilleurScore;
+      correspondancesApprochees.push({
+        exigee: co.nomCompetenceReference,
+        possedee: meilleure.nomCompetenceReference,
+        similarite: Number(meilleurScore.toFixed(2))
+      });
+    } else if (co.estObligatoire) {
+      nbObligatoiresManquantes++;
+    }
   }
 
   let score = poidsTotal > 0 ? (poidsObtenu / poidsTotal) * 100 : 60;
@@ -141,7 +183,17 @@ function scoreCompetence(competencesOffre, competencesEtudiant) {
 
   return {
     score: Math.max(0, Math.min(100, Math.round(score))),
-    detail: { nbTrouvees, total: competencesOffre.length, nbObligatoiresManquantes }
+    detail: {
+      nbTrouvees,
+      nbApprochees,
+      total: competencesOffre.length,
+      nbObligatoiresManquantes,
+      /* Les deux meilleures correspondances approchées sont conservées
+         pour pouvoir expliquer le rapprochement à l'utilisateur. */
+      correspondancesApprochees: correspondancesApprochees
+        .sort((a, b) => b.similarite - a.similarite)
+        .slice(0, 2)
+    }
   };
 }
 
@@ -278,6 +330,18 @@ function construireRaisons(scores, details) {
   const raisons = [];
 
   const c = details.competence;
+
+  /* Une correspondance approchée mérite d'être explicitée : sans cela,
+     l'étudiant ne comprend pas pourquoi une offre dont il ne possède
+     aucune compétence exigée lui est proposée. */
+  if (c && c.correspondancesApprochees?.length > 0) {
+    const meilleure = c.correspondancesApprochees[0];
+    raisons.push({
+      texte: `${meilleure.possedee} est proche de ${meilleure.exigee}`,
+      fort: meilleure.similarite >= 0.5
+    });
+  }
+
   if (c && c.nbTrouvees > 0) {
     raisons.push({
       texte: `${c.nbTrouvees} compétence${c.nbTrouvees > 1 ? 's' : ''} sur ${c.total}`,
@@ -417,11 +481,22 @@ export async function GET(req) {
       competencesParOffre.get(cle).push(c);
     }
 
-    /* ---------- 5. Calcul des scores ---------- */
+    /* ---------- 5. Matrice de co-occurrence ----------
+       Mise en cache : elle ne change qu'avec les compétences déclarées.
+       Un échec de construction ne doit pas empêcher la recommandation —
+       le moteur retombe alors sur la correspondance exacte. */
+    let matrice = null;
+    try {
+      matrice = await obtenirMatrice(client);
+    } catch (erreurMatrice) {
+      console.error('Matrice de co-occurrence indisponible :', erreurMatrice.message);
+    }
+
+    /* ---------- 6. Calcul des scores ---------- */
     const evaluees = offres.map(offre => {
       const competencesOffre = competencesParOffre.get(String(offre.idOffre)) || [];
 
-      const rCompetence = scoreCompetence(competencesOffre, competencesEtudiant);
+      const rCompetence = scoreCompetence(competencesOffre, competencesEtudiant, matrice);
       const rFiliere = scoreFiliere(offre, etudiant, centresInteret);
       const rNiveau = scoreNiveau(offre, etudiant);
       const rLocalisation = scoreLocalisation(offre, preference);
