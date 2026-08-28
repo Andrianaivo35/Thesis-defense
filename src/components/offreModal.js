@@ -171,7 +171,12 @@ export default function OffreModal({ offre, onClose, onPostuler, onModifier }) {
         <ModalFooter>
           <CancelButton onClick={onClose}>Fermer</CancelButton>
 
-          {onPostuler && (
+          {onPostuler && offre.dejaPostule && (
+            <PostulerButton as="span" style={{ opacity: 0.6, cursor: 'default' }}>
+              Vous avez déjà postulé à cette offre
+            </PostulerButton>
+          )}
+          {onPostuler && !offre.dejaPostule && (
             <PostulerButton onClick={() => onPostuler(offre)}>
               Postuler à cette offre
               <ArrowRight size={15} strokeWidth={2.5} />

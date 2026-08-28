@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import OffreModal from '@/components/offreModal'
 import AppNavbar from '@/components/appNavbar'
 import Recommandations from '@/components/recommandations'
-import { getUtilisateur } from '@/lib/auth'
+import { getUtilisateur, fetchAuth } from '@/lib/auth'
 import { Search, MapPin, Clock, CalendarDays, ArrowRight, Plus } from 'lucide-react'
 import {
   PageContainer,
@@ -53,7 +53,9 @@ export default function ListeOffre() {
   useEffect(() => {
     const fetchOffres = async () => {
       try {
-        const res = await fetch('/api/listeOffre')
+        // fetchAuth transmet le jeton s'il existe : la route reste accessible
+        // sans authentification, mais renvoie alors dejaPostule = false.
+        const res = await fetchAuth('/api/listeOffre')
         const data = await res.json()
         if (!res.ok) throw new Error(data.details || data.error)
         setOffres(data.offres)
@@ -181,6 +183,15 @@ export default function ListeOffre() {
 
                 <OfferDetails>
                   {estMonOffre(offre) && <OwnOfferBadge>Votre offre</OwnOfferBadge>}
+                  {offre.dejaPostule && (
+                    <OwnOfferBadge>
+                      {offre.statutCandidature === 'Recruté'
+                        ? 'Candidature retenue'
+                        : offre.statutCandidature === 'Refusé'
+                          ? 'Candidature non retenue'
+                          : 'Déjà postulé'}
+                    </OwnOfferBadge>
+                  )}
                   <OfferTitle>{offre.titre}</OfferTitle>
                   <OfferMeta>
                     <MetaItem>
