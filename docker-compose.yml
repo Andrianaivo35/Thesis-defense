@@ -17,6 +17,7 @@ services:
       # ne parcourt pas les sous-dossiers : chaque migration est montee ici.
       - ./scripts/migrations/001-rattachement-universite.sql:/docker-entrypoint-initdb.d/02-001-rattachement-universite.sql:ro
       - ./scripts/migrations/002-bibliotheque-cv.sql:/docker-entrypoint-initdb.d/02-002-bibliotheque-cv.sql:ro
+      - ./scripts/migrations/003-referentiel-filieres.sql:/docker-entrypoint-initdb.d/02-003-referentiel-filieres.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s
