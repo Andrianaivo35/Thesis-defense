@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { verifyToken } from '@/lib/jwt';
 import { validerMotDePasse } from '@/lib/motDePasse';
+import { normaliserEmail, estConflitEmail, MESSAGE_EMAIL_PRIS } from '@/lib/email';
 
 /* =====================================================================
    POST : création d'un compte étudiant par son université
@@ -47,7 +48,7 @@ export async function POST(req) {
       return NextResponse.json({ error: erreurMotDePasse }, { status: 400 });
     }
 
-    const emailNormalise = email.trim().toLowerCase();
+    const emailNormalise = normaliserEmail(email);
 
     const dejaPris = await client.query(
       'SELECT 1 FROM utilisateur WHERE LOWER("emailUtilisateur") = $1',
@@ -55,7 +56,7 @@ export async function POST(req) {
     );
     if (dejaPris.rows.length > 0) {
       return NextResponse.json(
-        { error: 'Un compte existe déjà avec cette adresse e-mail' },
+        { error: MESSAGE_EMAIL_PRIS },
         { status: 409 }
       );
     }
@@ -105,6 +106,15 @@ export async function POST(req) {
 
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {});
+
+    /* La vérification préalable ne suffit pas : entre le SELECT et
+       l'INSERT, une autre requête peut avoir pris l'adresse. La
+       contrainte d'unicité de la migration 008 est le seul garde-fou
+       réel, et c'est ici qu'on traduit son refus en message clair
+       plutôt qu'en « erreur serveur ». */
+    if (estConflitEmail(error)) {
+      return NextResponse.json({ error: MESSAGE_EMAIL_PRIS }, { status: 409 });
+    }
     console.error('Erreur ajout étudiant:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   } finally {

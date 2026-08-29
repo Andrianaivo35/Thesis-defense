@@ -2,6 +2,7 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
+import { normaliserEmail } from '@/lib/email';
 import {
   identifierAppelant, verifierLimite, reinitialiserLimite, messageLimiteAtteinte
 } from '@/lib/limiteDebit';
@@ -10,7 +11,12 @@ export async function POST(req) {
   const client = await pool.connect();
 
   try {
-    const { email, motDePasse } = await req.json();
+    const { email: emailSaisi, motDePasse } = await req.json();
+    /* L'adresse est ramenée à sa forme canonique avant toute
+       comparaison : sans cela, « Jean@Univ.mg » et « jean@univ.mg »
+       désignent deux comptes différents pour la connexion, alors
+       que la base n'en autorise qu'un seul (migration 008). */
+    const email = normaliserEmail(emailSaisi);
 
     // Validation basique
     if (!email || !motDePasse) {
@@ -36,7 +42,7 @@ export async function POST(req) {
     const utilisateurResult = await client.query(
       `SELECT "idUtilisateur", "emailUtilisateur", "motDePasse", "typeUtilisateur"
        FROM utilisateur
-       WHERE "emailUtilisateur" = $1 AND "typeUtilisateur" = $2`,
+       WHERE lower("emailUtilisateur") = $1 AND "typeUtilisateur" = $2`,
       [email, 'Universite']
     );
 

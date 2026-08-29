@@ -34,6 +34,7 @@
    nettoyage. C'est fait, et les documents sont à jour.
    ===================================================================== */
 import pg from 'pg';
+import bcrypt from 'bcryptjs';
 
 const pool = new pg.Pool({
   user: process.env.DB_USER || 'postgres',
@@ -174,6 +175,34 @@ const recos = await client.query('DELETE FROM recommandation RETURNING 1');
 console.log(`4. ${sansVille.rowCount} offres sans ville corrigées, ` +
             `${expirees.rowCount} dates limites dépassées repoussées, ` +
             `${recos.rowCount} recommandations périmées purgées`);
+
+/* ---------------------------------------------------------------------
+   5. Comptes dont le mot de passe s'est perdu
+
+   Les trois comptes conservés au §3 dataient de la saisie manuelle
+   initiale : leur mot de passe n'a jamais été noté nulle part. Après
+   avoir changé leur adresse, plus personne ne pouvait y entrer — y
+   compris dans le compte d'administration.
+
+   Un compte inaccessible dans une base de démonstration est une
+   incohérence au même titre qu'un nom d'essai. On les aligne donc sur le
+   mot de passe des comptes engendrés.
+
+   ⚠️ Base de démonstration uniquement. Un mot de passe partagé et écrit
+   en clair dans un script n'a évidemment pas sa place en production ;
+   c'est le Lot 6.2, avec ses jetons d'activation à usage unique, qui
+   apportera le mécanisme correct. */
+const MOT_DE_PASSE_DEMO = 'Demo1234!';
+const empreinte = await bcrypt.hash(MOT_DE_PASSE_DEMO, 10);
+
+const realignes = await client.query(
+  `UPDATE utilisateur SET "motDePasse" = $1
+    WHERE "emailUtilisateur" IN (
+      'admin@stageshare.mg',
+      'contact@asja.demo.stageshare.mg',
+      'contact@blueline.demo.stageshare.mg')
+    RETURNING "emailUtilisateur"`, [empreinte]);
+console.log(`5. ${realignes.rowCount} comptes realignés sur le mot de passe de démonstration`);
 
 await client.query('COMMIT');
 

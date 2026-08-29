@@ -583,7 +583,7 @@ de noms.
 
 ---
 
-## 6.1 ⬜ Contrainte d'unicité sur l'e-mail — **prérequis strict**
+## 6.1 ✅ Contrainte d'unicité sur l'e-mail — **prérequis strict** *(terminé, 29/08/2026)*
 
 **Pourquoi.** [REVUE-CODE E3](1%20-%20REVUE-CODE.md). Il n'existe **aucune contrainte
 `UNIQUE`** sur `utilisateur."emailUtilisateur"`, et les routes d'inscription font
@@ -599,6 +599,25 @@ gérer le code `23505` dans les routes d'inscription (le motif existe déjà dan
 `entreprise` et `universite` — seule la table `admin` la possède.
 
 ⚠️ **Rien de ce lot ne doit être commencé avant cette tâche.**
+
+**Fait** (migration 008). Trois décisions au-delà de l'énoncé initial :
+
+- **Index fonctionnel sur `lower(email)`**, et non contrainte `UNIQUE` simple. Une
+  contrainte ordinaire aurait laissé coexister « Jean@Univ.mg » et « jean@univ.mg » — deux
+  comptes pour une seule boîte réelle.
+- **Un défaut existant a été découvert au passage** : les routes historiques comparaient
+  l'adresse brute, alors que `universiteAjoutEtudiant` comparait sur `LOWER(...)`. Un
+  utilisateur inscrit sous une casse et se connectant sous une autre recevait
+  « identifiants incorrects », mot de passe correct et compte intact. Corrigé par
+  [src/lib/email.js](../src/lib/email.js), appliqué aux 9 routes concernées.
+- **Le code `23505` est traité dans les cinq routes d'inscription.** La vérification
+  préalable ne protège pas de la course entre le `SELECT` et l'`INSERT` : seule la
+  contrainte le fait, et son refus devait devenir un message clair plutôt qu'une
+  « erreur serveur ».
+
+**Vérifié** en base (doublon à l'identique, en majuscules, et seconde fiche sur un même
+compte : tous refusés) et par HTTP (connexion insensible à la casse, inscription et ajout
+par l'université refusés en 409, compte d'origine intact).
 
 ---
 
@@ -750,7 +769,8 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 5 | 5.4 Ingestion de CV (OCR) | ✅ | 28/08/2026 |
 | 5 | 5.5 Évaluation | ✅ | 29/08/2026 |
 | — | Peuplement CV / candidatures / QCM | ✅ | 29/08/2026 |
-| 6 | 6.1 Unicité de l'e-mail (prérequis) | ⬜ | |
+| 6 | 6.1 Unicité de l'e-mail (prérequis) | ✅ | 29/08/2026 |
+| — | Nettoyage de la base (traces, essais) | ✅ | 29/08/2026 |
 | 6 | 6.2 Jetons activation / réinitialisation | ⬜ | |
 | 6 | 6.3 Import CSV avec prévisualisation | ⬜ | |
 | 6 | 6.4 Promotions | ⬜ | |
