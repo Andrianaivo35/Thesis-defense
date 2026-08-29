@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AppNavbar from '@/components/appNavbar'
 import { getUtilisateur, fetchAuth } from '@/lib/auth'
-import { LayoutDashboard, Megaphone, Users, UserPlus, ArrowRight } from 'lucide-react'
+import { LayoutDashboard, Megaphone, Users, UserPlus, ArrowRight, FileSpreadsheet } from 'lucide-react'
 import {
   PageContainer, HeaderSection, PageTitle, PageSubtitle,
   QuickAccessGrid, QuickCard, QuickCardIcon, QuickCardTitle, QuickCardText, QuickCardArrow,
@@ -99,6 +99,21 @@ export default function UniversiteDashboard() {
             </QuickCardText>
             <QuickCardArrow>
               Créer un compte
+              <ArrowRight size={14} strokeWidth={2.5} />
+            </QuickCardArrow>
+          </QuickCard>
+
+          <QuickCard onClick={() => router.push('/pages/universiteImport')}>
+            <QuickCardIcon>
+              <FileSpreadsheet size={28} strokeWidth={2} />
+            </QuickCardIcon>
+            <QuickCardTitle>Importer une promotion</QuickCardTitle>
+            <QuickCardText>
+              Créez les comptes de toute une promotion depuis un fichier CSV.
+              Vous vérifiez le contenu avant que rien ne soit enregistré.
+            </QuickCardText>
+            <QuickCardArrow>
+              Importer un fichier
               <ArrowRight size={14} strokeWidth={2.5} />
             </QuickCardArrow>
           </QuickCard>

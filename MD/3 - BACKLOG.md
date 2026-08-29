@@ -667,7 +667,7 @@ Au passage, `ForgotLink` des trois pages de connexion pointait vers `/mot-de-pas
 
 ---
 
-## 6.3 ⬜ Import CSV / Excel avec prévisualisation
+## 6.3 ✅ Import CSV / Excel avec prévisualisation *(terminé, 29/08/2026)*
 
 **Pourquoi.** C'est la fonctionnalité qui rend la plateforme adoptable par un établissement.
 
@@ -682,9 +682,42 @@ Au passage, `ForgotLink` des trois pages de connexion pointait vers `/mot-de-pas
 4. **CSV en priorité** ; le format XLSX impose une dépendance de parsing supplémentaire, à
    n'ajouter que si le besoin est confirmé.
 
-⚠️ **Point de performance.** bcrypt au coût 10, multiplié par 300 étudiants, représente 15 à
-30 secondes dans une seule requête HTTP. Il faut traiter par lots ou en tâche de fond, sinon
-la requête expire.
+⚠️ **Point de performance — devenu caduc.** Le plan redoutait bcrypt au coût 10 multiplié par
+300 étudiants, soit 15 à 30 secondes. Le Lot 6.2 a supprimé la difficulté sans qu'on la
+cherche : les comptes naissent **sans mot de passe**, donc il n'y a plus un seul appel à
+bcrypt dans l'import. **Mesuré : 300 comptes créés en 1,25 s**, analyse en 115 ms. Ni lots
+ni tâche de fond nécessaires.
+
+**Fait.** Le format XLSX n'a pas été ajouté, conformément au point 4 : le besoin n'est pas
+confirmé et il imposerait une dépendance de parsing.
+
+Trois difficultés réelles, toutes dues au fait que **le fichier sort d'Excel sur un poste
+français** — et aucune n'était dans l'énoncé :
+
+- **Le séparateur est le point-virgule**, la virgule étant le séparateur décimal en
+  français. Un lecteur qui suppose la virgule voit une seule colonne et déclare le fichier
+  vide. Détection automatique parmi `;` `,` tabulation `|`.
+- **L'encodage est du Windows-1252**, pas de l'UTF-8. « Rakotondrabé » devenait
+  « RakotondrabÃ© » : le fichier s'importait sans erreur et la base se remplissait de noms
+  abîmés — un échec **silencieux**, le pire des trois. On tente l'UTF-8 en mode strict et
+  l'on retombe sur Windows-1252 ; l'ordre compte, Windows-1252 acceptant n'importe quoi.
+- **La marque d'ordre d'octets** d'Excel rendait la première colonne méconnaissable.
+
+Autres décisions :
+
+- **Niveau, filière et spécialisation sont des avertissements, pas des erreurs.** Refuser un
+  étudiant entier parce que sa filière est mal orthographiée serait une rigueur mal placée :
+  le compte est créé, le champ reste vide, l'étudiant complétera.
+- **Une empreinte lie l'analyse à la confirmation.** Ce qui a été validé est exactement ce
+  qui est écrit. Quand elle diffère, le message distingue « votre fichier a changé » de
+  « une adresse a été prise entre-temps » — les confondre égarait l'utilisateur.
+- Le récapitulatif montre **d'abord les anomalies** : sur 300 lignes correctes, ce sont les
+  11 fautives qu'on vient voir.
+
+**Vérifié** : l'analyse n'écrit rien (0 compte créé), une empreinte fausse est refusée, un
+fichier modifié entre les deux étapes est refusé, un conflit d'adresse annule **toute** la
+transaction (aucune écriture partielle), et les 300 comptes créés sont bien inactifs, sans
+mot de passe, avec un jeton d'activation chacun.
 
 ---
 
@@ -795,7 +828,7 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 6 | 6.1 Unicité de l'e-mail (prérequis) | ✅ | 29/08/2026 |
 | — | Nettoyage de la base (traces, essais) | ✅ | 29/08/2026 |
 | 6 | 6.2 Jetons activation / réinitialisation | ✅ | 29/08/2026 |
-| 6 | 6.3 Import CSV avec prévisualisation | ⬜ | |
+| 6 | 6.3 Import CSV avec prévisualisation | ✅ | 29/08/2026 |
 | 6 | 6.4 Promotions | ⬜ | |
 | 6 | 6.5 Cycle de vie du rattachement | ⬜ | |
 | 6 | 6.6 Intégration e-mail | ⬜ | |
