@@ -38,6 +38,7 @@ export async function GET(req) {
         p."annee" AS "promotionAnnee",
         p."statut" AS "promotionStatut",
         u."emailUtilisateur",
+        u."idUtilisateur",
         u."compteActive",
         stage."nomEntreprise" AS "stageEntreprise",
         stage."posteOffre" AS "stagePoste",
@@ -70,7 +71,7 @@ export async function GET(req) {
              OR ($2 = 'aucune' AND e."idPromotion" IS NULL)
              OR ($2 <> 'aucune' AND e."idPromotion" = NULLIF($2, '')::int))
       GROUP BY e."idEtudiant", p."libelle", p."annee", p."statut",
-               u."emailUtilisateur", u."compteActive",
+               u."emailUtilisateur", u."idUtilisateur", u."compteActive",
                stage."nomEntreprise", stage."posteOffre"
       ORDER BY e."nomEtudiant" ASC
     `, [idUniversite, filtrePromotion]);

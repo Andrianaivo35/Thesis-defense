@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
-import { GraduationCap, UserMinus } from 'lucide-react'
+import AppNavbar from '@/components/appNavbar'
+import { GraduationCap, UserMinus, MessageSquare } from 'lucide-react'
 import {
   PageContainer, HeaderSection, SearchBar, FiltersBar, FilterLabel, FilterSelect,
   PageTitle,
@@ -13,7 +14,7 @@ import {
   StageTag, NoStageTag,
   EtudiantFooter, ViewProfileButton,
   EmptyState, LoadingState,
-  BoutonPromotion, ActionButton
+  BoutonPromotion, ActionButton, ContactButton
 } from '@/components/styleUniversiteEtudiants'
 
 export default function UniversiteEtudiants() {
@@ -190,7 +191,13 @@ export default function UniversiteEtudiants() {
   }
 
   return (
-    <PageContainer>
+    <>
+      {/* La page n'avait AUCUNE barre de navigation : une université qui
+          y arrivait ne pouvait plus rejoindre son tableau de bord, ni
+          ses annonces, ni se déconnecter, sans revenir en arrière dans
+          le navigateur. */}
+      <AppNavbar />
+      <PageContainer>
       <HeaderSection>
         <SearchBar
           type="text"
@@ -446,13 +453,32 @@ export default function UniversiteEtudiants() {
                 <NoStageTag>Pas encore en stage</NoStageTag>
               )}
 
+              {/* La carte n'offrait qu'un lien passif : une université
+                  pouvait consulter ses étudiants, jamais agir. Contacter
+                  est l'action la plus évidemment attendue, et la
+                  messagerie existe déjà.
+
+                  stopPropagation : la carte entière ouvre le profil ;
+                  sans cela, le clic sur « Contacter » déclencherait les
+                  deux. */}
               <EtudiantFooter>
-                <ViewProfileButton>Voir le profil et les activités →</ViewProfileButton>
+                <ViewProfileButton>Voir le profil →</ViewProfileButton>
+                {e.idUtilisateur && (
+                  <ContactButton
+                    onClick={(ev) => {
+                      ev.stopPropagation()
+                      router.push(`/pages/messages?destinataire=${e.idUtilisateur}`)
+                    }}
+                  >
+                    <MessageSquare size={13} strokeWidth={2} /> Contacter
+                  </ContactButton>
+                )}
               </EtudiantFooter>
             </EtudiantCard>
           ))}
         </EtudiantsGrid>
       )}
-    </PageContainer>
+      </PageContainer>
+    </>
   )
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import AppNavbar from '@/components/appNavbar'
 import { VILLES, DUREES_STAGE, LIBELLES_DOMAINES } from '@/lib/referentiels'
 import {
   PageContainer, ContainerForm, ContainerTexte, FormGrid, ColumnForm,
@@ -187,7 +188,12 @@ export default function EntrepriseCreerOffre() {
   }
 
   return (
-    <PageContainer>
+    <>
+      {/* Ni barre de navigation ni bouton de retour : une entreprise qui
+          ouvrait ce formulaire et se ravisait n'avait aucun moyen d'en
+          sortir autrement qu'en revenant en arrière dans le navigateur. */}
+      <AppNavbar />
+      <PageContainer>
       <ContainerForm>
         <ContainerTexte><h2>Publier une offre de stage</h2></ContainerTexte>
 
@@ -444,6 +450,7 @@ export default function EntrepriseCreerOffre() {
           </ContainerButtons>
         </form>
       </ContainerForm>
-    </PageContainer>
+      </PageContainer>
+    </>
   )
 }

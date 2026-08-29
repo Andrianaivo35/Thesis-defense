@@ -248,7 +248,9 @@ export const EtudiantFooter = styled.div`
   padding-top: 14px;
   border-top: 1px solid #f1f5f9;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 `
 
 export const ViewProfileButton = styled.span`
@@ -331,4 +333,30 @@ export const ActionButton = styled.button`
 
   &:hover:not(:disabled) { border-color: #c7d2fe; background: #f8fafc; }
   &:disabled { opacity: .5; cursor: not-allowed; }
+`
+
+/* Bouton d'action sur une carte étudiant.
+
+   ViewProfileButton est un <span> décoratif, avec un effet de survol
+   piloté par la carte entière : s'en servir pour une action réelle
+   donnerait un élément qui ressemble à un bouton sans en être un — ni
+   focus au clavier, ni sémantique.
+
+   Même bleu que le reste de l'écran : rien de nouveau, seulement une
+   action là où il n'y en avait aucune. */
+export const ContactButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2563eb;
+  background: #ffffff;
+  border: 1.5px solid #dbeafe;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+
+  &:hover { background: #eff6ff; border-color: #bfdbfe; }
 `
