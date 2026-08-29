@@ -55,6 +55,37 @@ export async function POST(req) {
       );
     }
 
+    /* === La filière doit être enseignée par l'université choisie ===
+
+       Le formulaire filtre déjà la liste, mais un filtrage côté
+       navigateur n'est pas une validation : un appel direct à l'API le
+       contourne. La règle est donc appliquée ici aussi.
+
+       Elle ne s'applique QUE si l'établissement a déclaré ses domaines,
+       et QUE si l'étudiant a choisi une université de la liste. Une
+       université saisie librement — parce qu'elle n'existe pas encore
+       sur la plateforme — n'impose rien : c'est précisément le cas où
+       la plateforme ne sait pas. */
+    if (idUniversite && filiere) {
+      const offerts = await client.query(
+        'SELECT "domaine" FROM "UniversiteDomaine" WHERE "idUniversite" = $1',
+        [idUniversite]
+      );
+      if (offerts.rowCount > 0 &&
+          !offerts.rows.some(d => d.domaine === filiere)) {
+        const liste = offerts.rows.map(d => d.domaine).join(', ');
+        return NextResponse.json(
+          {
+            error: `Cet établissement n'enseigne pas « ${filiere} ». ` +
+                   `Filières proposées : ${liste}. Si la vôtre en fait pourtant ` +
+                   `partie, saisissez le nom de votre université à la main : ` +
+                   `elle vérifiera votre rattachement.`
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // === Validation de l'université ===
     // Soit un identifiant choisi dans la liste, soit un nom saisi librement.
     if (!idUniversite && (!nomUniversite || nomUniversite.trim() === '')) {

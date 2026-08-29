@@ -17,13 +17,27 @@ export async function GET() {
     try {
         const result = await client.query(`
             SELECT
-                "idUniversite",
-                "nomUniversite",
-                "sigleUniversitaire",
-                "ville",
-                "estVerifie"
-            FROM universite
-            ORDER BY "nomUniversite" ASC
+                u."idUniversite",
+                u."nomUniversite",
+                u."sigleUniversitaire",
+                u."ville",
+                u."estVerifie",
+                /* Les domaines enseignés, pour que le formulaire
+                   d'inscription n'offre que des filières que
+                   l'établissement propose réellement.
+
+                   Un tableau vide signifie « non déclaré », pas
+                   « aucun » : le formulaire n'impose alors aucune
+                   restriction. Confondre les deux bloquerait tous les
+                   étudiants d'une université qui vient de s'inscrire. */
+                COALESCE(
+                  (SELECT json_agg(ud."domaine" ORDER BY ud."domaine")
+                     FROM "UniversiteDomaine" ud
+                    WHERE ud."idUniversite" = u."idUniversite"),
+                  '[]'
+                ) AS "domaines"
+            FROM universite u
+            ORDER BY u."nomUniversite" ASC
         `);
 
         return NextResponse.json(

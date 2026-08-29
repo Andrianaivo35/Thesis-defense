@@ -28,6 +28,7 @@ services:
       - ./scripts/migrations/011-cycle-vie-rattachement.sql:/docker-entrypoint-initdb.d/02-011-cycle-vie-rattachement.sql:ro
       - ./scripts/migrations/012-file-courriels.sql:/docker-entrypoint-initdb.d/02-012-file-courriels.sql:ro
       - ./scripts/migrations/013-annonce-promotion.sql:/docker-entrypoint-initdb.d/02-013-annonce-promotion.sql:ro
+      - ./scripts/migrations/014-domaines-universite.sql:/docker-entrypoint-initdb.d/02-014-domaines-universite.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s

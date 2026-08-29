@@ -131,6 +131,28 @@ export default function EtudiantRegistreInfo() {
     u => String(u.idUniversite) === String(idUniversite)
   )
 
+  /* Les filières réellement enseignées par l'établissement choisi.
+
+     Une liste vide signifie « non déclaré », PAS « aucune » : on
+     retombe alors sur le référentiel complet. Confondre les deux
+     bloquerait tous les étudiants d'une université qui vient de
+     s'inscrire — et l'étudiant n'aurait aucun moyen de comprendre
+     pourquoi sa filière a disparu. */
+  const domainesOfferts = universiteChoisie?.domaines || []
+  const filieresProposees = domainesOfferts.length > 0
+    ? LIBELLES_DOMAINES.filter(d => domainesOfferts.includes(d))
+    : LIBELLES_DOMAINES
+
+  /* Si la filière déjà saisie n'est pas offerte par la nouvelle
+     université, on la vide : la laisser afficherait une valeur absente
+     de la liste, et le formulaire partirait avec elle. */
+  useEffect(() => {
+    if (filiere && !filieresProposees.includes(filiere)) {
+      setFiliere('')
+      setSpecialisation('')
+    }
+  }, [idUniversite]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const choisirUniversite = (u) => {
     setIdUniversite(u.idUniversite)
     setUniversite(u.nomUniversite)
@@ -518,8 +540,21 @@ export default function EtudiantRegistreInfo() {
                       required
                     >
                       <option value="">Sélectionner votre filière</option>
-                      {LIBELLES_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+                      {filieresProposees.map(d => <option key={d} value={d}>{d}</option>)}
                     </Select>
+                    {/* Dire POURQUOI la liste est courte. Sans cette
+                        phrase, l'étudiant qui ne trouve pas sa filière
+                        croit à un bug et abandonne. */}
+                    {domainesOfferts.length > 0 && (
+                      <HelperText>
+                        <Info size={12} strokeWidth={2} />
+                        {universiteChoisie.nomUniversite} n&apos;enseigne que
+                        {' '}{domainesOfferts.length > 1 ? 'ces filières' : 'cette filière'}.
+                        Si la vôtre manque, choisissez « Mon université n&apos;est pas dans
+                        la liste » et saisissez son nom : votre rattachement sera vérifié
+                        par l&apos;établissement.
+                      </HelperText>
+                    )}
                   </ContainerLabelInput>
 
                   <ContainerLabelInput>

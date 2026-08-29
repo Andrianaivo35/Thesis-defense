@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import { LIBELLES_DOMAINES } from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import {
   GraduationCap, Phone, Image as ImageIcon, Upload, Trash2, Info, Lock,
   AlertCircle, CheckCircle2, ArrowLeft, ArrowRight,
-  Plus, Minus, Save
+  Plus, Minus, Save, BookOpen
 } from 'lucide-react'
 import {
   PageContainer, BackButton,
@@ -41,9 +42,40 @@ export default function UniversiteModifierProfilPage() {
 
   const [openSections, setOpenSections] = useState({
     general: true,
+    filieres: false,
     contact: false,
     logo: false
   })
+
+  const [domaines, setDomaines] = useState([])
+  const [observes, setObserves] = useState([])
+
+  useEffect(() => {
+    fetchAuth('/api/universiteDomaines')
+      .then(r => r.json())
+      .then(d => { setDomaines(d.domaines || []); setObserves(d.observes || []) })
+      .catch(() => {})
+  }, [])
+
+  const basculerDomaine = (domaine) => {
+    setDomaines(prev => prev.includes(domaine)
+      ? prev.filter(d => d !== domaine)
+      : [...prev, domaine])
+  }
+
+  const enregistrerDomaines = async () => {
+    setError(''); setSuccess('')
+    try {
+      const res = await fetchAuth('/api/universiteDomaines', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domaines })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSuccess(data.message)
+    } catch (err) { setError(err.message) }
+  }
 
   useEffect(() => {
     const fetchProfil = async () => {
@@ -217,6 +249,80 @@ export default function UniversiteModifierProfilPage() {
         </AccordionSection>
 
         {/* ========== 2. CONTACT ========== */}
+        <AccordionSection>
+          <AccordionHeader onClick={() => toggleSection('filieres')}>
+            <AccordionTitle>
+              <BookOpen size={17} strokeWidth={2} />
+              Filières enseignées
+            </AccordionTitle>
+            <AccordionToggle>
+              {openSections.filieres
+                ? <Minus size={16} strokeWidth={2.5} />
+                : <Plus size={16} strokeWidth={2.5} />}
+            </AccordionToggle>
+          </AccordionHeader>
+          {openSections.filieres && (
+            <AccordionBody>
+              <InfoNote>
+                <Info size={13} strokeWidth={2} />
+                Un étudiant qui vous choisit à l&apos;inscription ne pourra déclarer
+                que ces filières. Cela évite les profils incohérents — et donc les
+                recommandations calculées sur une spécialité que vous n&apos;enseignez pas.
+                <br /><br />
+                <strong>Ne rien cocher laisse le choix libre.</strong> C&apos;est le
+                réglage à conserver tant que vous n&apos;êtes pas sûr de la liste :
+                mieux vaut ne rien contraindre que bloquer un étudiant légitime.
+              </InfoNote>
+
+              {/* Ce que les étudiants déjà rattachés révèlent. Une filière
+                  observée mais non cochée signale une déclaration en retard
+                  sur la réalité — et de futures inscriptions refusées sans
+                  que l'université comprenne pourquoi. */}
+              {observes.filter(o => !domaines.includes(o)).length > 0 && (
+                <InfoNote style={{ borderColor: '#fcd34d', background: '#fffbeb' }}>
+                  <AlertCircle size={13} strokeWidth={2} />
+                  Des étudiants déjà rattachés déclarent des filières que vous
+                  n&apos;avez pas cochées :{' '}
+                  <strong>{observes.filter(o => !domaines.includes(o)).join(', ')}</strong>.
+                  Si vous les enseignez, cochez-les — sinon les prochaines inscriptions
+                  seront refusées.
+                </InfoNote>
+              )}
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 9, marginTop: 14 }}>
+                {LIBELLES_DOMAINES.map(d => {
+                  const coche = domaines.includes(d)
+                  return (
+                    <label key={d} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 8,
+                      padding: '9px 13px', fontSize: 13, cursor: 'pointer',
+                      borderRadius: 9, border: `1.5px solid ${coche ? '#a5b4fc' : '#e2e8f0'}`,
+                      background: coche ? '#eef2ff' : '#fff',
+                      color: coche ? '#4338ca' : '#334155',
+                      fontWeight: coche ? 600 : 400
+                    }}>
+                      <input type="checkbox" checked={coche}
+                        onChange={() => basculerDomaine(d)}
+                        style={{ width: 15, height: 15, cursor: 'pointer' }} />
+                      {d}
+                    </label>
+                  )
+                })}
+              </div>
+
+              <ActionBar style={{ marginTop: 18 }}>
+                <span />
+                <SaveButton type="button" onClick={enregistrerDomaines}>
+                  <Save size={15} strokeWidth={2} />
+                  {domaines.length === 0
+                    ? 'Enregistrer (choix libre)'
+                    : `Enregistrer ${domaines.length} filière${domaines.length > 1 ? 's' : ''}`}
+                </SaveButton>
+              </ActionBar>
+            </AccordionBody>
+          )}
+        </AccordionSection>
+
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('contact')}>
             <AccordionTitle>
