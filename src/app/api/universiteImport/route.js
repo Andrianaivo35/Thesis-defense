@@ -4,6 +4,7 @@ import { verifyToken } from '@/lib/jwt';
 import { analyserFichier } from '@/lib/importEtudiants';
 import { creerJeton, TYPE_ACTIVATION } from '@/lib/jetons';
 import { envoyerLienActivation, lienActivation, envoiConfigure } from '@/lib/mail';
+import { trouverOuCreerPromotion, estAnneeValide } from '@/lib/promotions';
 
 /* =====================================================================
    POST /api/universiteImport — import d'une promotion
@@ -47,6 +48,8 @@ export async function POST(req) {
     const fichier = formData.get('fichier');
     const etape = String(formData.get('etape') || 'analyse');
     const empreinteAttendue = formData.get('empreinte');
+    const libellePromotion = String(formData.get('promotion') || '').trim();
+    const anneePromotion = String(formData.get('annee') || '').trim();
 
     if (!fichier || typeof fichier.arrayBuffer !== 'function') {
       return NextResponse.json({ error: 'Aucun fichier reçu.' }, { status: 400 });
@@ -114,6 +117,22 @@ export async function POST(req) {
       return NextResponse.json({ error: message, adressesPrises: prises }, { status: 409 });
     }
 
+    /* La promotion est exigée à la confirmation, pas à l'analyse :
+       l'université doit pouvoir vérifier son fichier avant de décider
+       comment le nommer. */
+    if (!libellePromotion) {
+      return NextResponse.json(
+        { error: 'Indiquez le nom de la promotion, par exemple « L3 Informatique ».' },
+        { status: 400 }
+      );
+    }
+    if (!estAnneeValide(anneePromotion)) {
+      return NextResponse.json(
+        { error: "L'année universitaire doit être de la forme « 2025-2026 »." },
+        { status: 400 }
+      );
+    }
+
     const universite = await client.query(
       'SELECT "nomUniversite" FROM universite WHERE "idUniversite" = $1',
       [payload.idUniversite]
@@ -124,7 +143,22 @@ export async function POST(req) {
     const crees = [];
 
     await client.query('BEGIN');
+    let promotion;
     try {
+      /* Retrouvée si elle existe déjà : relancer le même import ne doit
+         pas fabriquer une seconde « L3 Informatique 2025-2026 ». Le
+         niveau et la filière viennent de la première ligne importable,
+         une promotion étant par construction homogène. */
+      const modele = aImporter[0] || {};
+      promotion = await trouverOuCreerPromotion(client, {
+        idUniversite: payload.idUniversite,
+        libelle: libellePromotion,
+        annee: anneePromotion,
+        niveauAcademique: modele.niveau || null,
+        filiere: modele.filiere || null,
+        specialisation: modele.specialisation || null
+      });
+
       for (const ligne of aImporter) {
         /* Compte inactif et sans mot de passe : c'est l'étudiant qui
            choisira le sien via le lien d'activation (Lot 6.2). Aucun
@@ -142,13 +176,14 @@ export async function POST(req) {
           `INSERT INTO etudiant (
              "idUtilisateur", "nomEtudiant", "prenomEtudiant", "telephoneEtudiant",
              "idUniversite", "nomUniversiteSaisi", "matricule",
-             "filiere", "specialisation", "niveauAcademique",
+             "filiere", "specialisation", "niveauAcademique", "idPromotion",
              "dateInscription", "estActif", "statutRattachement", "dateRattachement"
-           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10, CURRENT_DATE, true, 'Valide', now())`,
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, CURRENT_DATE, true, 'Valide', now())`,
           [
             idUtilisateur, ligne.nom, ligne.prenom, ligne.telephone,
             payload.idUniversite, nomUniversite, ligne.matricule,
-            ligne.filiere, ligne.specialisation, ligne.niveau
+            ligne.filiere, ligne.specialisation, ligne.niveau,
+            promotion.idPromotion
           ]
         );
 
@@ -194,6 +229,8 @@ export async function POST(req) {
       etape: 'confirmation',
       success: true,
       comptesCrees: crees.length,
+      promotion: { idPromotion: promotion.idPromotion,
+                   libelle: promotion.libelle, annee: promotion.annee },
       courrielsEnvoyes: envoyes,
       envoiConfigure: envoiConfigure(),
       /* Tant que l'envoi n'est pas branché (Lot 6.6), les liens sont
@@ -204,8 +241,8 @@ export async function POST(req) {
         nom: c.nom, email: c.email, lien: lienActivation(c.jeton)
       })),
       message: envoyes === crees.length
-        ? `${crees.length} comptes créés. Chaque étudiant a reçu son lien d'activation.`
-        : `${crees.length} comptes créés. L'envoi de courriel n'étant pas configuré, ` +
+        ? `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». Chaque étudiant a reçu son lien d'activation.`
+        : `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». L'envoi de courriel n'étant pas configuré, ` +
           `transmettez les liens ci-dessous à vos étudiants.`
     }, { status: 201 });
 

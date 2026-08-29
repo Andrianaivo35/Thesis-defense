@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import { anneeUniversitaireCourante, anneesProposees } from '@/lib/promotions'
 import AppNavbar from '@/components/appNavbar'
 import {
   Upload, FileSpreadsheet, AlertCircle, CheckCircle2, Info,
@@ -37,6 +38,8 @@ export default function UniversiteImport() {
   const [erreur, setErreur] = useState('')
   const [enCours, setEnCours] = useState(false)
   const [toutAfficher, setToutAfficher] = useState(false)
+  const [promotion, setPromotion] = useState('')
+  const [annee, setAnnee] = useState(anneeUniversitaireCourante())
 
   const envoyer = async (etape) => {
     setErreur(''); setEnCours(true)
@@ -44,8 +47,10 @@ export default function UniversiteImport() {
       const formData = new FormData()
       formData.append('fichier', fichier)
       formData.append('etape', etape)
-      if (etape === 'confirmation' && analyse?.empreinte) {
-        formData.append('empreinte', analyse.empreinte)
+      if (etape === 'confirmation') {
+        if (analyse?.empreinte) formData.append('empreinte', analyse.empreinte)
+        formData.append('promotion', promotion.trim())
+        formData.append('annee', annee)
       }
       const res = await fetchAuth('/api/universiteImport', { method: 'POST', body: formData })
       const data = await res.json()
@@ -293,11 +298,45 @@ export default function UniversiteImport() {
                         </CardMeta>
                       )}
 
+                      {/* La promotion n'est demandée qu'ICI, une fois le
+                          fichier vérifié : l'université doit pouvoir
+                          regarder son contenu avant de décider comment le
+                          nommer. */}
+                      <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid #f1f5f9' }}>
+                        <OffreTitre style={{ fontSize: 15 }}>3. Nommer la promotion</OffreTitre>
+                        <CardMeta style={{ marginTop: 6 }}>
+                          <MetaItem>
+                            <Info size={13} strokeWidth={2} />
+                            Ces {stats.importables} étudiants formeront un groupe que vous
+                            pourrez ensuite gérer d&apos;un seul geste.
+                          </MetaItem>
+                        </CardMeta>
+                        <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+                          <input
+                            value={promotion}
+                            onChange={(e) => setPromotion(e.target.value)}
+                            placeholder="Nom de la promotion, ex. « L3 Informatique »"
+                            maxLength={120}
+                            style={{ flex: '1 1 240px', padding: '10px 13px', fontSize: 14,
+                                     border: '1.5px solid #e2e8f0', borderRadius: 9, outline: 'none' }}
+                          />
+                          <select
+                            value={annee}
+                            onChange={(e) => setAnnee(e.target.value)}
+                            style={{ flex: '0 1 160px', padding: '10px 13px', fontSize: 14,
+                                     border: '1.5px solid #e2e8f0', borderRadius: 9, outline: 'none' }}
+                          >
+                            {anneesProposees().map(a => <option key={a} value={a}>{a}</option>)}
+                          </select>
+                        </div>
+                      </div>
+
                       <CardFooter>
                         <ActionButton type="button" onClick={() => setAnalyse(null)}>
                           <ArrowLeft size={13} strokeWidth={2} /> Changer de fichier
                         </ActionButton>
-                        <ActionButton type="button" disabled={enCours || stats.importables === 0}
+                        <ActionButton type="button"
+                          disabled={enCours || stats.importables === 0 || !promotion.trim()}
                           onClick={() => envoyer('confirmation')}>
                           {enCours
                             ? 'Création en cours...'

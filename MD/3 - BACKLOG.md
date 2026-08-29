@@ -721,7 +721,7 @@ mot de passe, avec un jeton d'activation chacun.
 
 ---
 
-## 6.4 ⬜ Promotions
+## 6.4 ✅ Promotions *(terminé, 29/08/2026)*
 
 **Pourquoi.** Unité de gestion (voir le principe directeur). Sans elle, les actions du 6.5
 sont inutilisables à l'échelle réelle.
@@ -729,11 +729,42 @@ sont inutilisables à l'échelle réelle.
 **À faire.** Rattacher chaque étudiant importé à une promotion (libellé + année), et
 organiser l'écran université par promotion.
 
-**À trancher pendant la conception :** l'articulation avec `AnnonceCohorte` et
-`EtudiantExterne`, qui constituent aujourd'hui une **seconde notion parallèle** d'étudiant
-rattaché à une université (3 lignes en base, sans compte, avec CV). Soit la promotion les
-remplace, soit les deux cohabitent avec un rôle clairement distinct — mais laisser deux
-mécanismes concurrents sans arbitrage serait une dette.
+**Arbitrage rendu** (migration 010). Les deux notions n'avaient pas le même rôle :
+
+- `AnnonceCohorte` est une **demande adressée aux entreprises** — « je cherche des stages
+  pour un groupe ». Rôle légitime, **conservée**, et elle reçoit `idPromotion` : une annonce
+  peut désormais désigner une promotion réelle, et l'entreprise voit de vrais profils au
+  lieu d'une liste de noms.
+- `EtudiantExterne` était le seul moyen, pour une université, de présenter ses étudiants
+  sans les inscrire un par un. **Le Lot 6.3 a supprimé cette raison d'être** : l'import crée
+  de vrais comptes, de vrais profils, de vrais CV analysables. La table est **abandonnée** —
+  plus aucune écriture. Elle n'est pas supprimée : elle est vide, et détruire une structure
+  n'apporte rien de plus que cesser de s'en servir.
+
+**Décisions de conception.**
+
+- `etudiant.idPromotion` est en `ON DELETE SET NULL`, **jamais CASCADE** : supprimer une
+  promotion ne doit en aucun cas supprimer des étudiants. Vérifié — ils perdent leur groupe,
+  pas leur compte, leurs candidatures ni leurs CV.
+- L'unicité porte sur *(établissement, libellé en minuscules, année)* : relancer le même
+  import ne fabrique pas une seconde « L3 Informatique 2025-2026 ». Vérifié avec une casse
+  différente.
+- La promotion est demandée **à la confirmation de l'import, pas à l'analyse** :
+  l'université doit pouvoir vérifier le contenu de son fichier avant de décider comment le
+  nommer.
+- L'écran affiche explicitement les étudiants **sans promotion** — inscrits d'eux-mêmes, ou
+  antérieurs à ce lot. Les passer sous silence les rendrait invisibles.
+
+**Un défaut trouvé en recoupant deux sources.** L'API annonçait 15 inscrits là où le filtre
+en renvoyait 3 : la jointure sur les candidatures multipliait les lignes et le `COUNT` les
+comptait plusieurs fois. `COUNT(DISTINCT …)` corrige. **L'écart n'apparaît que sur des
+données portant des candidatures** — un corpus vide aurait laissé passer le défaut.
+
+**Limite du jeu de démonstration.** 38 étudiants sur 15 universités : aucun regroupement ne
+produit de promotion réaliste. Le peuplement ne crée donc de promotion que pour les groupes
+d'au moins deux inscrits — 4 promotions, 26 étudiants restant non rattachés — plutôt que de
+fabriquer des étudiants pour la photo. La fonctionnalité est vérifiée à l'échelle par le
+test d'import : **300 comptes rattachés à une promotion en 1,25 s**.
 
 ---
 
@@ -829,6 +860,6 @@ Nommé ici pour que le périmètre ne dérive pas.
 | — | Nettoyage de la base (traces, essais) | ✅ | 29/08/2026 |
 | 6 | 6.2 Jetons activation / réinitialisation | ✅ | 29/08/2026 |
 | 6 | 6.3 Import CSV avec prévisualisation | ✅ | 29/08/2026 |
-| 6 | 6.4 Promotions | ⬜ | |
+| 6 | 6.4 Promotions | ✅ | 29/08/2026 |
 | 6 | 6.5 Cycle de vie du rattachement | ⬜ | |
 | 6 | 6.6 Intégration e-mail | ⬜ | |

@@ -40,6 +40,7 @@ import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
 import { randomUUID } from 'crypto';
+import { trouverOuCreerPromotion, anneeUniversitaireCourante } from '../src/lib/promotions.js';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
@@ -245,6 +246,66 @@ for (const e of sansInteret) {
 }
 await client.query('COMMIT');
 console.log(`3. ${sansParcours.length} parcours et ${sansInteret.length} centres d'intérêt ajoutés`);
+
+/* =====================================================================
+   3bis. PROMOTIONS
+
+   Les étudiants existaient avant l'entité « promotion » (Lot 6.4) : ils
+   sont tous rattachés à un établissement, mais à aucun groupe. L'écran
+   université, qui s'organise autour des promotions, n'aurait donc rien à
+   montrer.
+
+   On les regroupe par établissement, niveau et filière — exactement ce
+   qu'une promotion est dans la réalité.
+
+   SEULS LES GROUPES D'AU MOINS DEUX ÉTUDIANTS deviennent des promotions.
+   Le corpus compte 38 étudiants répartis sur 15 universités : regrouper
+   sans condition produirait une trentaine de « promotions » d'un seul
+   inscrit, ce qui ne ressemble à rien et n'illustre pas la notion.
+
+   Les autres restent sans promotion, état que l'écran affiche
+   explicitement. C'est plus honnête que de fabriquer des étudiants pour
+   la photo — et cela montre les deux cas de l'interface. Une promotion
+   réaliste se crée en démonstration par l'import du Lot 6.3, qui est de
+   toute façon le chemin prévu.
+   ===================================================================== */
+const groupes = (await client.query(`
+  SELECT e."idUniversite", e."niveauAcademique", e."filiere",
+         array_agg(e."idEtudiant") AS etudiants
+    FROM etudiant e
+   WHERE e."idUniversite" IS NOT NULL
+     AND e."niveauAcademique" IS NOT NULL
+     AND e."filiere" IS NOT NULL
+     AND e."idPromotion" IS NULL
+   GROUP BY 1,2,3
+  HAVING count(*) >= 2
+`)).rows;
+
+const annee = anneeUniversitaireCourante();
+let promotionsCreees = 0, rattaches = 0;
+
+await client.query('BEGIN');
+for (const g of groupes) {
+  const promotion = await trouverOuCreerPromotion(client, {
+    idUniversite: g.idUniversite,
+    libelle: `${g.niveauAcademique} ${g.filiere}`,
+    annee,
+    niveauAcademique: g.niveauAcademique,
+    filiere: g.filiere
+  });
+  promotionsCreees++;
+  await client.query(
+    'UPDATE etudiant SET "idPromotion" = $1 WHERE "idEtudiant" = ANY($2::int[])',
+    [promotion.idPromotion, g.etudiants]
+  );
+  rattaches += g.etudiants.length;
+}
+await client.query('COMMIT');
+const isoles = (await client.query(
+  `SELECT count(*)::int AS n FROM etudiant
+    WHERE "idUniversite" IS NOT NULL AND "idPromotion" IS NULL`)).rows[0].n;
+console.log(`3bis. ${promotionsCreees} promotions, ${rattaches} étudiants rattachés, ` +
+            `${isoles} sans promotion (groupes d'un seul inscrit)`);
 
 /* =====================================================================
    4. CANDIDATURES

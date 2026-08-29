@@ -16,6 +16,7 @@ export async function GET(req) {
     }
 
     const idUniversite = payload.idUniversite;
+    const filtrePromotion = new URL(req.url).searchParams.get('promotion') || null;
 
     // === Tous les étudiants de cette université ===
     // LEFT JOIN LATERAL : récupère le stage en cours le plus récent (si recruté)
@@ -29,12 +30,18 @@ export async function GET(req) {
         e."filiere",
         e."specialisation",
         e."estActif",
+        e."idPromotion",
+        p."libelle" AS "promotionLibelle",
+        p."annee" AS "promotionAnnee",
+        p."statut" AS "promotionStatut",
         u."emailUtilisateur",
+        u."compteActive",
         stage."nomEntreprise" AS "stageEntreprise",
         stage."posteOffre" AS "stagePoste",
         COUNT(DISTINCT cand."idCandidature") AS "nombreCandidatures"
       FROM etudiant e
       INNER JOIN utilisateur u ON e."idUtilisateur" = u."idUtilisateur"
+      LEFT JOIN "Promotion" p ON p."idPromotion" = e."idPromotion"
       LEFT JOIN "Candidature" cand ON cand."idEtudiant" = e."idEtudiant"
       LEFT JOIN LATERAL (
         SELECT ent."nomEntreprise", o."titre" AS "posteOffre"
@@ -47,9 +54,19 @@ export async function GET(req) {
       ) stage ON true
       WHERE e."idUniversite" = $1
         AND COALESCE(e."statutRattachement", 'Valide') = 'Valide'
-      GROUP BY e."idEtudiant", u."emailUtilisateur", stage."nomEntreprise", stage."posteOffre"
+        /* Filtre par promotion. La valeur « aucune » vise les étudiants
+           rattachés à l'établissement mais à aucun groupe : inscrits
+           d'eux-mêmes, ou importés avant l'existence des promotions.
+           Sans ce cas, ils deviendraient invisibles dans un écran
+           organisé par promotion. */
+        AND ($2::text IS NULL
+             OR ($2 = 'aucune' AND e."idPromotion" IS NULL)
+             OR ($2 <> 'aucune' AND e."idPromotion" = NULLIF($2, '')::int))
+      GROUP BY e."idEtudiant", p."libelle", p."annee", p."statut",
+               u."emailUtilisateur", u."compteActive",
+               stage."nomEntreprise", stage."posteOffre"
       ORDER BY e."nomEtudiant" ASC
-    `, [idUniversite]);
+    `, [idUniversite, filtrePromotion]);
 
     /* === Demandes de rattachement en attente ===
        Un étudiant qui se déclare membre de cette université n'y apparaît pas

@@ -279,3 +279,35 @@ export const LoadingState = styled.div`
   color: #64748b;
   font-size: 15px;
 `
+/* Sélecteur de promotion.
+
+   Des boutons plutôt qu'une liste déroulante : une université en a
+   quelques-unes, et chacune doit montrer son effectif et ce qui la
+   distingue — comptes à activer, étudiants en stage. Une liste
+   déroulante cacherait précisément ce qu'on vient regarder. */
+export const BoutonPromotion = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 168px;
+  padding: 12px 16px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 11px;
+  border: 1.5px solid ${p => (p.$actif ? '#a5b4fc' : '#e2e8f0')};
+  background: ${p => (p.$actif ? '#eef2ff' : '#ffffff')};
+  transition: border-color .15s, background .15s;
+
+  &:hover { border-color: #c7d2fe; }
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: ${p => (p.$actif ? '#4338ca' : '#1e293b')};
+  }
+  span {
+    font-size: 12px;
+    color: #64748b;
+  }
+`

@@ -23,9 +23,19 @@ export default function UniversiteEtudiants() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterNiveau, setFilterNiveau] = useState('all')
+  const [promotions, setPromotions] = useState([])
+  const [sansPromotion, setSansPromotion] = useState(0)
+  const [filtrePromotion, setFiltrePromotion] = useState('all')
 
   const chargerEtudiants = async () => {
     try {
+      /* Les promotions sont chargées en parallèle : l'écran s'organise
+         autour d'elles, il ne doit pas attendre deux allers-retours. */
+      fetchAuth('/api/universitePromotions')
+        .then(r => r.json())
+        .then(d => { setPromotions(d.promotions || []); setSansPromotion(d.sansPromotion || 0) })
+        .catch(() => {})
+
       const res = await fetchAuth('/api/universiteEtudiant')
       const data = await res.json()
       if (!res.ok) throw new Error(data.details || data.error)
@@ -70,6 +80,15 @@ export default function UniversiteEtudiants() {
 
   const etudiantsFiltres = useMemo(() => {
     let filtered = etudiants
+
+    /* « aucune » vise les étudiants rattachés à l'établissement mais à
+       aucun groupe : inscrits d'eux-mêmes, ou importés avant l'existence
+       des promotions. Sans ce cas, ils disparaîtraient de l'écran. */
+    if (filtrePromotion === 'aucune') {
+      filtered = filtered.filter(e => !e.idPromotion)
+    } else if (filtrePromotion !== 'all') {
+      filtered = filtered.filter(e => String(e.idPromotion) === String(filtrePromotion))
+    }
 
     if (filterNiveau !== 'all') {
       filtered = filtered.filter(e => e.niveauAcademique === filterNiveau)
@@ -185,6 +204,49 @@ export default function UniversiteEtudiants() {
               </EtudiantCard>
             ))}
           </EtudiantsGrid>
+        </>
+      )}
+
+      {/* ===== Les promotions, unité de gestion de l'établissement =====
+
+          Une université raisonne en promotions, pas en individus. Une
+          liste de plusieurs centaines de noms ne se pilote pas ; quelques
+          groupes, si. */}
+      {(promotions.length > 0 || sansPromotion > 0) && (
+        <>
+          <PageTitle style={{ fontSize: 19 }}>Mes promotions</PageTitle>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
+            <BoutonPromotion $actif={filtrePromotion === 'all'}
+              onClick={() => setFiltrePromotion('all')}>
+              <strong>Toutes</strong>
+              <span>{etudiants.length} étudiants</span>
+            </BoutonPromotion>
+
+            {promotions.map(p => (
+              <BoutonPromotion key={p.idPromotion}
+                $actif={String(filtrePromotion) === String(p.idPromotion)}
+                onClick={() => setFiltrePromotion(p.idPromotion)}>
+                <strong>{p.libelle}</strong>
+                <span>{p.annee} · {p.effectif} étudiant{p.effectif > 1 ? 's' : ''}</span>
+                {p.enAttenteActivation > 0 && (
+                  <span style={{ color: '#b45309' }}>
+                    {p.enAttenteActivation} compte{p.enAttenteActivation > 1 ? 's' : ''} à activer
+                  </span>
+                )}
+                {p.enStage > 0 && (
+                  <span style={{ color: '#15803d' }}>{p.enStage} en stage</span>
+                )}
+              </BoutonPromotion>
+            ))}
+
+            {sansPromotion > 0 && (
+              <BoutonPromotion $actif={filtrePromotion === 'aucune'}
+                onClick={() => setFiltrePromotion('aucune')}>
+                <strong>Sans promotion</strong>
+                <span>{sansPromotion} étudiant{sansPromotion > 1 ? 's' : ''}</span>
+              </BoutonPromotion>
+            )}
+          </div>
         </>
       )}
 
