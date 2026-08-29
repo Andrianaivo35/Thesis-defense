@@ -39,7 +39,8 @@ export async function POST(req) {
 
     // 1. Chercher l'utilisateur de type Admin avec cet email
     const utilisateurResult = await client.query(
-      `SELECT "idUtilisateur", "emailUtilisateur", "motDePasse", "typeUtilisateur"
+      `SELECT "idUtilisateur", "emailUtilisateur", "motDePasse", "typeUtilisateur",
+              "compteActive"
        FROM utilisateur
        WHERE lower("emailUtilisateur") = $1 AND "typeUtilisateur" = $2`,
       [email, 'Admin']
@@ -53,6 +54,22 @@ export async function POST(req) {
     }
 
     const utilisateur = utilisateurResult.rows[0];
+
+    /* Un compte créé par une université n'a pas encore de mot de passe :
+       son titulaire n'a pas suivi le lien d'activation. bcrypt.compare
+       sur une valeur nulle lèverait ; et le message doit dire quoi faire,
+       sans quoi la personne recommence indéfiniment un mot de passe
+       qu'elle n'a jamais choisi. */
+    if (!utilisateur.compteActive || !utilisateur.motDePasse) {
+      return NextResponse.json(
+        {
+          error: "Ce compte n'a pas encore été activé. Ouvrez le lien d'activation " +
+                 'reçu par courriel, ou demandez-en un nouveau.',
+          compteInactif: true
+        },
+        { status: 403 }
+      );
+    }
 
     // 2. Vérifier le mot de passe
     const motDePasseValide = await bcrypt.compare(motDePasse, utilisateur.motDePasse);

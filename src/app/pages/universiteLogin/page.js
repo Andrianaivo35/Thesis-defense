@@ -120,7 +120,7 @@ export default function UniversiteLogin() {
               </FooterLink>
 
               <div>
-                <ForgotLink onClick={() => router.push('/mot-de-passe-oublie')}>
+                <ForgotLink onClick={() => router.push("/pages/motDePasseOublie")}>
                   Mot de passe oublié ?
                 </ForgotLink>
               </div>

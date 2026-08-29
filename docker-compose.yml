@@ -23,6 +23,7 @@ services:
       - ./scripts/migrations/006-descriptions-competences.sql:/docker-entrypoint-initdb.d/02-006-descriptions-competences.sql:ro
       - ./scripts/migrations/007-analyse-cv.sql:/docker-entrypoint-initdb.d/02-007-analyse-cv.sql:ro
       - ./scripts/migrations/008-unicite-email.sql:/docker-entrypoint-initdb.d/02-008-unicite-email.sql:ro
+      - ./scripts/migrations/009-jetons-activation.sql:/docker-entrypoint-initdb.d/02-009-jetons-activation.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s

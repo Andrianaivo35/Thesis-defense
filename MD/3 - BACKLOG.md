@@ -621,7 +621,7 @@ par l'université refusés en 409, compte d'origine intact).
 
 ---
 
-## 6.2 ⬜ Jetons à usage unique : activation et réinitialisation
+## 6.2 ✅ Jetons à usage unique : activation et réinitialisation *(terminé, 29/08/2026)*
 
 **Pourquoi.** Deux besoins, une seule mécanique. Plutôt qu'un mot de passe temporaire envoyé
 en clair, l'étudiant reçoit un **lien d'activation à usage unique** :
@@ -641,6 +641,29 @@ en clair, l'étudiant reçoit un **lien d'activation à usage unique** :
 
 **Vérification.** Un jeton ne fonctionne qu'une fois ; un jeton expiré est refusé ; une
 demande sur un e-mail inexistant renvoie la même réponse qu'un e-mail valide.
+
+**Fait** (migration 009). Trois points au-delà de l'énoncé :
+
+- **Une faille de temporisation trouvée par la mesure.** La réponse était bien identique,
+  mais pas sa *durée* : 97 ms pour une adresse existante contre 15 ms pour une inconnue.
+  L'énumération redevenait possible au chronomètre. Un plancher de 400 ms ramène l'écart
+  des médianes à 3 ms. Vérifié aussi que la limitation de débit se déclenche à la même
+  tentative dans les deux cas — sinon elle rouvrait la fuite.
+- **Le `GET` de vérification ne consomme pas le jeton.** Un client de messagerie qui
+  pré-visite les URL rendrait sinon tous les liens inutilisables avant le clic. Et le mot
+  de passe est validé *avant* la consommation : une faute de frappe ne doit pas brûler le
+  lien.
+- **`universiteAjoutEtudiant` n'a plus de mot de passe provisoire.** L'université crée un
+  compte inactif et sans mot de passe ; l'étudiant reçoit le lien. Le champ a disparu du
+  formulaire.
+
+Les **gabarits de courriel** sont écrits ([src/lib/mail.js](../src/lib/mail.js)), l'envoi
+reste au 6.6. En attendant, `mail.js` ne lève plus quand SMTP n'est pas configuré — l'échec
+d'un courriel n'a pas à annuler la création d'un compte — et la route rend le lien à
+l'université, authentifiée et créatrice du compte, pour qu'elle le transmette.
+
+Au passage, `ForgotLink` des trois pages de connexion pointait vers `/mot-de-passe-oublie`,
+**une route inexistante**. Elle mène désormais à la page réelle.
 
 ---
 
@@ -771,7 +794,7 @@ Nommé ici pour que le périmètre ne dérive pas.
 | — | Peuplement CV / candidatures / QCM | ✅ | 29/08/2026 |
 | 6 | 6.1 Unicité de l'e-mail (prérequis) | ✅ | 29/08/2026 |
 | — | Nettoyage de la base (traces, essais) | ✅ | 29/08/2026 |
-| 6 | 6.2 Jetons activation / réinitialisation | ⬜ | |
+| 6 | 6.2 Jetons activation / réinitialisation | ✅ | 29/08/2026 |
 | 6 | 6.3 Import CSV avec prévisualisation | ⬜ | |
 | 6 | 6.4 Promotions | ⬜ | |
 | 6 | 6.5 Cycle de vie du rattachement | ⬜ | |

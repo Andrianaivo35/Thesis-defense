@@ -7,7 +7,6 @@ import { UserPlus, Info, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-rea
 import {
   NIVEAUX_ACADEMIQUES, LIBELLES_DOMAINES, filieresDuDomaine
 } from '@/lib/referentiels'
-import { REGLE_MOT_DE_PASSE } from '@/lib/motDePasse'
 import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   CandidatureCard, OffreTitre,
@@ -23,18 +22,19 @@ const champStyle = {
 export default function UniversiteAjoutEtudiant() {
   const router = useRouter()
   const [form, setForm] = useState({
-    nom: '', prenom: '', email: '', telephone: '', motDePasse: '',
+    nom: '', prenom: '', email: '', telephone: '',
     matricule: '', niveauAcademique: '', filiere: '', specialisation: ''
   })
   const [enCours, setEnCours] = useState(false)
   const [message, setMessage] = useState('')
+  const [lienActivation, setLienActivation] = useState('')
   const [erreur, setErreur] = useState('')
 
   const maj = (champ, valeur) => setForm(prev => ({ ...prev, [champ]: valeur }))
 
   const envoyer = async (e) => {
     e.preventDefault()
-    setErreur(''); setMessage(''); setEnCours(true)
+    setErreur(''); setMessage(''); setLienActivation(''); setEnCours(true)
     try {
       const res = await fetchAuth('/api/universiteAjoutEtudiant', {
         method: 'POST',
@@ -44,8 +44,12 @@ export default function UniversiteAjoutEtudiant() {
       if (!res.ok) throw new Error(data.error || 'Création impossible')
 
       setMessage(data.message)
+      /* Tant que l'envoi de courriel n'est pas branché (Lot 6.6), le
+         serveur rend le lien : sans lui, le compte serait créé et
+         inaccessible, et la fonctionnalité indémontrable. */
+      setLienActivation(data.lienActivation || '')
       setForm({
-        nom: '', prenom: '', email: '', telephone: '', motDePasse: '',
+        nom: '', prenom: '', email: '', telephone: '',
         matricule: '', niveauAcademique: '', filiere: '', specialisation: ''
       })
     } catch (err) {
@@ -85,6 +89,36 @@ export default function UniversiteAjoutEtudiant() {
         {message && (
           <EmptyState style={{ marginBottom: 16, borderStyle: 'solid', borderColor: '#d6dcb3' }}>
             <CheckCircle2 size={16} strokeWidth={2} /> {message}
+          </EmptyState>
+        )}
+
+        {/* Le lien n'apparaît que si le courriel n'a pas pu partir.
+            Une fois l'envoi branché (Lot 6.6), ce bloc disparaîtra de
+            lui-même : l'étudiant sera seul à recevoir son lien. */}
+        {lienActivation && (
+          <EmptyState style={{ marginBottom: 16, borderStyle: 'solid',
+                               borderColor: '#c4b5fd', textAlign: 'left' }}>
+            <p style={{ fontWeight: 600, color: '#475569', margin: '0 0 8px' }}>
+              Lien d&apos;activation à transmettre à l&apos;étudiant
+            </p>
+            <p style={{ fontSize: 12.5, color: '#64748b', margin: '0 0 10px' }}>
+              Valable 24 heures, utilisable une seule fois. Il définira lui-même
+              son mot de passe.
+            </p>
+            <input
+              readOnly
+              value={lienActivation}
+              onFocus={(e) => e.target.select()}
+              style={{ width: '100%', padding: '9px 11px', fontSize: 12.5,
+                       border: '1.5px solid #e2e8f0', borderRadius: 8,
+                       background: '#fff', color: '#334155' }}
+            />
+            <p style={{ marginTop: 10 }}>
+              <ActionButton type="button"
+                onClick={() => navigator.clipboard?.writeText(lienActivation)}>
+                Copier le lien
+              </ActionButton>
+            </p>
           </EmptyState>
         )}
 
@@ -140,16 +174,19 @@ export default function UniversiteAjoutEtudiant() {
                 </select>
               </Champ>
 
-              <Champ label="Mot de passe provisoire *">
-                <input style={champStyle} type="text" value={form.motDePasse} required
-                  onChange={(e) => maj('motDePasse', e.target.value)} />
-              </Champ>
+              {/* Plus de mot de passe provisoire.
 
+                  Un mot de passe choisi par l'université resterait en clair
+                  dans le courriel ou le tableur qui le transmet, serait
+                  rarement changé, et échapperait à la politique de
+                  robustesse. L'étudiant reçoit un lien à usage unique et
+                  choisit lui-même son mot de passe. */}
               <CardMeta>
                 <MetaItem>
                   <Info size={13} strokeWidth={2} />
-                  {REGLE_MOT_DE_PASSE} Communiquez-le à l&apos;étudiant, qui pourra le
-                  modifier depuis son profil.
+                  Vous ne choisissez pas son mot de passe : l&apos;étudiant recevra un
+                  lien d&apos;activation à usage unique, valable 24 heures, et le
+                  définira lui-même.
                 </MetaItem>
               </CardMeta>
             </div>

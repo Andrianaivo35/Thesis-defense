@@ -128,7 +128,7 @@ export default function LoginEtudiant() {
               </FooterLink>
 
               <div>
-                <ForgotLink href="/mot-de-passe-oublie">
+                <ForgotLink href="/pages/motDePasseOublie">
                   Mot de passe oublié ?
                 </ForgotLink>
               </div>
