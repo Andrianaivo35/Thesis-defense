@@ -17,8 +17,8 @@
    pour un même couple.
    ===================================================================== */
 
-import { similarite } from '@/lib/cooccurrence';
-import { VALEUR_NIVEAU, DUREE_EN_MOIS, domaineDeLaFiliere } from '@/lib/referentiels';
+import { similarite } from './cooccurrence.js';
+import { VALEUR_NIVEAU, DUREE_EN_MOIS, domaineDeLaFiliere } from './referentiels.js';
 
 export const POIDS = {
   competence: 40,

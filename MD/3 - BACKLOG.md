@@ -533,8 +533,21 @@ Le détail est dans [PLAN.md](PLAN.md). Rappel de l'enchaînement :
    Routage page par page (natif / OCR / mixte), OCR Tesseract derrière un
    adaptateur, appariement flou au référentiel, confirmation par l'étudiant.
    Mesuré sur 41 CV : routage 41/41, précision 98,8 %, rappel 96,0 %, F1 97,4 %.
-5. **5.5** Évaluation ([PLAN §7](PLAN.md)) — **à mener en parallèle de 5.1 et 5.2**, pas à la
-   fin : il faut journaliser les prédictions au fil de l'eau.
+5. ✅ **5.5** Évaluation ([PLAN §7](PLAN.md)) — **terminé**.
+   Détail complet dans [6 - EVALUATION.md](6%20-%20EVALUATION.md).
+
+   La journalisation des prédictions au fil de l'eau s'est avérée inutile : la table
+   `Candidature` étant vide, il n'y avait de toute façon aucune issue réelle à confronter.
+   Le protocole retenu est rétrospectif — **ablation d'une compétence** sur les profils
+   déclarés, avec une pertinence définie par correspondance exacte, donc favorable à la
+   baseline.
+
+   **Résultat en partie négatif, rapporté comme tel.** Isolé, le mécanisme double la
+   précision au premier rang (9,6 → 22,9 %) et gagne 13 % de MRR relatif. Mais au poids en
+   vigueur (40 %), l'effet est nul à légèrement négatif dans le score complet : les quatre
+   autres composantes absorbent l'apport. Le contrôle anti-fuite écarte la mémorisation.
+
+   Volet extraction de CV en revanche net : précision 98,8 %, rappel 96,0 %, F1 97,4 %.
 
 ✅ **[REVUE-CODE M5](1%20-%20REVUE-CODE.md) tranché** (migration 004, 28/08/2026) :
 `Candidature.scoreMatching` contenait en réalité la note au QCM. La colonne a été renommée

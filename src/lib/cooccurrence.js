@@ -149,7 +149,7 @@ let cache = null;
 /* ---------------------------------------------------------------------
    Lecture des contextes
    ------------------------------------------------------------------ */
-async function lireContextes(client) {
+async function lireContextes(client, contextesExclus = null) {
   const offres = await client.query(`
     SELECT "idOffre" AS contexte, "idCompetenceReference" AS competence
     FROM "CompetenceOffre"
@@ -171,6 +171,19 @@ async function lireContextes(client) {
   };
   ajouter('o', offres.rows);
   ajouter('e', etudiants.rows);
+
+  /* Exclusion de contextes.
+
+     Sans usage en production : la matrice est toujours construite sur la
+     totalité du corpus. Ce paramètre existe pour le protocole
+     d'évaluation (Lot 5.5), qui doit pouvoir retirer de l'apprentissage
+     le profil ou l'offre qu'il s'apprête à évaluer.
+
+     Sans cela la mesure serait faussée : la matrice aurait déjà vu la
+     réponse qu'on lui demande de retrouver. */
+  if (contextesExclus && contextesExclus.size > 0) {
+    for (const cle of contextesExclus) parContexte.delete(cle);
+  }
 
   return [...parContexte.values()].filter(s => s.size >= 2);
 }
@@ -256,8 +269,16 @@ function construireVecteursTexte(competences) {
 /* ---------------------------------------------------------------------
    Construction de la matrice
    ------------------------------------------------------------------ */
-export async function construireMatrice(client) {
-  const contextes = await lireContextes(client);
+/**
+ * Construit la matrice de similarité sur l'ensemble du corpus.
+ *
+ * @param client       connexion PostgreSQL
+ * @param contextesExclus  Set de clés de contexte à retirer de
+ *   l'apprentissage, sous la forme `o<idOffre>` ou `e<idEtudiant>`.
+ *   Réservé au protocole d'évaluation ; jamais utilisé en production.
+ */
+export async function construireMatrice(client, contextesExclus = null) {
+  const contextes = await lireContextes(client, contextesExclus);
 
   const referentiel = await client.query(`
     SELECT "idCompetenceReference" AS id,
