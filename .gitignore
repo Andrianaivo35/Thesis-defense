@@ -44,3 +44,7 @@ next-env.d.ts
 
 # Fichiers televerses par les utilisateurs (CV, lettres) - jamais dans le depot
 public/uploads/
+
+# Fichiers televerses (CV, lettres) : volume local pour `npm run dev`.
+# Ce sont des donnees personnelles, elles n'ont rien a faire dans le depot.
+/uploads/

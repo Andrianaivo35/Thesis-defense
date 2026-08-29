@@ -25,6 +25,19 @@ Deux fausses solutions ont été écartées :
 Fabriquer la vérité terrain qu'on souhaite mesurer est la façon la plus sûre d'obtenir un
 beau tableau qui ne dit rien.
 
+> **Note ajoutée après coup.** La table `Candidature` a depuis été peuplée
+> ([scripts/seed-candidatures.mjs](../scripts/seed-candidatures.mjs)), pour que la boucle
+> fonctionnelle soit démontrable — tableau de bord entreprise, suivi des candidatures,
+> historique des QCM.
+>
+> **Ces données ne changent rien à ce chapitre et ne doivent pas y être injectées.** Les
+> issues y sont engendrées par un modèle de comportement écrit à la main, dont les
+> hypothèses recoupent celles du moteur de recommandation. S'en servir comme vérité terrain
+> reviendrait exactement à la première fausse solution du tableau ci-dessus. Le protocole
+> reste l'ablation.
+>
+> Vérifié : le peuplement n'a modifié aucun des chiffres rapportés ci-dessous.
+
 ## 2. Le protocole retenu : l'ablation
 
 On s'appuie sur ce que la base contient réellement — les compétences déclarées — et sur une
