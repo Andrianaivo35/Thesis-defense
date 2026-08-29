@@ -115,8 +115,8 @@ export function distanceEdition(a, b) {
    les premières lettres d'un mot, donc privilégier le préfixe devait
    améliorer le rappel. On retenait max(Levenshtein, Jaro-Winkler).
 
-   La mesure sur les 41 CV du corpus a dit l'inverse. Jaro-Winkler était
-   à lui seul la cause de la quasi-totalité des faux positifs :
+   La mesure sur le corpus de vérité terrain a dit l'inverse. Jaro-Winkler
+   était à lui seul la cause de la quasi-totalité des faux positifs :
 
      terme lu                   apparié à              J-W     Leven.
      « anglais »                Angular                0,867   0,571

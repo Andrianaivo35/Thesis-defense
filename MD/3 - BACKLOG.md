@@ -532,7 +532,7 @@ Le détail est dans [PLAN.md](PLAN.md). Rappel de l'enchaînement :
    Détail complet dans [5 - INGESTION-CV.md](5%20-%20INGESTION-CV.md).
    Routage page par page (natif / OCR / mixte), OCR Tesseract derrière un
    adaptateur, appariement flou au référentiel, confirmation par l'étudiant.
-   Mesuré sur 41 CV : routage 41/41, précision 98,8 %, rappel 96,0 %, F1 97,4 %.
+   Mesuré sur 38 CV : routage 38/38, précision 98,2 %, rappel 95,2 %, F1 96,7 %.
 5. ✅ **5.5** Évaluation ([PLAN §7](PLAN.md)) — **terminé**.
    Détail complet dans [6 - EVALUATION.md](6%20-%20EVALUATION.md).
 

@@ -37,6 +37,13 @@ beau tableau qui ne dit rien.
 > reste l'ablation.
 >
 > Vérifié : le peuplement n'a modifié aucun des chiffres rapportés ci-dessous.
+>
+> **Second remaniement.** Le nettoyage de la base
+> ([scripts/nettoyer-base.mjs](../scripts/nettoyer-base.mjs)) a ensuite retiré trois
+> comptes personnels ou d'essai. Toutes les mesures de ce chapitre ont été
+> **rejouées** sur les 38 étudiants restants. Aucune conclusion ne change ; les
+> écarts sont de l'ordre du point, ce qui illustre concrètement la sensibilité au
+> bruit annoncée en §6.
 
 ## 2. Le protocole retenu : l'ablation
 
@@ -84,14 +91,14 @@ un contexte donné.
 
 ### 3.1 Protocole A — effet global
 
-*34 étudiants, 116 ablations, 67 offres classées.*
+*33 étudiants, 113 ablations, 67 offres classées.*
 
 | Métrique | Baseline | Co-occurrence | Écart |
 |---|---|---|---|
-| Précision@5 | 37,1 % | 33,3 % | **−3,8 pt** |
-| Rappel@5 | 84,6 % | 79,4 % | **−5,2 pt** |
-| NDCG@5 | 84,3 % | 79,9 % | **−4,4 pt** |
-| MRR | 0,897 | 0,887 | −0,010 |
+| Précision@5 | 37,2 % | 33,6 % | **−3,5 pt** |
+| Rappel@5 | 84,7 % | 80,2 % | **−4,5 pt** |
+| NDCG@5 | 83,9 % | 80,1 % | **−3,8 pt** |
+| MRR | 0,890 | 0,880 | −0,011 |
 
 **La co-occurrence dégrade légèrement le classement global.**
 
@@ -117,16 +124,16 @@ correctement une bonne part des offres. L'effet du mécanisme y est dilué.
 D classe sur la **seule** composante compétences, la seule que la matrice influence, et
 restreint la pertinence aux offres que l'ablation vient de rendre inatteignables.
 
-*34 étudiants, 83 ablations.*
+*33 étudiants, 81 ablations.*
 
 | Métrique | Baseline | Co-occurrence | Écart |
 |---|---|---|---|
-| **Précision@1** | 9,6 % | **22,9 %** | **+13,3 pt** |
-| **NDCG@1** | 9,6 % | **22,9 %** | **+13,3 pt** |
-| NDCG@5 | 42,9 % | 45,8 % | +3,0 pt |
-| NDCG@10 | 50,1 % | 52,3 % | +2,2 pt |
-| **MRR** | 0,396 | **0,449** | **+0,054** (+13 % relatif) |
-| Rappel@3 | 52,2 % | 48,3 % | −3,9 pt |
+| **Précision@1** | 9,9 % | **22,2 %** | **+12,3 pt** |
+| **NDCG@1** | 9,9 % | **22,2 %** | **+12,3 pt** |
+| NDCG@5 | 42,8 % | 45,1 % | +2,3 pt |
+| NDCG@10 | 50,2 % | 51,7 % | +1,5 pt |
+| **MRR** | 0,395 | **0,442** | **+0,047** (+12 % relatif) |
+| Rappel@3 | 51,6 % | 47,6 % | −4,0 pt |
 
 **Le mécanisme fonctionne.** Quand la compétence exigée disparaît du profil, la
 co-occurrence remonte l'offre en tête plus de deux fois plus souvent que la correspondance
@@ -139,11 +146,11 @@ NDCG@5 ciblé, en faisant varier le seul poids des compétences :
 
 | Poids | Baseline | Co-occurrence | Écart |
 |---|---|---|---|
-| 40 % *(en vigueur)* | 68,6 % | 68,6 % | +0,1 pt |
-| 55 % | 66,9 % | 66,2 % | −0,8 pt |
-| 70 % | 58,3 % | 59,6 % | +1,2 pt |
-| 85 % | 52,7 % | 51,5 % | −1,2 pt |
-| 100 % | 42,9 % | 45,8 % | +3,0 pt |
+| 40 % *(en vigueur)* | 68,3 % | 68,4 % | +0,1 pt |
+| 55 % | 67,1 % | 66,3 % | −0,8 pt |
+| 70 % | 58,7 % | 59,5 % | +0,8 pt |
+| 85 % | 50,4 % | 50,6 % | +0,2 pt |
+| 100 % | 42,8 % | 45,1 % | +2,3 pt |
 
 **Cette courbe n'est pas monotone.** Les points intermédiaires alternent de signe : c'est du
 bruit, pas une tendance. Il serait malhonnête d'en conclure « il suffit de relever le poids
@@ -162,7 +169,7 @@ La phrase que le plan espérait pouvoir prononcer en soutenance était :
 **La mesure ne permet pas de la prononcer telle quelle.** Ce qu'elle permet de dire :
 
 1. **Le mécanisme fait ce pour quoi il a été conçu.** Isolé, il double la précision au
-   premier rang (9,6 % → 22,9 %) et améliore le rang réciproque moyen de 13 % relatifs sur
+   premier rang (9,9 % → 22,2 %) et améliore le rang réciproque moyen de 12 % relatifs sur
    la population qu'il vise.
 
 2. **Ce gain ne survit pas à l'intégration.** Dans le score complet, au poids en vigueur,
@@ -171,8 +178,8 @@ La phrase que le plan espérait pouvoir prononcer en soutenance était :
 
 3. **Il n'est pas un artefact de mémorisation** : le protocole anti-fuite ne l'annule pas.
 
-4. **Le corpus est trop petit pour trancher plus finement.** 67 offres, 41 étudiants,
-   86 paires pertinentes. La non-monotonie de la courbe de sensibilité le montre
+4. **Le corpus est trop petit pour trancher plus finement.** 67 offres, 38 étudiants,
+   83 paires pertinentes. La non-monotonie de la courbe de sensibilité le montre
    directement.
 
 C'est un résultat exploitable en soutenance, et défendable : *une contribution
@@ -188,17 +195,17 @@ administratifs — est plus intéressante que le gain qu'on espérait annoncer.
 
 ## 5. Qualité de l'extraction de CV
 
-Mesurée séparément, sur les 41 CV du corpus de vérité terrain — voir
+Mesurée séparément, sur les 38 CV du corpus de vérité terrain — voir
 [5 - INGESTION-CV.md](5%20-%20INGESTION-CV.md) pour le détail.
 
 | | |
 |---|---|
-| Routage de la nature du PDF | **41/41** |
-| Recours à l'OCR | 24 CV sur 41 (**59 %**) |
-| Confiance OCR moyenne | 91,5 % |
-| Précision de l'extraction | **98,8 %** |
-| Rappel de l'extraction | **96,0 %** |
-| F1 | **97,4 %** |
+| Routage de la nature du PDF | **38/38** |
+| Recours à l'OCR | 22 CV sur 38 (**58 %**) |
+| Confiance OCR moyenne | 91,6 % |
+| Précision de l'extraction | **98,2 %** |
+| Rappel de l'extraction | **95,2 %** |
+| F1 | **96,7 %** |
 
 Contrairement au volet recommandation, **ce volet-là est un succès net**. La différence
 tient à la vérité terrain : celle de l'extraction est exacte par construction (on a écrit
@@ -212,8 +219,8 @@ les CV), celle de la recommandation est un proxy.
 |---|---|
 | **Pas d'historique de candidatures** | La pertinence est un proxy calculé, pas un jugement humain observé. C'est la limite principale. |
 | **La pertinence est de la correspondance exacte** | Elle pénalise structurellement tout lissage. La co-occurrence est jugée par le critère que précisément elle prétend dépasser. |
-| **Corpus de 67 offres / 41 étudiants** | Les écarts sous 2 points ne sont pas interprétables. La courbe de sensibilité le démontre. |
-| **86 paires pertinentes seulement** | Une poignée d'étudiants pèse lourd dans les moyennes. |
+| **Corpus de 67 offres / 38 étudiants** | Les écarts sous 2 points ne sont pas interprétables. La courbe de sensibilité le démontre. |
+| **83 paires pertinentes seulement** | Une poignée d'étudiants pèse lourd dans les moyennes. |
 | **Ablation d'une seule compétence** | Un profil réel peut en manquer plusieurs ; l'effet n'est pas mesuré à ce régime. |
 | **Aucun test de significativité** | Avec ces effectifs, il ne serait pas concluant. Ne pas présenter les écarts comme des résultats statistiques. |
 

@@ -50,7 +50,7 @@ Une décision prise au niveau du **document** se trompe forcément :
   texte qui était parfait.
 
 D'où le routage **page par page**. C'est peu coûteux à écrire et cela change la
-nature du résultat : sur les 8 CV mixtes du corpus, le rappel est de 100 %.
+nature du résultat : sur les 7 CV mixtes du corpus, le rappel est de 100 %.
 
 ### 2.2 Le critère de routage
 
@@ -68,7 +68,7 @@ Implémenté dans `evaluerCoucheTexte()` ([src/lib/extractionTexte.js](../src/li
    encodées, PDF produit par un logiciel défaillant. Le symptôme est une
    proportion anormale de caractères non alphabétiques.
 
-**Résultat mesuré : 41/41 CV correctement routés.**
+**Résultat mesuré : 38/38 CV correctement routés.**
 
 ### 2.3 Comment on récupère l'image d'une page numérisée
 
@@ -164,7 +164,7 @@ de revue, sans être coché par défaut.
 ## 5. Les erreurs, et comment la mesure les a révélées
 
 C'est la partie la plus utile du chapitre. Chaque erreur a été trouvée en
-mesurant sur les 41 CV du corpus de vérité terrain, jamais en relisant le code.
+mesurant sur le corpus de vérité terrain, jamais en relisant le code.
 
 ### 5.1 Jaro-Winkler détruisait la précision
 
@@ -257,28 +257,35 @@ Les mesures en ligne de commande passaient toutes. Contre le conteneur :
 
 ## 6. Résultats
 
-Sur les **41 CV** du corpus de vérité terrain
-([voir sa génération](../scripts/generer-cv-test.js)) — 176 compétences à
-retrouver et 530 termes parasites à ignorer.
+Sur les **38 CV** du corpus de vérité terrain
+([voir sa génération](../scripts/generer-cv-test.js)) — 168 compétences à
+retrouver et 492 termes parasites à ignorer.
 
 ```
-routage de la nature du PDF : 41/41
-confiance OCR moyenne       : 91,5 % sur 24 CV
+routage de la nature du PDF : 38/38
+confiance OCR moyenne       : 91,6 % sur 22 CV
 durée d'analyse             : ~1,5 s par CV scanné, OCR compris
 
-précision 98,8 %   rappel 96,0 %   F1 97,4 %
+précision 98,2 %   rappel 95,2 %   F1 96,7 %
 ```
 
 | Nature | CV | Précision | Rappel |
 |---|---|---|---|
-| natif | 17 | 97,4 % | **100,0 %** |
-| scanné | 16 | **100,0 %** | 89,2 % |
-| mixte | 8 | **100,0 %** | **100,0 %** |
+| natif | 16 | 97,2 % | 98,6 % |
+| scanné | 15 | **100,0 %** | 89,4 % |
+| mixte | 7 | 97,0 % | **100,0 %** |
 
-**Lecture.** Les sept compétences manquées sont **toutes** sur des CV scannés :
-l'OCR coûte environ onze points de rappel et **rien** en précision. C'est le
-comportement souhaitable — le pipeline préfère taire une compétence qu'en
-inventer une.
+**Lecture.** Sept des huit compétences manquées sont sur des CV scannés :
+l'OCR coûte une dizaine de points de rappel, et rien ou presque en précision.
+C'est le comportement souhaitable — le pipeline préfère taire une compétence
+qu'en inventer une.
+
+> Ces chiffres ont été **remesurés** après le nettoyage de la base
+> ([scripts/nettoyer-base.mjs](../scripts/nettoyer-base.mjs)), qui a retiré trois
+> comptes personnels ou d'essai : le corpus est passé de 41 à 38 CV. Les écarts
+> avec la mesure précédente (précision 98,8 %, rappel 96,0 %) sont de l'ordre du
+> demi-point, ce qui donne une idée concrète du bruit à cette taille
+> d'échantillon.
 
 ### Reproduire
 
