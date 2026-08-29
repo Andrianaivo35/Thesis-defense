@@ -28,41 +28,63 @@ plateforme n'en a aucune aujourd'hui : tout est derrière une authentification. 
 **prérequis**, pas un détail — sans lui, l'université paierait pour être vue par des gens
 qui sont déjà ses étudiants.
 
-## A.2 Le danger, et la règle qui en découle
+## A.2 Périmètre arrêté : des bandeaux, jamais des offres
 
-La valeur de cette plateforme tient à une chose : **le classement est mérité**. Le mémoire
-entier consiste à montrer qu'une offre remonte parce qu'elle correspond, et à expliquer
-pourquoi.
+> **Décision prise.** La visibilité payante se limite à des **emplacements de visibilité** —
+> bandeaux, mises en avant, vitrine. Elle ne touche **jamais** aux offres recommandées.
 
-Si une entreprise peut payer pour apparaître dans les recommandations, alors :
+Ce n'était pas acquis, et c'est le bon arbitrage. La valeur de cette plateforme tient à une
+chose : **le classement est mérité**. Le mémoire entier consiste à montrer qu'une offre
+remonte parce qu'elle correspond, et à expliquer pourquoi.
 
-- la recommandation ne veut plus rien dire — l'étudiant ne peut plus distinguer « on me la
-  propose parce qu'elle me correspond » de « on me la propose parce qu'elle a payé » ;
-- **la contribution scientifique du projet est annulée**. Les mesures du chapitre
+Si une entreprise pouvait payer pour apparaître dans les recommandations :
+
+- la recommandation ne voudrait plus rien dire — l'étudiant ne pourrait plus distinguer
+  « on me la propose parce qu'elle me correspond » de « on me la propose parce qu'elle a
+  payé » ;
+- **la contribution scientifique du projet serait annulée.** Les mesures du chapitre
   d'évaluation portent sur un classement par pertinence ; un classement acheté ne se mesure
   pas ;
-- l'effet se retourne vite : une plateforme dont les recommandations sont suspectes n'est
-  plus consultée, et l'espace publicitaire ne vaut plus rien.
+- l'effet se retournerait vite : une plateforme dont les recommandations sont suspectes
+  n'est plus consultée, et l'espace publicitaire ne vaut alors plus rien.
 
-> **Règle non négociable : l'argent n'entre jamais dans le score.**
->
-> `evaluerCouple()` ne doit connaître aucune notion de partenariat, d'abonnement ou de
-> campagne. La visibilité payante vit **à côté** des résultats classés, dans des
-> emplacements distincts, et **toujours signalée comme telle**.
+Le périmètre retenu écarte ces trois risques d'emblée.
 
-Ce n'est pas une position morale, c'est la condition pour que le produit reste vendable.
+### Ce que cela impose au code
 
-## A.3 Les emplacements possibles
+`evaluerCouple()` — le scoreur — ne doit connaître **aucune** notion de partenaire,
+d'abonnement ou de campagne. Pas de paramètre, pas de jointure, pas de coefficient.
 
-Classés du plus honnête au plus risqué :
+C'est une contrainte facile à énoncer et facile à violer six mois plus tard, sous une forme
+qui paraîtra anodine : « remonter légèrement les offres des partenaires », « à score égal,
+privilégier un partenaire ». Les deux franchissent la ligne.
 
-| Emplacement | Description | Risque |
+La séparation doit donc être **structurelle** : les emplacements payants sont servis par
+leurs propres routes, alimentés par leurs propres tables, et rendus par leurs propres
+composants. Aucun chemin de code ne relie une campagne à un score.
+
+### Ce que cela impose à l'écran
+
+Un bandeau se lit comme une publicité : **hors du flux classé**, et **signalé** — « Annonce »,
+« Contenu sponsorisé ». Le dissimuler exposerait à la réglementation sur la publicité, et
+surtout ruinerait la confiance qui fait la valeur du reste.
+
+## A.3 Les emplacements retenus
+
+Tous sont des **espaces de visibilité**. Aucun n'intervient dans un classement par
+pertinence.
+
+| Emplacement | Description | Qui l'achète |
 |---|---|---|
-| **Vitrine publique** | Pages d'établissements et d'entreprises, consultables sans compte, référencées | Aucun — c'est le bon endroit pour la promotion aux futurs bacheliers |
-| **Bandeau** | En tête de la liste des offres, hors du flux classé, marqué « Annonce » | Faible s'il reste hors du flux |
-| **Entreprise mise en avant** | Encart séparé dans « Toutes les entreprises », après les résultats normaux | Faible |
-| **Annonce de cohorte sponsorisée** | Une université paie pour que son annonce soit vue des entreprises | Modéré : c'est un flux classé |
-| **Offre remontée dans les recommandations** | — | **À proscrire.** Voir §A.2 |
+| **Vitrine publique** | Pages d'établissements et d'entreprises, consultables sans compte et référencées | Université visant les futurs bacheliers |
+| **Bandeau d'en-tête** | En tête de la liste des offres, **au-dessus** du flux et non dedans, marqué « Annonce » | Entreprise visant les étudiants |
+| **Entreprise mise en avant** | Encart distinct dans « Toutes les entreprises », séparé des résultats | Entreprise |
+| **Université mise en avant** | Même principe, sur la vitrine publique | Université |
+| **Bandeau de cohorte** | Visible des entreprises, à côté des annonces de cohorte | Université |
+
+**Hors périmètre, par décision :** toute remontée d'une offre, d'un candidat ou d'une
+annonce **dans un résultat classé**. Y compris sous les formes atténuées évoquées plus
+haut — « à score égal », « léger bonus ». La frontière n'est tenable que si elle est nette.
 
 ## A.4 Ce qu'il faudrait construire
 
@@ -83,14 +105,38 @@ Rien de tout cela n'existe. Par ordre de dépendance :
 ## A.5 Le partenariat, qui n'est pas de la publicité
 
 Une convention université ↔ entreprise est une **relation**, pas une campagne : stages
-réservés, forum de recrutement, intervention en cours. Elle mérite son propre objet, et
-elle a une conséquence légitime sur les recommandations — non pas un score gonflé, mais un
-**motif affiché** :
+réservés, forum de recrutement, intervention en cours. Elle mérite son propre objet.
+
+C'est probablement la forme de monétisation la plus saine des trois — elle se vend sur une
+valeur réelle, pas sur de l'attention.
+
+### Une question laissée ouverte
+
+Un partenariat pourrait s'afficher comme **mention** sur une offre déjà recommandée :
 
 > « Cette entreprise est partenaire de votre établissement. »
 
-C'est une information vraie, utile, et qui n'altère aucun classement. C'est probablement
-la forme de monétisation la plus saine des trois.
+Cela ne change **ni quelles offres apparaissent, ni dans quel ordre** : c'est une annotation,
+pas un classement. À ce titre, la règle du §A.2 n'est pas franchie.
+
+**Mais la frontière est plus fine qu'elle n'en a l'air**, et la décision arrêtée dit
+« bandeaux, pas les offres ». Une mention payante posée sur une carte d'offre reste un
+élément commercial dans le flux recommandé — même sans effet sur le tri, elle attire l'œil,
+et c'est précisément ce qui s'achète.
+
+Deux lectures se défendent :
+
+| | Pour | Contre |
+|---|---|---|
+| **Autoriser la mention** | Information vraie et utile à l'étudiant ; aucun effet sur le tri | Élément commercial dans le flux recommandé, contraire à l'esprit de la décision |
+| **L'interdire** | Frontière parfaitement nette, impossible à éroder | Prive l'étudiant d'une information qui l'intéresse réellement |
+
+**À trancher avant d'implémenter**, pas pendant. Une frontière qu'on précise en cours de
+route finit toujours par se déplacer.
+
+Un compromis possible : afficher la mention **uniquement quand le partenariat est réel et
+gratuit à afficher** — c'est-à-dire ne jamais la facturer. Elle devient alors une
+information de la plateforme, et non un produit.
 
 ---
 
@@ -194,7 +240,7 @@ repasse par une offre publiée.
 |---|---|---|
 | 1 | **Vitrine publique** | Prérequis de la promotion aux futurs bacheliers, utile en soi, sans risque |
 | 2 | **Forum public étiqueté par compétences** | Fait grandir le corpus du moteur ; c'est le chantier au plus fort effet de levier |
-| 3 | **Partenariats université ↔ entreprise** | La monétisation la plus saine, sans toucher au classement |
+| 3 | **Partenariats université ↔ entreprise** | La monétisation la plus saine — se vend sur une valeur réelle. Trancher d'abord la question du §A.5 |
 | 4 | **Groupes par université** | Utile, sans arbitrage délicat |
-| 5 | **Bandeaux et mises en avant payantes** | Après la vitrine et la mesure d'audience, sans quoi il n'y a rien à vendre |
+| 5 | **Bandeaux et mises en avant** | Après la vitrine et la mesure d'audience, sans quoi il n'y a rien à vendre. Emplacements de visibilité uniquement — jamais de remontée dans un classement (§A.2) |
 | 6 | **Groupes par entreprise** | En dernier : c'est celui qui demande l'arbitrage du §B.3 |
