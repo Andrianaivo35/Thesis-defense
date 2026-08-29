@@ -491,3 +491,47 @@ export const BotBadge = styled.span`
   border-radius: 5px;
   letter-spacing: 0.5px;
 `
+/* ---------------------------------------------------------------------
+   Ajouts UI/UX (audit MD/7)
+   --------------------------------------------------------------------- */
+
+/* Séparateur de date. Sans lui, rien ne distingue un message de ce matin
+   d'un message d'il y a trois semaines : le fil se lit comme une seule
+   conversation continue, ce qu'il n'est pas. */
+export const DateSeparator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 10px;
+  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 600;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+  }
+`
+
+/* Message en cours d'envoi : présent à l'écran, visiblement pas encore
+   confirmé. C'est ce qui évite qu'on réappuie sur « Envoyer ». */
+export const BubbleEtat = styled.span`
+  font-size: 10.5px;
+  margin-left: 7px;
+  opacity: .8;
+  color: ${p => (p.$echec ? '#dc2626' : 'inherit')};
+`
+
+export const RetryButton = styled.button`
+  margin-left: 8px;
+  padding: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #dc2626;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+`
