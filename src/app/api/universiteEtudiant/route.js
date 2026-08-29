@@ -30,6 +30,9 @@ export async function GET(req) {
         e."filiere",
         e."specialisation",
         e."estActif",
+        e."statutRattachement",
+        e."dateFinRattachement",
+        e."motifFinRattachement",
         e."idPromotion",
         p."libelle" AS "promotionLibelle",
         p."annee" AS "promotionAnnee",
@@ -53,7 +56,11 @@ export async function GET(req) {
         LIMIT 1
       ) stage ON true
       WHERE e."idUniversite" = $1
-        AND COALESCE(e."statutRattachement", 'Valide') = 'Valide'
+        /* Actifs ET anciens : l'écran les sépare lui-même. Deux requêtes
+           séparées obligeraient à dupliquer la jointure sur les stages
+           et les candidatures, qui est la partie coûteuse. */
+        AND COALESCE(e."statutRattachement", 'Valide')
+            IN ('Valide', 'Diplome', 'Sorti')
         /* Filtre par promotion. La valeur « aucune » vise les étudiants
            rattachés à l'établissement mais à aucun groupe : inscrits
            d'eux-mêmes, ou importés avant l'existence des promotions.

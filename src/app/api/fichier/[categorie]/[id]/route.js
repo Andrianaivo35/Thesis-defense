@@ -74,9 +74,17 @@ export async function GET(req, { params }) {
         autorise = lien.rows.length > 0;
 
       } else if (payload.typeUtilisateur === 'Universite') {
+        /* Un DIPLÔMÉ reste rattaché : il figure dans la liste de son
+           établissement en « ancien étudiant », et l'accompagner dans sa
+           recherche de stage de fin d'études suppose de pouvoir ouvrir
+           son CV.
+
+           Un SORTI, non. Le rattachement est rompu ; le conserver en
+           base sert l'historique et la réversibilité, pas un droit de
+           lecture. */
         autorise =
           String(cv.idUniversite) === String(payload.idUniversite) &&
-          cv.statutRattachement === 'Valide';
+          ['Valide', 'Diplome'].includes(cv.statutRattachement);
       }
 
     } else {

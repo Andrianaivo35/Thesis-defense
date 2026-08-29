@@ -308,6 +308,40 @@ console.log(`3bis. ${promotionsCreees} promotions, ${rattaches} étudiants ratta
             `${isoles} sans promotion (groupes d'un seul inscrit)`);
 
 /* =====================================================================
+   3ter. UNE PROMOTION DÉJÀ DIPLÔMÉE
+
+   L'écran université sépare les actifs des anciens (Lot 6.5). Sans un
+   seul ancien, la moitié de cet écran est vide et la fonctionnalité
+   invisible en démonstration.
+
+   On clôt donc la plus petite promotion : ses membres deviennent des
+   « anciens étudiants », restent sur la plateforme et continuent de
+   candidater — ce qui est précisément l'intention du statut.
+   ===================================================================== */
+await client.query(`UPDATE etudiant SET "statutRattachement" = 'Valide',
+                       "dateFinRattachement" = NULL, "motifFinRattachement" = NULL
+                     WHERE "statutRattachement" IN ('Diplome', 'Sorti')`);
+await client.query(`UPDATE "Promotion" SET "statut" = 'Active'`);
+
+const aClore = (await client.query(`
+  SELECT p."idPromotion", p."libelle", p."annee", count(e.*)::int AS n
+    FROM "Promotion" p JOIN etudiant e ON e."idPromotion" = p."idPromotion"
+   GROUP BY 1,2,3 ORDER BY n ASC LIMIT 1`)).rows[0];
+
+if (aClore) {
+  await client.query('BEGIN');
+  await client.query(
+    `UPDATE etudiant SET "statutRattachement" = 'Diplome', "dateFinRattachement" = now()
+      WHERE "idPromotion" = $1`, [aClore.idPromotion]);
+  await client.query(
+    `UPDATE "Promotion" SET "statut" = 'Diplomee' WHERE "idPromotion" = $1`,
+    [aClore.idPromotion]);
+  await client.query('COMMIT');
+  console.log(`3ter. Promotion « ${aClore.libelle} — ${aClore.annee} » diplômée ` +
+              `(${aClore.n} anciens étudiants)`);
+}
+
+/* =====================================================================
    4. CANDIDATURES
 
    MODÈLE DE COMPORTEMENT — écrit à la main, jamais dérivé du score.

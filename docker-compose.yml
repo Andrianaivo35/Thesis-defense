@@ -25,6 +25,7 @@ services:
       - ./scripts/migrations/008-unicite-email.sql:/docker-entrypoint-initdb.d/02-008-unicite-email.sql:ro
       - ./scripts/migrations/009-jetons-activation.sql:/docker-entrypoint-initdb.d/02-009-jetons-activation.sql:ro
       - ./scripts/migrations/010-promotions.sql:/docker-entrypoint-initdb.d/02-010-promotions.sql:ro
+      - ./scripts/migrations/011-cycle-vie-rattachement.sql:/docker-entrypoint-initdb.d/02-011-cycle-vie-rattachement.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s

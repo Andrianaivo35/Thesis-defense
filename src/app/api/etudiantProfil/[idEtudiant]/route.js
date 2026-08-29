@@ -66,8 +66,20 @@ export async function GET(req, { params }) {
         e."estActif",
         u."emailUtilisateur",
         u."idUtilisateur",
-        univ."nomUniversite",
-        univ."sigleUniversitaire"
+        e."statutRattachement",
+        e."dateFinRattachement",
+        /* Un SORTI n'affiche plus son établissement : le rattachement
+           est rompu, et laisser le nom donnerait à croire qu'il en fait
+           encore partie. Il reste en base pour l'historique et pour
+           pouvoir revenir sur une décision, pas pour être montré.
+
+           Un DIPLÔMÉ le conserve — l'interface l'annonce en « ancien
+           étudiant de X », ce qui est l'information juste et reste utile
+           à une entreprise. */
+        CASE WHEN e."statutRattachement" = 'Sorti' THEN NULL
+             ELSE univ."nomUniversite" END AS "nomUniversite",
+        CASE WHEN e."statutRattachement" = 'Sorti' THEN NULL
+             ELSE univ."sigleUniversitaire" END AS "sigleUniversitaire"
       FROM etudiant e
       INNER JOIN utilisateur u ON e."idUtilisateur" = u."idUtilisateur"
       LEFT JOIN universite univ ON e."idUniversite" = univ."idUniversite"

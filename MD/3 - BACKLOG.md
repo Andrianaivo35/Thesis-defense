@@ -768,7 +768,7 @@ test d'import : **300 comptes rattachés à une promotion en 1,25 s**.
 
 ---
 
-## 6.5 ⬜ Cycle de vie du rattachement
+## 6.5 ✅ Cycle de vie du rattachement *(terminé, 29/08/2026)*
 
 **Pourquoi.** Une université doit pouvoir signaler qu'un étudiant a terminé ses études, ou
 qu'il a quitté l'établissement. Sans cela, sa liste ne cesse de croître.
@@ -787,6 +787,36 @@ distinctement.
 
 Actions applicables à une promotion entière, avec exclusion possible de quelques individus.
 Notifier l'étudiant du changement, en réutilisant la messagerie interne du Lot 2.2.
+
+**Fait** (migration 011). Trois écarts assumés avec l'énoncé :
+
+- **`Sorti` ne vide pas `idUniversite`.** Le plan disait « détache ». Détacher au sens
+  d'effacer la colonne supprimerait l'information : plus personne ne saurait d'où vient
+  l'étudiant, ni ne pourrait revenir sur une exclusion prononcée par erreur. Le rattachement
+  est donc **conservé en base**, et c'est le **statut** qui détache — le profil n'affiche
+  plus l'établissement, l'université ne le voit plus dans sa liste active. Réversible,
+  historique intact.
+- **Une simulation précède l'action.** Comme la prévisualisation de l'import : une opération
+  portant sur quatre-vingts personnes doit se voir avant de se lancer. La simulation
+  n'écrit rien — vérifié.
+- **La promotion se clôt d'elle-même** quand plus aucun actif n'y figure. Laisser une
+  promotion « En cours » vide obligerait à la clore une seconde fois, à la main.
+
+**Une décision d'accès à trancher au passage.** L'accès aux CV se fondait sur
+`statutRattachement === 'Valide'` : un diplômé serait devenu invisible à son propre
+établissement, alors qu'il reste dans sa liste. Un **diplômé** est désormais accessible —
+l'accompagner dans sa recherche de stage de fin d'études suppose de pouvoir ouvrir son CV —
+un **sorti** ne l'est pas : le lien est rompu.
+
+**Un défaut latent découvert.** `BoutonPromotion` était utilisé sans être importé depuis le
+Lot 6.4. Ni le build ni le rendu serveur ne pouvaient l'attraper — le panneau ne s'affiche
+qu'après le chargement client des promotions. La page aurait planté dès leur arrivée.
+
+**Vérifié** : simulation sans écriture, exclusion nominative (3 diplômés sur 4, 1 exclu),
+promotion restant ouverte tant qu'un actif subsiste puis close automatiquement, profil du
+diplômé conservant son établissement et celui du sorti le masquant tout en le gardant en
+base avec son motif, notification par messagerie interne, et un autre établissement sans
+prise sur ces étudiants.
 
 ---
 
@@ -861,5 +891,5 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 6 | 6.2 Jetons activation / réinitialisation | ✅ | 29/08/2026 |
 | 6 | 6.3 Import CSV avec prévisualisation | ✅ | 29/08/2026 |
 | 6 | 6.4 Promotions | ✅ | 29/08/2026 |
-| 6 | 6.5 Cycle de vie du rattachement | ⬜ | |
+| 6 | 6.5 Cycle de vie du rattachement | ✅ | 29/08/2026 |
 | 6 | 6.6 Intégration e-mail | ⬜ | |

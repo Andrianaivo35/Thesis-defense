@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
+import { GraduationCap, UserMinus } from 'lucide-react'
 import {
   PageContainer, HeaderSection, SearchBar, FiltersBar, FilterLabel, FilterSelect,
   PageTitle,
@@ -11,7 +12,8 @@ import {
   EtudiantInfo, EtudiantInfoItem,
   StageTag, NoStageTag,
   EtudiantFooter, ViewProfileButton,
-  EmptyState, LoadingState
+  EmptyState, LoadingState,
+  BoutonPromotion, ActionButton
 } from '@/components/styleUniversiteEtudiants'
 
 export default function UniversiteEtudiants() {
@@ -26,6 +28,9 @@ export default function UniversiteEtudiants() {
   const [promotions, setPromotions] = useState([])
   const [sansPromotion, setSansPromotion] = useState(0)
   const [filtrePromotion, setFiltrePromotion] = useState('all')
+  const [voirAnciens, setVoirAnciens] = useState(false)
+  const [cloture, setCloture] = useState(null)   // { statut, apercu, motif }
+  const [clotureEnCours, setClotureEnCours] = useState(false)
 
   const chargerEtudiants = async () => {
     try {
@@ -72,14 +77,79 @@ export default function UniversiteEtudiants() {
     }
   }
 
+  /* On simule avant d'agir : une action portant sur quatre-vingts
+     personnes doit se voir avant de se lancer. Même raisonnement que la
+     prévisualisation de l'import. */
+  const preparerCloture = async (statut) => {
+    setMessageDemande('')
+    try {
+      const res = await fetchAuth('/api/universiteCycleVie', {
+        method: 'POST',
+        body: JSON.stringify({
+          statut, simulation: true,
+          idPromotion: filtrePromotion !== 'all' && filtrePromotion !== 'aucune'
+            ? filtrePromotion : null,
+          idsEtudiants: filtrePromotion === 'aucune'
+            ? etudiantsFiltres.map(e => e.idEtudiant) : null
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setCloture({ statut, apercu: data, exclusions: [], motif: '' })
+    } catch (err) { setMessageDemande(err.message) }
+  }
+
+  const confirmerCloture = async () => {
+    setClotureEnCours(true)
+    try {
+      const res = await fetchAuth('/api/universiteCycleVie', {
+        method: 'POST',
+        body: JSON.stringify({
+          statut: cloture.statut,
+          idPromotion: filtrePromotion !== 'all' && filtrePromotion !== 'aucune'
+            ? filtrePromotion : null,
+          idsEtudiants: filtrePromotion === 'aucune'
+            ? cloture.apercu.concernes.map(c => c.idEtudiant) : null,
+          exclusions: cloture.exclusions,
+          motif: cloture.motif
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setMessageDemande(data.message)
+      setCloture(null)
+      await chargerEtudiants()
+    } catch (err) { setMessageDemande(err.message) }
+    finally { setClotureEnCours(false) }
+  }
+
+  const basculerExclusion = (id) => {
+    setCloture(c => ({
+      ...c,
+      exclusions: c.exclusions.includes(id)
+        ? c.exclusions.filter(x => x !== id)
+        : [...c.exclusions, id]
+    }))
+  }
+
   const niveauxList = useMemo(() => {
     const set = new Set()
     etudiants.forEach(e => e.niveauAcademique && set.add(e.niveauAcademique))
     return Array.from(set).sort()
   }, [etudiants])
 
+  /* Actifs et anciens viennent de la même requête, mais ne se mélangent
+     pas à l'écran : une université cherche ses étudiants de l'année, pas
+     un annuaire cumulé depuis quatre ans. */
+  const actifs = useMemo(
+    () => etudiants.filter(e => (e.statutRattachement || 'Valide') === 'Valide'),
+    [etudiants])
+  const anciens = useMemo(
+    () => etudiants.filter(e => ['Diplome', 'Sorti'].includes(e.statutRattachement)),
+    [etudiants])
+
   const etudiantsFiltres = useMemo(() => {
-    let filtered = etudiants
+    let filtered = voirAnciens ? anciens : actifs
 
     /* « aucune » vise les étudiants rattachés à l'établissement mais à
        aucun groupe : inscrits d'eux-mêmes, ou importés avant l'existence
@@ -250,7 +320,88 @@ export default function UniversiteEtudiants() {
         </>
       )}
 
-      <PageTitle>Mes étudiants ({etudiantsFiltres.length})</PageTitle>
+      {/* ===== Bascule actifs / anciens et actions de fin de cursus ===== */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
+                    marginBottom: 14 }}>
+        <BoutonPromotion $actif={!voirAnciens} onClick={() => setVoirAnciens(false)}
+          style={{ minWidth: 0, padding: '9px 14px' }}>
+          <strong>Étudiants actifs</strong>
+          <span>{actifs.length}</span>
+        </BoutonPromotion>
+        <BoutonPromotion $actif={voirAnciens} onClick={() => setVoirAnciens(true)}
+          style={{ minWidth: 0, padding: '9px 14px' }}>
+          <strong>Anciens</strong>
+          <span>{anciens.length} diplômés ou sortis</span>
+        </BoutonPromotion>
+
+        {/* Les actions de fin de cursus ne s'offrent que sur les actifs,
+            et seulement quand une promotion est sélectionnée : c'est
+            l'unité de gestion, et l'appliquer à « toutes » serait
+            presque toujours une erreur. */}
+        {!voirAnciens && filtrePromotion !== 'all' && etudiantsFiltres.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' }}>
+            <ActionButton type="button" onClick={() => preparerCloture('Diplome')}>
+              <GraduationCap size={13} strokeWidth={2} /> Déclarer diplômés
+            </ActionButton>
+            <ActionButton type="button" onClick={() => preparerCloture('Sorti')}>
+              <UserMinus size={13} strokeWidth={2} /> Retirer des effectifs
+            </ActionButton>
+          </div>
+        )}
+      </div>
+
+      {/* ===== Confirmation, avec exclusion nominative ===== */}
+      {cloture && (
+        <EmptyState style={{ marginBottom: 18, borderStyle: 'solid',
+                             borderColor: '#c4b5fd', textAlign: 'left' }}>
+          <p style={{ fontWeight: 700, color: '#334155', margin: '0 0 6px' }}>
+            {cloture.statut === 'Diplome'
+              ? `Déclarer ${cloture.apercu.total - cloture.exclusions.length} étudiants diplômés`
+              : `Retirer ${cloture.apercu.total - cloture.exclusions.length} étudiants des effectifs`}
+          </p>
+          <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 12px' }}>
+            {cloture.statut === 'Diplome'
+              ? "Ils restent sur la plateforme en « ancien étudiant » et continuent de recevoir des recommandations."
+              : "Leur rattachement prend fin. Leur compte reste actif et ils pourront rattacher un autre établissement."}
+            {' '}Décochez ceux qui ne sont pas concernés — un redoublant, par exemple.
+          </p>
+
+          <div style={{ maxHeight: 220, overflowY: 'auto', marginBottom: 12 }}>
+            {cloture.apercu.concernes.map(c => (
+              <label key={c.idEtudiant} style={{
+                display: 'flex', alignItems: 'center', gap: 9, padding: '5px 0',
+                fontSize: 13, cursor: 'pointer',
+                opacity: cloture.exclusions.includes(c.idEtudiant) ? 0.45 : 1
+              }}>
+                <input type="checkbox"
+                  checked={!cloture.exclusions.includes(c.idEtudiant)}
+                  onChange={() => basculerExclusion(c.idEtudiant)}
+                  style={{ width: 15, height: 15, cursor: 'pointer' }} />
+                {c.nom}
+              </label>
+            ))}
+          </div>
+
+          {cloture.statut === 'Sorti' && (
+            <input
+              value={cloture.motif}
+              onChange={(e) => setCloture(c => ({ ...c, motif: e.target.value }))}
+              placeholder="Motif (facultatif) : abandon, transfert, exclusion…"
+              style={{ width: '100%', padding: '9px 12px', fontSize: 13, marginBottom: 12,
+                       border: '1.5px solid #e2e8f0', borderRadius: 8 }} />
+          )}
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <ActionButton type="button" onClick={() => setCloture(null)}>Annuler</ActionButton>
+            <ActionButton type="button" onClick={confirmerCloture}
+              disabled={clotureEnCours || cloture.apercu.total === cloture.exclusions.length}>
+              {clotureEnCours ? 'Enregistrement...' : 'Confirmer'}
+            </ActionButton>
+          </div>
+        </EmptyState>
+      )}
+
+      <PageTitle>{voirAnciens ? 'Anciens étudiants' : 'Mes étudiants'} ({etudiantsFiltres.length})</PageTitle>
 
       {isLoading ? (
         <LoadingState>Chargement des étudiants...</LoadingState>

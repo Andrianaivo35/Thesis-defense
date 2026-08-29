@@ -37,7 +37,15 @@ export async function GET(req) {
                 un COUNT simple annonçait 15 inscrits là où il y en avait
                 3. L'écart n'apparaît que sur des données réelles — un
                 corpus sans candidature aurait laissé passer le défaut. */
-             COUNT(DISTINCT e."idEtudiant")::int AS "effectif",
+             COUNT(DISTINCT e."idEtudiant") FILTER (
+               WHERE COALESCE(e."statutRattachement", 'Valide') = 'Valide')::int AS "effectif",
+             /* Les diplômés restent visibles séparément : une promotion
+                close n'est pas une promotion vide, et l'université doit
+                pouvoir retrouver ses anciens. */
+             COUNT(DISTINCT e."idEtudiant") FILTER (
+               WHERE e."statutRattachement" = 'Diplome')::int AS "diplomes",
+             COUNT(DISTINCT e."idEtudiant") FILTER (
+               WHERE e."statutRattachement" = 'Sorti')::int AS "sortis",
              COUNT(DISTINCT e."idEtudiant") FILTER (
                WHERE u."compteActive" = false)::int AS "enAttenteActivation",
              COUNT(DISTINCT c."idEtudiant") FILTER (

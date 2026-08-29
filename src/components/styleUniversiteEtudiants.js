@@ -311,3 +311,24 @@ export const BoutonPromotion = styled.button`
     color: #64748b;
   }
 `
+
+/* Bouton d'action secondaire, repris du style des autres écrans.
+   Défini ici plutôt qu'importé d'un module de candidature : cet écran ne
+   doit pas dépendre de la feuille de style d'une autre fonctionnalité. */
+export const ActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+
+  &:hover:not(:disabled) { border-color: #c7d2fe; background: #f8fafc; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+`
