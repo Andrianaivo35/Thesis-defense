@@ -5,6 +5,7 @@ import { analyserFichier } from '@/lib/importEtudiants';
 import { creerJeton, TYPE_ACTIVATION } from '@/lib/jetons';
 import { envoyerLienActivation, lienActivation, envoiConfigure } from '@/lib/mail';
 import { trouverOuCreerPromotion, estAnneeValide } from '@/lib/promotions';
+import { declencherVidage } from '@/lib/fileCourriel';
 
 /* =====================================================================
    POST /api/universiteImport — import d'une promotion
@@ -188,10 +189,22 @@ export async function POST(req) {
         );
 
         const { jeton, expiration } = await creerJeton(client, idUtilisateur, TYPE_ACTIVATION);
+
+        /* Le courriel est mis en file DANS la transaction. Si l'import
+           échoue plus loin, aucun lien n'est annoncé pour un compte qui
+           n'existera pas ; s'il réussit, l'envoi est garanti d'être
+           tenté même si le serveur tombe juste après. */
+        const miseEnFile = await envoyerLienActivation(client, {
+          to: ligne.email,
+          nom: `${ligne.prenom} ${ligne.nom}`,
+          nomUniversite, jeton, expiration
+        });
+
         crees.push({
           email: ligne.email,
           nom: `${ligne.prenom} ${ligne.nom}`,
-          jeton, expiration
+          jeton, expiration,
+          enFile: miseEnFile.enFile
         });
       }
 
@@ -212,36 +225,37 @@ export async function POST(req) {
       throw erreur;
     }
 
-    /* Les courriels partent APRÈS la transaction. Trois cents envois à
-       l'intérieur la maintiendraient ouverte plusieurs minutes, et
-       l'échec du dernier annulerait les deux cent quatre-vingt-dix-neuf
-       comptes précédents — alors qu'ils sont parfaitement valides. */
-    let envoyes = 0;
-    for (const compte of crees) {
-      const resultat = await envoyerLienActivation({
-        to: compte.email, nom: compte.nom, nomUniversite,
-        jeton: compte.jeton, expiration: compte.expiration
-      });
-      if (resultat.envoye) envoyes++;
-    }
+    /* Les courriels sont en file, pas encore partis. On déclenche le
+       vidage sans l'attendre : trois cents envois prennent plusieurs
+       minutes, et personne ne doit patienter devant son navigateur.
+
+       La file étant durable, ce déclenchement n'est qu'une commodité —
+       si le processus s'arrête, le prochain vidage reprendra où il en
+       était. */
+    const envoyes = crees.filter(c => c.enFile).length;
+    declencherVidage();
 
     return NextResponse.json({
       etape: 'confirmation',
       success: true,
       comptesCrees: crees.length,
+      courrielsEnFile: envoyes,
       promotion: { idPromotion: promotion.idPromotion,
                    libelle: promotion.libelle, annee: promotion.annee },
-      courrielsEnvoyes: envoyes,
       envoiConfigure: envoiConfigure(),
       /* Tant que l'envoi n'est pas branché (Lot 6.6), les liens sont
          rendus à l'université — authentifiée, et créatrice de ces
          comptes — pour qu'elle les transmette. Sans eux, la promotion
          entière serait créée et inaccessible. */
-      liens: envoyes === crees.length ? null : crees.map(c => ({
+      /* Le lien n'est rendu que si l'envoi n'a PAS pu être mis en file.
+         Le test porte sur la configuration, pas sur le succès d'un envoi
+         donné : si SMTP est configuré mais qu'un envoi échoue, rendre le
+         lien permettrait de les récolter en provoquant des échecs. */
+      liens: envoiConfigure() && envoyes === crees.length ? null : crees.map(c => ({
         nom: c.nom, email: c.email, lien: lienActivation(c.jeton)
       })),
-      message: envoyes === crees.length
-        ? `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». Chaque étudiant a reçu son lien d'activation.`
+      message: envoiConfigure() && envoyes === crees.length
+        ? `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». Le lien d'activation part vers chaque étudiant.`
         : `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». L'envoi de courriel n'étant pas configuré, ` +
           `transmettez les liens ci-dessous à vos étudiants.`
     }, { status: 201 });

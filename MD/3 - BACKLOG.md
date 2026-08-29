@@ -820,7 +820,7 @@ prise sur ces étudiants.
 
 ---
 
-## 6.6 ⬜ Intégration de l'envoi d'e-mails — **en dernier**
+## 6.6 ✅ Intégration de l'envoi d'e-mails *(terminé, 29/08/2026)*
 
 **Pourquoi en dernier.** C'est une intégration technique, pas une conception : elle n'apporte
 aucune décision structurante et peut être branchée à la fin.
@@ -838,6 +838,40 @@ dans `.env`. Aucun e-mail n'a donc jamais été émis par l'application.
 **Ce qui reste à l'intégration finale :** configurer un compte d'envoi réel (Gmail exige un
 mot de passe d'application, pas le mot de passe du compte), et gérer l'envoi **par lots** —
 300 e-mails synchrones dans une requête expireraient.
+
+**Fait** (migration 012). L'envoi par lots a été traité par une **file durable**, pas par un
+simple envoi en arrière-plan :
+
+- Le délai n'était que le symptôme visible. Le vrai risque est la **perte** : un
+  redémarrage, une coupure, un mot de passe SMTP expiré, et 300 étudiants n'ont jamais reçu
+  leur lien — leur seul moyen d'accéder à la plateforme.
+- Le courriel est écrit en file **dans la transaction** qui le motive (motif dit « boîte
+  d'envoi transactionnelle »). Si l'import échoue, aucun courriel n'annonce un compte
+  inexistant ; s'il réussit, l'envoi est garanti d'être tenté.
+- Vidage séquentiel par lots de 25, avec 3 tentatives puis abandon — s'acharner sur une
+  adresse morte fait suspendre un compte Gmail.
+- `GET/POST /api/courriels` donne à l'administration l'état de la file et une relance. Un
+  envoi silencieux n'est pas vérifiable.
+
+**Deux garde-fous, dont un ajouté à la demande.**
+
+- **Liste noire de domaines** : les 38 adresses de démonstration sont en
+  `@demo.stageshare.mg`, un domaine inexistant. Les expédier produirait autant de rebonds
+  depuis le compte réel.
+- **Liste blanche de destinataires** (`COURRIEL_DESTINATAIRES_AUTORISES`) : une liste noire
+  ne protège que des domaines qu'on a pensé à y mettre, or une adresse inventée pour un
+  essai peut appartenir à quelqu'un de réel. Quand la liste est renseignée, **aucune autre
+  adresse ne peut partir**. La vider est le réglage de production.
+
+Au passage, `envoyerEmailValidation` existait depuis l'origine mais **n'était appelé nulle
+part** — d'où le constat « aucun e-mail n'a jamais été émis ». Il est branché sur la
+validation de compte par l'administration, et un gabarit de fin de cursus a été ajouté pour
+le Lot 6.5.
+
+**Vérifié avec un envoi réel** : adresse de démonstration → rien en file ; adresse réelle
+hors liste blanche → rien en file ; adresse autorisée → **courriel effectivement reçu**.
+Import de 3 comptes **rendu en 41 ms** avec 3 courriels en file, expédiés ensuite — la
+requête n'attend pas le SMTP, ce qui préserve aussi le plancher de temporisation du Lot 6.2.
 
 ---
 
@@ -892,4 +926,4 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 6 | 6.3 Import CSV avec prévisualisation | ✅ | 29/08/2026 |
 | 6 | 6.4 Promotions | ✅ | 29/08/2026 |
 | 6 | 6.5 Cycle de vie du rattachement | ✅ | 29/08/2026 |
-| 6 | 6.6 Intégration e-mail | ⬜ | |
+| 6 | 6.6 Intégration e-mail | ✅ | 29/08/2026 |

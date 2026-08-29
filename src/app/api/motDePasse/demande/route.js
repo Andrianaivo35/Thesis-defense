@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { normaliserEmail } from '@/lib/email';
 import { creerJeton, TYPE_REINITIALISATION } from '@/lib/jetons';
 import { envoyerLienReinitialisation } from '@/lib/mail';
+import { declencherVidage } from '@/lib/fileCourriel';
 import {
   identifierAppelant, verifierLimite, messageLimiteAtteinte
 } from '@/lib/limiteDebit';
@@ -98,13 +99,16 @@ export async function POST(req) {
       try {
         const { jeton, expiration } = await creerJeton(
           client, utilisateur.idUtilisateur, TYPE_REINITIALISATION);
-        await client.query('COMMIT');
 
-        /* L'envoi a lieu hors transaction : un serveur de courriel lent
-           ne doit pas maintenir une transaction ouverte. */
-        await envoyerLienReinitialisation({
+        /* Mise en file dans la transaction, puis vidage sans attendre :
+           la durée de la réponse ne doit pas dépendre de la vitesse du
+           serveur de courriel, sous peine de rouvrir la fuite par
+           temporisation refermée au Lot 6.2. */
+        await envoyerLienReinitialisation(client, {
           to: utilisateur.emailUtilisateur, jeton, expiration
         });
+        await client.query('COMMIT');
+        declencherVidage();
       } catch (erreur) {
         await client.query('ROLLBACK').catch(() => {});
         /* Même en cas d'échec, la réponse reste uniforme : une erreur

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { creerJeton, TYPE_ACTIVATION } from '@/lib/jetons';
 import { envoyerLienActivation, lienActivation, envoiConfigure } from '@/lib/mail';
+import { declencherVidage } from '@/lib/fileCourriel';
 import { normaliserEmail, estConflitEmail, MESSAGE_EMAIL_PRIS } from '@/lib/email';
 
 /* =====================================================================
@@ -98,17 +99,17 @@ export async function POST(req) {
 
     const { jeton, expiration } = await creerJeton(client, idUtilisateur, TYPE_ACTIVATION);
 
-    await client.query('COMMIT');
-
-    /* Envoi hors transaction : un serveur de courriel lent ne doit pas
-       maintenir une transaction ouverte, et son échec ne doit pas
-       annuler la création du compte. */
-    const courriel = await envoyerLienActivation({
+    /* Mise en file dans la transaction : le courriel et le compte
+       existent ensemble, ou pas du tout. */
+    const courriel = await envoyerLienActivation(client, {
       to: emailNormalise,
       nom: `${prenom.trim()} ${nom.trim()}`,
       nomUniversite: universite.rows[0]?.nomUniversite || null,
       jeton, expiration
     });
+
+    await client.query('COMMIT');
+    declencherVidage();
 
     /* Tant que l'envoi n'est pas configuré (Lot 6.6), le lien est rendu
        à l'université, qui le transmettra elle-même. Sans cela le compte
@@ -118,16 +119,16 @@ export async function POST(req) {
        Ce n'est pas une fuite : l'université est authentifiée, c'est elle
        qui vient de créer ce compte, et le lien ne permet que d'en poser
        le premier mot de passe. */
-    const lien = courriel.envoye ? null : lienActivation(jeton);
+    const lien = (envoiConfigure() && courriel.enFile) ? null : lienActivation(jeton);
 
     return NextResponse.json(
       {
         success: true,
-        courrielEnvoye: courriel.envoye,
+        courrielEnvoye: courriel.enFile,
         envoiConfigure: envoiConfigure(),
         lienActivation: lien,
         expirationActivation: expiration,
-        message: courriel.envoye
+        message: (envoiConfigure() && courriel.enFile)
           ? `Le compte de ${prenom.trim()} ${nom.trim()} a été créé. Un lien d'activation vient de lui être envoyé par courriel.`
           : `Le compte de ${prenom.trim()} ${nom.trim()} a été créé. L'envoi de courriel n'étant pas configuré, transmettez-lui vous-même le lien d'activation ci-dessous.`,
         idEtudiant: etudiant.rows[0].idEtudiant

@@ -2,6 +2,8 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { envoyerMessageInterne } from '@/lib/messagerie';
+import { envoyerEmailValidation } from '@/lib/mail';
+import { declencherVidage } from '@/lib/fileCourriel';
 
 // =====================================================================
 // PATCH : valider ou retirer la vérification d'un compte
@@ -79,9 +81,19 @@ Bienvenue dans la communauté Stage Share ! 🚀
         idDestinataire: compte.idUtilisateur,
         contenu
       });
+
+      /* Le gabarit de validation existait depuis l'origine mais n'était
+         appelé nulle part : aucun courriel n'a jamais été émis par
+         l'application. Il est branché ici, sur la file. */
+      if (compte.emailUtilisateur) {
+        await envoyerEmailValidation(client, {
+          to: compte.emailUtilisateur, nom: compte.nom, type
+        });
+      }
     }
 
     await client.query('COMMIT');
+    declencherVidage();
 
     return NextResponse.json(
       {

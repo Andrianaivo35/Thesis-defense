@@ -2,6 +2,8 @@ import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { envoyerMessageInterne } from '@/lib/messagerie';
+import { envoyerFinRattachement } from '@/lib/mail';
+import { declencherVidage } from '@/lib/fileCourriel';
 
 /* =====================================================================
    POST /api/universiteCycleVie — clore le rattachement d'étudiants
@@ -77,8 +79,9 @@ export async function POST(req) {
     const exclus = (exclusions || []).map(Number).filter(Boolean);
     const cibles = await client.query(`
       SELECT e."idEtudiant", e."idUtilisateur", e."nomEtudiant", e."prenomEtudiant",
-             e."statutRattachement"
+             e."statutRattachement", u."emailUtilisateur"
         FROM etudiant e
+        JOIN utilisateur u ON u."idUtilisateur" = e."idUtilisateur"
        WHERE e."idUniversite" = $1
          AND COALESCE(e."statutRattachement", 'Valide') = 'Valide'
          AND ($2::int IS NULL OR e."idPromotion" = $2)
@@ -180,9 +183,19 @@ export async function POST(req) {
         contenu
       });
       if (envoye) notifies++;
+
+      /* Le message interne ne suffit pas : un étudiant qui vient d'être
+         diplômé ne se connecte pas forcément dans les jours qui suivent.
+         Le courriel le joint là où il est. */
+      await envoyerFinRattachement(client, {
+        to: etudiant.emailUtilisateur,
+        nom: `${etudiant.prenomEtudiant} ${etudiant.nomEtudiant}`,
+        nomUniversite, statut, motif: motif?.trim() || null
+      });
     }
 
     await client.query('COMMIT');
+    declencherVidage();
 
     return NextResponse.json({
       success: true,
