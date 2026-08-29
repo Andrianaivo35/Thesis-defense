@@ -2,7 +2,7 @@
 
 Date : 27/08/2026
 Périmètre : **amélioration fonctionnelle et ergonomique de l'existant**, avant l'ajout des
-nouvelles fonctionnalités décrites dans [PLAN.md](PLAN.md).
+nouvelles fonctionnalités décrites dans [PLAN.md](0%20-%20PLAN.md).
 Les failles de sécurité sont traitées séparément dans [REVUE-CODE.md](1%20-%20REVUE-CODE.md).
 
 > **Aucune modification n'a été appliquée.** Ce document est une liste de travail destinée à
@@ -26,7 +26,7 @@ compétences, la filière, le niveau académique et la ville.
 par similarité de texte (`recouvrement()`, `valeurNiveau()` dans
 `src/app/api/recommandations/route.js`). Chaque variante d'écriture dégrade directement la
 qualité des correspondances — et dégradera encore plus la matrice de co-occurrence prévue
-au [PLAN §3](PLAN.md), qui suppose un vocabulaire de compétences propre.
+au [PLAN §3](0%20-%20PLAN.md), qui suppose un vocabulaire de compétences propre.
 
 **Preuve en base aujourd'hui :**
 
@@ -107,7 +107,7 @@ inconnue **crée une nouvelle ligne** dans `CompetenceReference`. C'est très ex
 l'origine de l'entrée `kjhd` / catégorie `welk` présente en base.
 
 Sans correction, on obtiendra « JavaScript », « Javascript », « JS » et « java script »
-comme quatre compétences distinctes — et la matrice de co-occurrence du [PLAN §3](PLAN.md)
+comme quatre compétences distinctes — et la matrice de co-occurrence du [PLAN §3](0%20-%20PLAN.md)
 n'aura **aucun sens**.
 
 **Amélioration.**
@@ -115,7 +115,7 @@ n'aura **aucun sens**.
    référentiel, avec recherche.
 2. Autoriser la proposition d'une compétence absente, mais la marquer **« en attente de
    validation »** plutôt que de l'injecter directement dans le référentiel (cf. le principe
-   déjà retenu au [PLAN §5.2, étape 5](PLAN.md)).
+   déjà retenu au [PLAN §5.2, étape 5](0%20-%20PLAN.md)).
 3. La catégorie ne doit plus être un champ libre : elle découle de la compétence choisie.
 4. Nettoyer les entrées parasites existantes avant tout calcul de co-occurrence.
 
@@ -146,7 +146,7 @@ Ces champs alimentent directement le calcul de score :
 
 > 💡 **Gain direct sur le mémoire :** une fois ces champs normalisés, les scores
 > `niveau`/`localisation`/`préférence` deviennent exacts au lieu d'heuristiques. Cela renforce
-> la *baseline* du chapitre évaluation ([PLAN §7](PLAN.md)) — et une baseline plus solide rend
+> la *baseline* du chapitre évaluation ([PLAN §7](0%20-%20PLAN.md)) — et une baseline plus solide rend
 > le gain mesuré du nouveau moteur **plus crédible**, pas moins.
 
 ---
@@ -313,16 +313,16 @@ fonctionnalités du PLAN arrivent sur des données déjà propres.
 | Sujet | Document |
 |---|---|
 | Failles de sécurité et anomalies bloquantes | [REVUE-CODE.md](1%20-%20REVUE-CODE.md) |
-| Nouvelles fonctionnalités (OCR, co-occurrence, conseiller) | [PLAN.md](PLAN.md) |
+| Nouvelles fonctionnalités (OCR, co-occurrence, conseiller) | [PLAN.md](0%20-%20PLAN.md) |
 | Améliorations de l'existant | **ce document** |
 
 **Points de jonction à ne pas manquer :**
-- **A2 est un prérequis du [PLAN §3](PLAN.md)** : la matrice de co-occurrence exige un
+- **A2 est un prérequis du [PLAN §3](0%20-%20PLAN.md)** : la matrice de co-occurrence exige un
   référentiel de compétences propre. À faire avant, pas après.
-- **A3 renforce la *baseline* du [PLAN §7](PLAN.md)** : des champs normalisés rendent la
+- **A3 renforce la *baseline* du [PLAN §7](0%20-%20PLAN.md)** : des champs normalisés rendent la
   comparaison baseline / nouveau moteur plus honnête et plus défendable.
 - **[REVUE-CODE.md E2](1%20-%20REVUE-CODE.md) (stockage des CV cassé en production) doit être traité
-  en même temps que le multi-CV du [PLAN §5.4](PLAN.md)** — c'est la même refonte.
+  en même temps que le multi-CV du [PLAN §5.4](0%20-%20PLAN.md)** — c'est la même refonte.
 - Le mot de passe administrateur ([REVUE-CODE.md C1](1%20-%20REVUE-CODE.md)) est **volontairement
   écarté** : environnement de test, changement prévu.
 - ⚠️ En revanche, [REVUE-CODE.md C2/C3](1%20-%20REVUE-CODE.md) (valeur `typeUtilisateur` des

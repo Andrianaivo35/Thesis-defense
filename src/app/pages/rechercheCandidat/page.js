@@ -133,15 +133,6 @@ export default function RechercheCandidat() {
     router.push(`/pages/messages?destinataire=${detailCohorte.idUtilisateurUniversite}`)
   }
 
-  const telechargerCv = (etudiant) => {
-    if (!etudiant.cvPdf) return
-    const link = document.createElement('a')
-    link.href = etudiant.cvPdf
-    link.download = `CV_${etudiant.prenom}_${etudiant.nom}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
 
   const truncate = (text, max = 100) => {
     if (!text) return ''
@@ -500,26 +491,24 @@ export default function RechercheCandidat() {
                   ) : (
                     <EtudiantsListModal>
                       {detailEtudiants.map((e, idx) => (
-                        <EtudiantRow key={e.idEtudiantExterne}>
+                        <EtudiantRow key={e.idEtudiant}>
                           <EtudiantInfoModal>
                             <EtudiantNomComplet>
-                              #{idx + 1} — {e.prenom} {e.nom}
+                              {e.prenom} {e.nom}
                             </EtudiantNomComplet>
-                            {e.email && (
-                              <EtudiantEmail>
-                                <Mail size={11} strokeWidth={2} />
-                                {e.email}
-                              </EtudiantEmail>
-                            )}
+                            {/* L'adresse n'est plus exposée : le contact passe par la
+                                messagerie interne, qui laisse à l'étudiant la maîtrise
+                                de son adresse. On montre à la place ce qui aide à
+                                décider — niveau et spécialité. */}
+                            <EtudiantEmail>
+                              {[e.niveauAcademique, e.specialisation || e.filiere]
+                                .filter(Boolean).join(' · ') || 'Profil à compléter'}
+                            </EtudiantEmail>
                           </EtudiantInfoModal>
-                          {e.cvPdf ? (
-                            <EtudiantCvAction onClick={() => telechargerCv(e)}>
-                              <Download size={13} strokeWidth={2} />
-                              Télécharger CV
-                            </EtudiantCvAction>
-                          ) : (
-                            <EtudiantSansCv>— Pas de CV —</EtudiantSansCv>
-                          )}
+                          <EtudiantCvAction
+                            onClick={() => router.push(`/pages/etudiantProfil/${e.idEtudiant}`)}>
+                            Voir le profil
+                          </EtudiantCvAction>
                         </EtudiantRow>
                       ))}
                     </EtudiantsListModal>

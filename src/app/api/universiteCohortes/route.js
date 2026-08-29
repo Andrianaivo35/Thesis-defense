@@ -19,11 +19,14 @@ export async function GET(req) {
     const result = await client.query(`
       SELECT 
         a.*,
-        COUNT(ee."idEtudiantExterne") AS "nombreEtudiants"
+        p."libelle" AS "promotionLibelle", p."annee" AS "promotionAnnee",
+        COUNT(DISTINCT e."idEtudiant") AS "nombreEtudiants"
       FROM "AnnonceCohorte" a
-      LEFT JOIN "EtudiantExterne" ee ON a."idAnnonceCohorte" = ee."idAnnonceCohorte"
+      LEFT JOIN "Promotion" p ON p."idPromotion" = a."idPromotion"
+      LEFT JOIN etudiant e ON e."idPromotion" = p."idPromotion"
+        AND COALESCE(e."statutRattachement", 'Valide') = 'Valide'
       WHERE a."idUniversite" = $1
-      GROUP BY a."idAnnonceCohorte"
+      GROUP BY a."idAnnonceCohorte", p."idPromotion"
       ORDER BY a."datePublication" DESC
     `, [payload.idUniversite]);
 
@@ -56,7 +59,7 @@ export async function POST(req) {
       titre, description, filiereConcernee, niveauAcademique,
       domainesRecherche, periodeDebut, periodeFin, dureeStage,
       villePreferee, accepteTeletravail, dateLimite,
-      etudiants  // [{ nom, prenom, email, cvPdf }]
+      idPromotion   // la promotion concernée, ou null
     } = body;
 
     if (!titre?.trim()) {
@@ -70,8 +73,9 @@ export async function POST(req) {
       INSERT INTO "AnnonceCohorte" (
         "idUniversite", "titre", "description", "filiereConcernee",
         "niveauAcademique", "domainesRecherche", "periodeDebut", "periodeFin",
-        "dureeStage", "villePreferee", "accepteTeletravail", "dateLimite", "statut"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'Active')
+        "dureeStage", "villePreferee", "accepteTeletravail", "dateLimite",
+        "idPromotion", "statut"
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'Active')
       RETURNING "idAnnonceCohorte"
     `, [
       payload.idUniversite, titre.trim(), description || null,
@@ -79,29 +83,26 @@ export async function POST(req) {
       domainesRecherche || null,
       periodeDebut || null, periodeFin || null,
       dureeStage || null, villePreferee || null,
-      accepteTeletravail || null, dateLimite || null
+      accepteTeletravail || null, dateLimite || null,
+      /* La promotion doit appartenir à cet établissement. Sans cette
+         vérification, un identifiant deviné publierait les étudiants
+         d'une autre université. */
+      idPromotion
+        ? (await client.query(
+            'SELECT "idPromotion" FROM "Promotion" WHERE "idPromotion" = $1 AND "idUniversite" = $2',
+            [idPromotion, payload.idUniversite])).rows[0]?.idPromotion || null
+        : null
     ]);
 
     const idAnnonceCohorte = annonceResult.rows[0].idAnnonceCohorte;
 
-    // 2. Ajouter les étudiants externes
-    if (Array.isArray(etudiants)) {
-      for (const e of etudiants) {
-        if (e.nom?.trim() && e.prenom?.trim()) {
-          await client.query(`
-            INSERT INTO "EtudiantExterne" (
-              "idAnnonceCohorte", "nom", "prenom", "email", "cvPdf"
-            ) VALUES ($1, $2, $3, $4, $5)
-          `, [
-            idAnnonceCohorte,
-            e.nom.trim(),
-            e.prenom.trim(),
-            e.email?.trim() || null,
-            e.cvPdf || null
-          ]);
-        }
-      }
-    }
+    /* Plus de saisie d'étudiants ici. L'annonce DÉSIGNE une promotion
+       déjà importée ; les étudiants qu'elle présente sont de vrais
+       comptes, avec profil, compétences et CV.
+
+       Saisir des noms à la main produisait des étudiants fantômes sur
+       lesquels une entreprise ne pouvait rien faire — pas même envoyer
+       un message. */
 
     await client.query('COMMIT');
 

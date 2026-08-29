@@ -7,21 +7,16 @@ import AppNavbar from '@/components/appNavbar'
 import {
   ArrowLeft, Pencil, Sparkles, ClipboardList, Users, Plus,
   FileText, CheckCircle2, Download, RefreshCw, Upload, Info,
-  Trash2, AlertCircle, Save, Send
+  AlertCircle, Save, Send
 } from 'lucide-react'
 import {
   PageContainer, BackButton, PageHeader, PageTitle, PageSubtitle,
   Section, SectionHeader, SectionTitle,
   FieldGroup, Label, Input, Textarea, Select, Grid2Cols,
-  AddEtudiantButton, EtudiantsList, EtudiantCard, EtudiantNumber, EtudiantFields,
-  SupprimerEtudiantButton,
   DocSection, DocLabel, DocBadge, DocButton, DocUploadLabel, DocActions, HiddenFileInput,
-  EmptyEtudiants, ActionBar, CancelButton, SaveButton,
+  ActionBar, CancelButton, SaveButton, Hint,
   AlertMessage, AlertIcon, LoadingState, InfoNote
 } from '@/components/styleFormulaireAnnonceCohorte'
-
-let localIdCounter = 1
-const genId = () => `local-${localIdCounter++}`
 
 export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
   const router = useRouter()
@@ -35,11 +30,20 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
   const [formData, setFormData] = useState({
     titre: '', description: '', filiereConcernee: '', niveauAcademique: '',
     domainesRecherche: '', periodeDebut: '', periodeFin: '', dureeStage: '',
-    villePreferee: '', accepteTeletravail: '', dateLimite: '', statut: 'Active'
+    villePreferee: '', accepteTeletravail: '', dateLimite: '', statut: 'Active',
+    idPromotion: null
   })
 
-  const [etudiants, setEtudiants] = useState([])
-  const [etudiantsInitiaux, setEtudiantsInitiaux] = useState([])
+  const [promotions, setPromotions] = useState([])
+
+  /* Chargées dans les deux modes : sans elles, le sélecteur est vide et
+     l'annonce ne peut désigner personne. */
+  useEffect(() => {
+    fetchAuth('/api/universitePromotions')
+      .then(r => r.json())
+      .then(d => setPromotions(d.promotions || []))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!isEditMode) return
@@ -62,19 +66,10 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
           villePreferee: a.villePreferee || '',
           accepteTeletravail: a.accepteTeletravail || '',
           dateLimite: a.dateLimite ? a.dateLimite.split('T')[0] : '',
-          statut: a.statut || 'Active'
+          statut: a.statut || 'Active',
+          idPromotion: a.idPromotion || null
         })
 
-        const charges = data.etudiants.map(e => ({
-          _localId: genId(),
-          idEtudiantExterne: e.idEtudiantExterne,
-          nom: e.nom,
-          prenom: e.prenom,
-          email: e.email || '',
-          cvPdf: e.cvPdf || ''
-        }))
-        setEtudiants(charges)
-        setEtudiantsInitiaux(JSON.parse(JSON.stringify(charges)))
       } catch (err) {
         setError(err.message)
       } finally {
@@ -86,96 +81,6 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
 
   const updateField = (field, value) => setFormData(prev => ({ ...prev, [field]: value }))
 
-  const ajouterEtudiant = () => {
-    setEtudiants(prev => [...prev, {
-      _localId: genId(),
-      idEtudiantExterne: null,
-      nom: '', prenom: '', email: '', cvPdf: ''
-    }])
-  }
-
-  const updateEtudiant = (localId, field, value) => {
-    setEtudiants(prev => prev.map(e =>
-      e._localId === localId ? { ...e, [field]: value } : e
-    ))
-  }
-
-  const supprimerEtudiant = (localId) => {
-    setEtudiants(prev => prev.filter(e => e._localId !== localId))
-  }
-
-  const handlePdfUpload = (localId, file) => {
-    if (!file) return
-    if (file.type !== 'application/pdf') {
-      setError('Le fichier doit être un PDF')
-      return
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setError(`Le PDF est trop volumineux (${(file.size / 1024 / 1024).toFixed(2)} Mo). Max 5 Mo.`)
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setError('')
-      updateEtudiant(localId, 'cvPdf', e.target.result)
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const telechargerCv = (etudiant) => {
-    if (!etudiant.cvPdf) return
-    const link = document.createElement('a')
-    link.href = etudiant.cvPdf
-    link.download = `CV_${etudiant.prenom}_${etudiant.nom}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  const calculerEtudiantsActions = () => {
-    const actions = []
-    for (const e of etudiants) {
-      if (!e.idEtudiantExterne) {
-        if (e.nom?.trim() && e.prenom?.trim()) {
-          actions.push({
-            action: 'create',
-            data: {
-              nom: e.nom,
-              prenom: e.prenom,
-              email: e.email || '',
-              cvPdf: e.cvPdf || ''
-            }
-          })
-        }
-      } else {
-        const initial = etudiantsInitiaux.find(i => i.idEtudiantExterne === e.idEtudiantExterne)
-        if (!initial) continue
-        const modifie =
-          initial.nom !== e.nom ||
-          initial.prenom !== e.prenom ||
-          initial.email !== e.email ||
-          initial.cvPdf !== e.cvPdf
-        if (modifie) {
-          actions.push({
-            action: 'update',
-            id: e.idEtudiantExterne,
-            data: {
-              nom: e.nom,
-              prenom: e.prenom,
-              email: e.email || '',
-              cvPdf: e.cvPdf || ''
-            }
-          })
-        }
-      }
-    }
-    for (const ei of etudiantsInitiaux) {
-      const encore = etudiants.find(e => e.idEtudiantExterne === ei.idEtudiantExterne)
-      if (!encore) actions.push({ action: 'delete', id: ei.idEtudiantExterne })
-    }
-    return actions
-  }
-
   const handleSave = async () => {
     if (!formData.titre.trim()) {
       setError("Le titre de l'annonce est requis")
@@ -186,24 +91,17 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
     setSuccess('')
 
     try {
-      let res
-      if (isEditMode) {
-        const etudiantsActions = calculerEtudiantsActions()
-        res = await fetchAuth(`/api/universiteCohortes/${idAnnonce}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...formData, etudiantsActions })
-        })
-      } else {
-        const etudiantsACreer = etudiants
-          .filter(e => e.nom?.trim() && e.prenom?.trim())
-          .map(({ _localId, idEtudiantExterne, ...rest }) => rest)
-        res = await fetchAuth('/api/universiteCohortes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...formData, etudiants: etudiantsACreer })
-        })
-      }
+      const res = isEditMode
+        ? await fetchAuth(`/api/universiteCohortes/${idAnnonce}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          })
+        : await fetchAuth('/api/universiteCohortes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || data.details || 'Erreur')
 
@@ -417,110 +315,43 @@ export default function FormulaireAnnonceCohorte({ idAnnonce = null }) {
           )}
         </Section>
 
-        {/* ===== SECTION 2 : Étudiants ===== */}
+        {/* ===== SECTION 2 : La promotion concernée =====
+
+            On ne saisit plus de noms. L'annonce DÉSIGNE une promotion
+            déjà importée, dont les membres sont de vrais comptes avec
+            profil, compétences et CV.
+
+            La saisie manuelle produisait des étudiants fantômes : une
+            entreprise intéressée n'avait aucun moyen d'agir, pas même
+            d'envoyer un message. */}
         <Section>
           <SectionHeader>
             <SectionTitle>
               <Users size={17} strokeWidth={2} />
-              Étudiants concernés ({etudiants.length})
+              Promotion concernée
             </SectionTitle>
-            <AddEtudiantButton onClick={ajouterEtudiant}>
-              <Plus size={15} strokeWidth={2.5} />
-              Ajouter un étudiant
-            </AddEtudiantButton>
           </SectionHeader>
 
-          {etudiants.length === 0 ? (
-            <EmptyEtudiants>
-              <p>Aucun étudiant ajouté pour l'instant.</p>
-              <p>Cliquez sur « <strong>Ajouter un étudiant</strong> » pour saisir leurs informations.</p>
-            </EmptyEtudiants>
-          ) : (
-            <EtudiantsList>
-              {etudiants.map((e, idx) => (
-                <EtudiantCard key={e._localId}>
-                  <EtudiantNumber>#{idx + 1}</EtudiantNumber>
-                  <EtudiantFields>
-                    <Grid2Cols>
-                      <FieldGroup>
-                        <Label>Nom *</Label>
-                        <Input
-                          value={e.nom}
-                          onChange={(ev) => updateEtudiant(e._localId, 'nom', ev.target.value)}
-                          placeholder="RAKOTO"
-                        />
-                      </FieldGroup>
-                      <FieldGroup>
-                        <Label>Prénom *</Label>
-                        <Input
-                          value={e.prenom}
-                          onChange={(ev) => updateEtudiant(e._localId, 'prenom', ev.target.value)}
-                          placeholder="Jean"
-                        />
-                      </FieldGroup>
-                    </Grid2Cols>
-
-                    <FieldGroup>
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        value={e.email}
-                        onChange={(ev) => updateEtudiant(e._localId, 'email', ev.target.value)}
-                        placeholder="jean.rakoto@exemple.com"
-                      />
-                    </FieldGroup>
-
-                    {/* === Document CV === */}
-                    <DocSection>
-                      <DocLabel>
-                        <FileText size={14} strokeWidth={2} />
-                        CV (PDF)
-                      </DocLabel>
-                      {e.cvPdf ? (
-                        <DocActions>
-                          <DocBadge>
-                            <CheckCircle2 size={12} strokeWidth={2.5} />
-                            CV ajouté
-                          </DocBadge>
-                          <DocButton type="button" onClick={() => telechargerCv(e)}>
-                            <Download size={13} strokeWidth={2} />
-                            Voir
-                          </DocButton>
-                          <DocUploadLabel htmlFor={`cv-${e._localId}`}>
-                            <RefreshCw size={13} strokeWidth={2} />
-                            Remplacer
-                          </DocUploadLabel>
-                        </DocActions>
-                      ) : (
-                        <DocUploadLabel htmlFor={`cv-${e._localId}`}>
-                          <Upload size={13} strokeWidth={2} />
-                          Choisir un fichier PDF
-                        </DocUploadLabel>
-                      )}
-                      <HiddenFileInput
-                        id={`cv-${e._localId}`}
-                        type="file"
-                        accept=".pdf,application/pdf"
-                        onChange={(ev) => handlePdfUpload(e._localId, ev.target.files?.[0])}
-                      />
-                      <InfoNote>
-                        <Info size={13} strokeWidth={2} />
-                        PDF uniquement, 5 Mo maximum.
-                      </InfoNote>
-                    </DocSection>
-                  </EtudiantFields>
-
-                  <SupprimerEtudiantButton
-                    onClick={() => supprimerEtudiant(e._localId)}
-                    title="Retirer cet étudiant"
-                    aria-label="Supprimer cet étudiant"
-                  >
-                    <Trash2 size={16} strokeWidth={2} />
-                  </SupprimerEtudiantButton>
-                </EtudiantCard>
+          <FieldGroup>
+            <Label>Quelle promotion cherche un stage ?</Label>
+            <Select
+              value={formData.idPromotion || ''}
+              onChange={(e) => updateField('idPromotion',
+                e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Aucune promotion précisée</option>
+              {promotions.map(p => (
+                <option key={p.idPromotion} value={p.idPromotion}>
+                  {p.libelle} — {p.annee} ({p.effectif} étudiant{p.effectif > 1 ? 's' : ''})
+                </option>
               ))}
-            </EtudiantsList>
-          )}
+            </Select>
+            <Hint>
+              {promotions.length === 0
+                ? "Vous n'avez pas encore de promotion. Importez-en une depuis « Importer une promotion » : les entreprises verront alors de vrais profils."
+                : "Les entreprises verront les profils réels de cette promotion — compétences, CV, parcours — et pourront contacter les étudiants directement."}
+            </Hint>
+          </FieldGroup>
         </Section>
 
         <ActionBar>

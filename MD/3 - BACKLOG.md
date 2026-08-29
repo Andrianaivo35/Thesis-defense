@@ -4,7 +4,7 @@ Document de référence unique pour la mise en œuvre. Il rassemble, dans l'ordr
 **tout ce qui doit être modifié, pourquoi, et ce qui doit être fait avant**.
 
 Sources : [REVUE-CODE.md](1%20-%20REVUE-CODE.md) (anomalies) · [AMELIORATIONS.md](2%20-%20AMELIORATIONS.md)
-(ergonomie et fonctionnalités) · [PLAN.md](PLAN.md) (nouvelles fonctionnalités du mémoire).
+(ergonomie et fonctionnalités) · [PLAN.md](0%20-%20PLAN.md) (nouvelles fonctionnalités du mémoire).
 
 ---
 
@@ -52,7 +52,7 @@ d'évaluation ne voudront rien dire. C'est toute la raison de cet ordre.
 > place, fausseraient la matrice de co-occurrence du Lot 5. Le faire maintenant évite de
 > devoir relancer l'évaluation plus tard.
 
-## 0.1 ⬜ Unifier la valeur de `typeUtilisateur` pour les universités
+## 0.1 ✅ Unifier la valeur de `typeUtilisateur` pour les universités
 
 **Pourquoi.** Anomalie bloquante prouvée ([REVUE-CODE C2/C3](1%20-%20REVUE-CODE.md)) :
 - l'inscription écrit `'Universite'` (sans accent), la connexion cherche `'Université'`
@@ -88,7 +88,7 @@ couperait l'accès aux 15 universités existantes.
 
 ---
 
-## 0.2 ⬜ Corriger `adminLogin` : `typeUtilisateur` manquant
+## 0.2 ✅ Corriger `adminLogin` : `typeUtilisateur` manquant
 
 **Pourquoi.** [REVUE-CODE M2](1%20-%20REVUE-CODE.md) — la réponse ne contient pas
 `typeUtilisateur: 'Admin'`, contrairement aux trois autres routes de connexion.
@@ -104,7 +104,7 @@ atterrit sur `/` au lieu de `/pages/adminLogin`.
 
 ---
 
-## 0.3 ⬜ Nettoyer les données de test résiduelles
+## 0.3 ✅ Nettoyer les données de test résiduelles
 
 **Pourquoi.** [AMELIORATIONS D5](2%20-%20AMELIORATIONS.md). Ces valeurs parasites polluent le
 référentiel de compétences et les champs sur lesquels le moteur calcule ses scores. Elles
@@ -144,7 +144,7 @@ candidatures existants sont intacts.
 > **Prérequis global du lot :** Lot 0 terminé (sans 0.1, le parcours université n'est pas
 > testable).
 
-## 1.1 ⬜ Compétences d'offre : passer par le référentiel
+## 1.1 ✅ Compétences d'offre : passer par le référentiel
 
 **Pourquoi.** [AMELIORATIONS A2](2%20-%20AMELIORATIONS.md). Incohérence au sein d'une même
 fonctionnalité : la **création** d'offre saisit les compétences en texte libre, alors que la
@@ -152,7 +152,7 @@ fonctionnalité : la **création** d'offre saisit les compétences en texte libr
 *find-or-create* : toute compétence inconnue crée une ligne dans `CompetenceReference`.
 C'est l'origine exacte de l'entrée `kjhd`.
 
-**C'est le prérequis n° 1 du [PLAN §3](PLAN.md)** : si « JavaScript », « Javascript » et
+**C'est le prérequis n° 1 du [PLAN §3](0%20-%20PLAN.md)** : si « JavaScript », « Javascript » et
 « JS » deviennent trois compétences distinctes, la matrice de co-occurrence n'a aucun sens.
 
 **Prérequis.** 0.3 (nettoyage du référentiel).
@@ -177,7 +177,7 @@ proposer une compétence inconnue → elle n'apparaît pas dans le référentiel
 
 ---
 
-## 1.2 ⬜ Université : capturer `idUniversite`, pas une chaîne
+## 1.2 ✅ Université : capturer `idUniversite`, pas une chaîne
 
 **Pourquoi.** [AMELIORATIONS A1](2%20-%20AMELIORATIONS.md). Le champ est un `<datalist>` : il ne
 transmet que le **texte** saisi, jamais l'identifiant. Le serveur retrouve ensuite
@@ -209,7 +209,7 @@ renvoie le `logo` en base64 sur une route publique.
 
 ---
 
-## 1.3 ⬜ Listes fermées : niveau, ville, durée
+## 1.3 ✅ Listes fermées : niveau, ville, durée
 
 **Pourquoi.** [AMELIORATIONS A3](2%20-%20AMELIORATIONS.md). Ces champs alimentent directement le
 calcul de score, et la saisie libre y produit des variantes que les heuristiques doivent
@@ -222,7 +222,7 @@ deviner. Constat en base : `'Licence 3'`, `'Master 1'`, `'Master 2'` … et `'ma
 | `duree` | `dureeEnMois()` | plus d'échec d'extraction |
 
 **Gain pour le mémoire :** une *baseline* plus solide rend le gain mesuré du nouveau moteur
-([PLAN §7](PLAN.md)) plus crédible, pas moins.
+([PLAN §7](0%20-%20PLAN.md)) plus crédible, pas moins.
 
 **Prérequis.** Aucun technique, mais à faire avant le Lot 5.
 
@@ -242,7 +242,7 @@ jamais bloquer un cas non anticipé.
 >
 > **Prérequis global :** Lot 0. (Indépendant du Lot 1, peut être mené en parallèle.)
 
-## 2.1 ⬜ Page « Mes candidatures » (étudiant)
+## 2.1 ✅ Page « Mes candidatures » (étudiant)
 
 **Pourquoi.** [AMELIORATIONS B1](2%20-%20AMELIORATIONS.md). Vérifié : le menu étudiant ne comporte
 que 4 entrées et **il n'existe ni page ni route API** permettant à un étudiant de consulter
@@ -256,7 +256,7 @@ statut, note au QCM, lien vers l'offre.
 
 ---
 
-## 2.2 ⬜ Notifier l'étudiant du changement de statut
+## 2.2 ✅ Notifier l'étudiant du changement de statut
 
 **Pourquoi.** [AMELIORATIONS B2](2%20-%20AMELIORATIONS.md). Quand une entreprise passe une
 candidature à `Recruté` ou `Refusé`, l'étudiant n'est prévenu par **aucun canal**.
@@ -274,7 +274,7 @@ fait pour la validation des comptes.
 
 ---
 
-## 2.3 ⬜ Indiquer « déjà postulé » dans la liste des offres
+## 2.3 ✅ Indiquer « déjà postulé » dans la liste des offres
 
 **Pourquoi.** [AMELIORATIONS B3](2%20-%20AMELIORATIONS.md). L'étudiant ne le découvre qu'après avoir
 ouvert le QCM, via une erreur 409.
@@ -286,7 +286,7 @@ sans le rendre obligatoire — l'offre doit rester consultable par un visiteur n
 
 ---
 
-## 2.4 ⬜ `SAVEPOINT` sur la vérification de compte
+## 2.4 ✅ `SAVEPOINT` sur la vérification de compte
 
 **Pourquoi.** [REVUE-CODE M1](1%20-%20REVUE-CODE.md). Le commentaire du code affirme que l'échec de
 l'envoi du message ne doit pas annuler la vérification — or en PostgreSQL, **toute
@@ -299,7 +299,7 @@ vérification est perdue, alors que l'API répond « Statut mis à jour ».
 
 # LOT 3 — Refonte du stockage des CV
 
-> **Pourquoi ce lot :** [REVUE-CODE E2](1%20-%20REVUE-CODE.md) et [PLAN §5.4](PLAN.md) sont **le même
+> **Pourquoi ce lot :** [REVUE-CODE E2](1%20-%20REVUE-CODE.md) et [PLAN §5.4](0%20-%20PLAN.md) sont **le même
 > chantier**. Les traiter séparément reviendrait à écrire deux fois la couche de stockage.
 >
 > **Prérequis :** Lot 0. À faire avant le Lot 5 si l'ingestion de CV est retenue.
@@ -314,7 +314,7 @@ monté, donc chaque reconstruction d'image détruit les CV déposés.
 1. Sortir les fichiers de `public/` ; les stocker sur un volume Docker persistant.
 2. Créer une route API authentifiée de téléchargement, vérifiant que le demandeur est bien
    l'entreprise propriétaire de l'offre ou l'étudiant lui-même.
-3. Introduire l'entité `CV` du [PLAN §5.4](PLAN.md) (multi-CV, périmètre minimal).
+3. Introduire l'entité `CV` du [PLAN §5.4](0%20-%20PLAN.md) (multi-CV, périmètre minimal).
 4. Retirer les CV réels du dépôt et ajouter `public/uploads/` au `.gitignore`
    ([REVUE-CODE E1](1%20-%20REVUE-CODE.md)).
 
@@ -333,7 +333,7 @@ monté, donc chaque reconstruction d'image détruit les CV déposés.
 >
 > **Prérequis global :** Lots 0 à 3 terminés.
 
-## 4.1 ⬜ Pagination et recherche côté serveur
+## 4.1 ✅ Pagination et recherche côté serveur
 
 **Pourquoi.** [AMELIORATIONS C1/C2](2%20-%20AMELIORATIONS.md). Aucune clause `LIMIT`/`OFFSET` sur
 `listeOffre`, `rechercheCandidat`, `rechercheEntreprise`, `listeEntreprises` et
@@ -357,7 +357,7 @@ d'offres ; une recherche par nom de compétence retourne les offres correspondan
 
 ---
 
-## 4.2 ⬜ Avertissement avant le QCM
+## 4.2 ✅ Avertissement avant le QCM
 
 **Pourquoi.** [AMELIORATIONS B4](2%20-%20AMELIORATIONS.md). La candidature et le QCM sont
 indissociables : une fois envoyé, la contrainte `UNIQUE (idEtudiant, idOffre)` interdit
@@ -373,7 +373,7 @@ périmètre : elle suppose un brouillon de candidature, donc un changement de mo
 
 ---
 
-## 4.3 ⬜ Durcissement des comptes
+## 4.3 ✅ Durcissement des comptes
 
 **Pourquoi.** [REVUE-CODE F2/F3/F4](1%20-%20REVUE-CODE.md).
 
@@ -395,7 +395,7 @@ environnement de test, changement déjà prévu de votre côté.
 
 ---
 
-## 4.4 ⬜ Référentiel de filières
+## 4.4 ✅ Référentiel de filières
 
 **Pourquoi.** [AMELIORATIONS A3](2%20-%20AMELIORATIONS.md), volet reporté au Lot 1. La filière, la
 spécialisation et le domaine restent saisis en texte libre, alors que `scoreFiliere()` les
@@ -412,7 +412,7 @@ existantes.
 
 ---
 
-## 4.5 ⬜ Cohérence de l'interface
+## 4.5 ✅ Cohérence de l'interface
 
 **Pourquoi.** [AMELIORATIONS D1 à D4](2%20-%20AMELIORATIONS.md). Sans effet sur les données, mais
 directement visible sur les captures d'écran du mémoire.
@@ -438,7 +438,7 @@ directement visible sur les captures d'écran du mémoire.
 > cela ne bloquait le moteur de recommandation, mais plusieurs de ces défauts cassent un
 > parcours nominal — donc se verraient en démonstration.
 
-## 4.6 ⬜ Tableau de bord entreprise
+## 4.6 ✅ Tableau de bord entreprise
 
 **Pourquoi.** Il existe un `adminDashboard` et un `universiteDashboard`, mais **aucun
 `entrepriseDashboard`** — alors que l'entreprise est le rôle le plus actif. Cette absence
@@ -455,7 +455,7 @@ Rediriger les deux liens morts vers cette page.
 
 ---
 
-## 4.7 ⬜ Page « Toutes les entreprises »
+## 4.7 ✅ Page « Toutes les entreprises »
 
 **Pourquoi.** `/api/listeEntreprises` est la **seule route API sans aucun consommateur**.
 Elle a pourtant été paginée et nettoyée de son `SELECT *` au Lot 4.1 — une route améliorée
@@ -466,7 +466,7 @@ dans son test d'état actif, alors que la page n'existe pas.
 
 ---
 
-## 4.8 ⬜ Page « À propos »
+## 4.8 ✅ Page « À propos »
 
 **Pourquoi.** Le pied de page de l'accueil pointe vers `/pages/aPropos` → **404**.
 
@@ -474,7 +474,7 @@ dans son test d'état actif, alors que la page n'existe pas.
 
 ---
 
-## 4.9 ⬜ Ajout d'un étudiant par l'université
+## 4.9 ✅ Ajout d'un étudiant par l'université
 
 **Pourquoi.** `universiteAjoutEtudiant` est une **coquille vide** : 8 lignes retournant un
 fragment vide, et **orpheline** — aucun lien ne pointe vers elle.
@@ -490,7 +490,7 @@ pas à valider sa propre demande.
 
 ---
 
-## 4.10 ⬜ Statistiques du tableau de bord université
+## 4.10 ✅ Statistiques du tableau de bord université
 
 **Pourquoi.** `universiteDashboard` affiche explicitement « Statistiques détaillées à
 venir » : la page existe, mais son contenu principal est un encart d'attente, avec un seul
@@ -501,13 +501,13 @@ attente, candidatures, placements.
 
 ---
 
-## 4.11 ⬜ Retirer le faux assistant conversationnel
+## 4.11 ✅ Retirer le faux assistant conversationnel
 
 **Pourquoi.** L'écran de messagerie contient un « Assistant Stage Share » codé en dur, qui
 répond *« je ne peux pas encore te répondre intelligemment, mais bientôt je serai connecté
 à une IA »*. C'est une promesse non tenue affichée à l'utilisateur.
 
-Le [PLAN §9](PLAN.md) écarte par ailleurs explicitement tout assistant conversationnel du
+Le [PLAN §9](0%20-%20PLAN.md) écarte par ailleurs explicitement tout assistant conversationnel du
 périmètre du mémoire. Laisser cette amorce visible en soutenance inviterait une question
 sur une fonctionnalité qu'on a justement décidé de ne pas traiter.
 
@@ -521,19 +521,19 @@ sur une fonctionnalité qu'on a justement décidé de ne pas traiter.
 > la volée). Sans eux, la matrice de co-occurrence est calculée sur un vocabulaire pollué et
 > l'évaluation ne veut rien dire.
 
-Le détail est dans [PLAN.md](PLAN.md). Rappel de l'enchaînement :
+Le détail est dans [PLAN.md](0%20-%20PLAN.md). Rappel de l'enchaînement :
 
-1. **5.1** Matrice de co-occurrence des compétences ([PLAN §3](PLAN.md)) — calculable
+1. **5.1** Matrice de co-occurrence des compétences ([PLAN §3](0%20-%20PLAN.md)) — calculable
    immédiatement sur les 51 offres existantes.
 2. **5.2** Correspondance bidirectionnelle (offre → candidats), qui découle de la matrice.
-3. **5.3** Conseiller contrefactuel ([PLAN §4](PLAN.md)) — réutilise le scoreur, sans
+3. **5.3** Conseiller contrefactuel ([PLAN §4](0%20-%20PLAN.md)) — réutilise le scoreur, sans
    nouvel algorithme.
-4. ✅ **5.4** Ingestion de CV : OCR + extraction ([PLAN §5](PLAN.md)) — **terminé**.
+4. ✅ **5.4** Ingestion de CV : OCR + extraction ([PLAN §5](0%20-%20PLAN.md)) — **terminé**.
    Détail complet dans [5 - INGESTION-CV.md](5%20-%20INGESTION-CV.md).
    Routage page par page (natif / OCR / mixte), OCR Tesseract derrière un
    adaptateur, appariement flou au référentiel, confirmation par l'étudiant.
    Mesuré sur 38 CV : routage 38/38, précision 98,2 %, rappel 95,2 %, F1 96,7 %.
-5. ✅ **5.5** Évaluation ([PLAN §7](PLAN.md)) — **terminé**.
+5. ✅ **5.5** Évaluation ([PLAN §7](0%20-%20PLAN.md)) — **terminé**.
    Détail complet dans [6 - EVALUATION.md](6%20-%20EVALUATION.md).
 
    La journalisation des prédictions au fil de l'eau s'est avérée inutile : la table
@@ -927,3 +927,4 @@ Nommé ici pour que le périmètre ne dérive pas.
 | 6 | 6.4 Promotions | ✅ | 29/08/2026 |
 | 6 | 6.5 Cycle de vie du rattachement | ✅ | 29/08/2026 |
 | 6 | 6.6 Intégration e-mail | ✅ | 29/08/2026 |
+| — | Dette `EtudiantExterne` soldée (migration 013) | ✅ | 29/08/2026 |

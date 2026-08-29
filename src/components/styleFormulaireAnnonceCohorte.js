@@ -507,3 +507,11 @@ export const LoadingState = styled.div`
   font-size: 16px;
   color: #64748b;
 `
+/* Indication sous un champ : explique la conséquence du choix, plutôt
+   que de répéter le libellé. */
+export const Hint = styled.p`
+  margin: 7px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #64748b;
+`

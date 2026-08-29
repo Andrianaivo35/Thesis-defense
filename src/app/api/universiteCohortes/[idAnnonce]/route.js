@@ -41,10 +41,13 @@ export async function GET(req, { params }) {
     );
 
     const etudiantsResult = await client.query(`
-      SELECT "idEtudiantExterne", "nom", "prenom", "email", "cvPdf", "dateAjout"
-      FROM "EtudiantExterne"
-      WHERE "idAnnonceCohorte" = $1
-      ORDER BY "idEtudiantExterne" ASC
+      SELECT e."idEtudiant", e."nomEtudiant" AS "nom", e."prenomEtudiant" AS "prenom",
+             e."niveauAcademique", e."filiere", e."specialisation"
+        FROM etudiant e
+        JOIN "AnnonceCohorte" a ON a."idPromotion" = e."idPromotion"
+       WHERE a."idAnnonceCohorte" = $1
+         AND COALESCE(e."statutRattachement", 'Valide') = 'Valide'
+       ORDER BY e."nomEtudiant"
     `, [idAnnonce]);
 
     return NextResponse.json({
@@ -83,7 +86,7 @@ export async function PATCH(req, { params }) {
       titre, description, filiereConcernee, niveauAcademique,
       domainesRecherche, periodeDebut, periodeFin, dureeStage,
       villePreferee, accepteTeletravail, dateLimite, statut,
-      etudiantsActions  // [{ action: 'create'|'update'|'delete', id, data }]
+      idPromotion       // la promotion concernée, ou null
     } = body;
 
     await client.query('BEGIN');
@@ -102,50 +105,29 @@ export async function PATCH(req, { params }) {
         "villePreferee" = $9,
         "accepteTeletravail" = $10,
         "dateLimite" = $11,
-        "statut" = COALESCE($12, "statut")
-      WHERE "idAnnonceCohorte" = $13
+        "statut" = COALESCE($12, "statut"),
+        "idPromotion" = $13
+      WHERE "idAnnonceCohorte" = $14
     `, [
       titre, description || null, filiereConcernee || null,
       niveauAcademique || null, domainesRecherche || null,
       periodeDebut || null, periodeFin || null,
       dureeStage || null, villePreferee || null,
       accepteTeletravail || null, dateLimite || null,
-      statut, idAnnonce
+      statut,
+      /* La promotion doit appartenir à l'établissement qui édite. */
+      idPromotion
+        ? (await client.query(
+            'SELECT "idPromotion" FROM "Promotion" WHERE "idPromotion" = $1 AND "idUniversite" = $2',
+            [idPromotion, payload.idUniversite])).rows[0]?.idPromotion || null
+        : null,
+      idAnnonce
     ]);
 
-    // 2. Actions sur les étudiants
-    if (Array.isArray(etudiantsActions)) {
-      for (const a of etudiantsActions) {
-        if (a.action === 'create' && a.data?.nom?.trim() && a.data?.prenom?.trim()) {
-          await client.query(`
-            INSERT INTO "EtudiantExterne" (
-              "idAnnonceCohorte", "nom", "prenom", "email", "cvPdf"
-            ) VALUES ($1, $2, $3, $4, $5)
-          `, [
-            idAnnonce,
-            a.data.nom.trim(),
-            a.data.prenom.trim(),
-            a.data.email?.trim() || null,
-            a.data.cvPdf || null
-          ]);
-        } else if (a.action === 'update' && a.id) {
-          await client.query(`
-            UPDATE "EtudiantExterne" SET
-              "nom" = $1, "prenom" = $2, "email" = $3, "cvPdf" = $4
-            WHERE "idEtudiantExterne" = $5 AND "idAnnonceCohorte" = $6
-          `, [
-            a.data.nom, a.data.prenom,
-            a.data.email || null, a.data.cvPdf || null,
-            a.id, idAnnonce
-          ]);
-        } else if (a.action === 'delete' && a.id) {
-          await client.query(`
-            DELETE FROM "EtudiantExterne"
-            WHERE "idEtudiantExterne" = $1 AND "idAnnonceCohorte" = $2
-          `, [a.id, idAnnonce]);
-        }
-      }
-    }
+    /* Plus d'actions sur des étudiants saisis à la main : l'annonce
+       DÉSIGNE une promotion, dont les membres sont de vrais comptes.
+       Modifier la composition se fait dans la promotion, pas dans
+       l'annonce — sans quoi les deux divergeraient. */
 
     await client.query('COMMIT');
 

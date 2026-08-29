@@ -25,13 +25,19 @@ export async function GET(req) {
         u."ville" AS "villeUniversite", u."logo" AS "logoUniversite",
         u."estVerifie",
         ut."idUtilisateur" AS "idUtilisateurUniversite",
-        COUNT(ee."idEtudiantExterne") AS "nombreEtudiants"
+        p."idPromotion", p."libelle" AS "promotionLibelle", p."annee" AS "promotionAnnee",
+        /* Les étudiants réellement disponibles, et non une liste saisie à
+           la main : ils ont un compte, un profil et un CV. C'est ce qui
+           rend l'annonce exploitable par l'entreprise. */
+        COUNT(DISTINCT e."idEtudiant") AS "nombreEtudiants"
       FROM "AnnonceCohorte" a
       INNER JOIN universite u ON a."idUniversite" = u."idUniversite"
       INNER JOIN utilisateur ut ON u."idUtilisateur" = ut."idUtilisateur"
-      LEFT JOIN "EtudiantExterne" ee ON a."idAnnonceCohorte" = ee."idAnnonceCohorte"
+      LEFT JOIN "Promotion" p ON p."idPromotion" = a."idPromotion"
+      LEFT JOIN etudiant e ON e."idPromotion" = p."idPromotion"
+        AND COALESCE(e."statutRattachement", 'Valide') = 'Valide'
       WHERE a."statut" = 'Active'
-      GROUP BY a."idAnnonceCohorte", u."idUniversite", ut."idUtilisateur"
+      GROUP BY a."idAnnonceCohorte", u."idUniversite", ut."idUtilisateur", p."idPromotion"
       ORDER BY a."datePublication" DESC
     `);
 
