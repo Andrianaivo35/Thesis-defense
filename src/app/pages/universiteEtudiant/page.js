@@ -177,7 +177,10 @@ export default function UniversiteEtudiants() {
     }
 
     return filtered
-  }, [etudiants, searchTerm, filterNiveau])
+  /* Toutes les entrees dont le calcul depend, sans exception : la liste
+     ne se rafraichissait pas au basculement actifs/anciens ni au
+     changement de promotion, parce que ces deux etats manquaient ici. */
+  }, [actifs, anciens, voirAnciens, filtrePromotion, searchTerm, filterNiveau])
 
   // Statistiques
   const stats = useMemo(() => ({
