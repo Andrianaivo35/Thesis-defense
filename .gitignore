@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...sauf le modele, qui ne contient aucun secret et sans lequel l'etape 4
+# de export/INSTALLATION.md (`cp .env.example .env`) echoue apres un clone.
+!.env.example
 
 # vercel
 .vercel
