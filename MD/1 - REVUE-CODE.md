@@ -105,7 +105,7 @@ d'encodage. Il faudra alors :
 - corriger `universiteLogin` (requête + les deux `typeUtilisateur` signés/renvoyés) ;
 - migrer les données existantes :
   `UPDATE utilisateur SET "typeUtilisateur"='Universite' WHERE "typeUtilisateur"='Université';`
-- corriger le script de seed (`scripts/seed-dummy-data*.js`) qui utilise la forme accentuée.
+- corriger le script de seed (`scripts/base/seed-dummy-data*.js`) qui utilise la forme accentuée.
 
 ⚠️ **Ces trois fichiers doivent être modifiés dans le même commit**, sinon on casse la
 connexion des comptes existants.

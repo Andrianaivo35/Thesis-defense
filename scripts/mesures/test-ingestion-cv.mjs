@@ -1,7 +1,7 @@
 /* Mesure du pipeline d'ingestion de CV sur le corpus de vérité terrain.
    Usage : node scripts/test-ingestion-cv.mjs [--detail]
 
-   Le corpus (scripts/cv-test) a été généré à partir des profils réels de
+   Le corpus (scripts/corpus/cv-test) a été généré à partir des profils réels de
    la base : on sait donc exactement quelles compétences chaque CV
    contient, et quels termes il contient SANS qu'ils soient des
    compétences. Les deux sont nécessaires :
@@ -13,11 +13,11 @@ import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
 import { fileURLToPath } from 'url';
-import { extraireTexteCV } from '../src/lib/extractionTexte.js';
-import { construireIndex, extraireCompetences, SEUIL_RETENTION } from '../src/lib/appariementFlou.js';
-import { libererOcr } from '../src/lib/ocr.js';
+import { extraireTexteCV } from '../../src/lib/extractionTexte.js';
+import { construireIndex, extraireCompetences, SEUIL_RETENTION } from '../../src/lib/appariementFlou.js';
+import { libererOcr } from '../../src/lib/ocr.js';
 
-const DOSSIER = path.join(path.dirname(fileURLToPath(import.meta.url)), 'cv-test');
+const DOSSIER = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'corpus', 'cv-test');
 const DETAIL = process.argv.includes('--detail');
 
 const pool = new pg.Pool({

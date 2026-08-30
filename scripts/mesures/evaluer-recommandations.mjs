@@ -58,8 +58,8 @@
    artefact de mémorisation.
    ===================================================================== */
 import pg from 'pg';
-import { construireMatrice } from '../src/lib/cooccurrence.js';
-import { evaluerCouple, POIDS } from '../src/lib/appariement.js';
+import { construireMatrice } from '../../src/lib/cooccurrence.js';
+import { evaluerCouple, POIDS } from '../../src/lib/appariement.js';
 
 const DETAIL = process.argv.includes('--detail');
 const RANGS = [1, 3, 5, 10];

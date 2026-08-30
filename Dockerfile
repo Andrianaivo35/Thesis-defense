@@ -31,4 +31,4 @@ EXPOSE 3000
 # ce dispositif ne s'executait qu'a la toute premiere creation du volume
 # et n'enregistrait rien. Une base existante ne recevait donc jamais les
 # migrations suivantes, sans qu'aucun signe ne l'indique.
-CMD ["sh", "-c", "node scripts/initialiser-base.mjs && npm start"]
+CMD ["sh", "-c", "node scripts/base/initialiser-base.mjs && npm start"]

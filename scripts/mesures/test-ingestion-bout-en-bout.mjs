@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const BASE = 'http://localhost:3000';
-const D = path.join(path.dirname(fileURLToPath(import.meta.url)), 'cv-test');
+const D = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'corpus', 'cv-test');
 const verite = JSON.parse(fs.readFileSync(path.join(D, 'verite.json'), 'utf8'));
 
 /* Un CV SCANNÉ : c'est le cas qui exerce réellement l'OCR. */

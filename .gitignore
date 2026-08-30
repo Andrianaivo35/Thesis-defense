@@ -54,3 +54,7 @@ public/uploads/
 # La procedure, elle, est versionnee : export/INSTALLATION.md.
 /export/*
 !/export/INSTALLATION.md
+
+# Chapitre 3 : figures et document engendres par scripts/memoire/.
+# Ils se regenerent en trois commandes, et pesent plusieurs Mo.
+/chapitre3/

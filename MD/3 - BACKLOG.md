@@ -70,7 +70,7 @@ tout problème d'encodage.
 - `src/app/api/universiteLogin/route.js` — paramètre de requête (l. 26) + `typeUtilisateur`
   signé dans le jeton (l. 68) + `typeUtilisateur` renvoyé (l. 84)
 - `src/app/api/universiteRegistreInfo/route.js` — déjà correct (`'Universite'`), à laisser
-- `scripts/seed-dummy-data.js` et `scripts/seed-dummy-data-2.js` — utilisent la forme
+- `scripts/base/seed-dummy-data.js` et `scripts/base/seed-dummy-data-2.js` — utilisent la forme
   accentuée, à aligner
 - Migration SQL sur les données existantes
 

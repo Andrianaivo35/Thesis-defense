@@ -5,7 +5,7 @@ Il consigne la méthode, **les échecs rencontrés et leur résolution**, les fo
 mesures obtenues et les limites assumées.
 
 Implémentation : [`src/lib/cooccurrence.js`](../src/lib/cooccurrence.js)
-Vérification : `node scripts/test-cooccurrence.mjs`
+Vérification : `node scripts/mesures/test-cooccurrence.mjs`
 
 > Les échecs documentés en §4 sont la partie la plus utile de ce document. Ils constituent
 > le raisonnement scientifique du mémoire : une hypothèse, sa mise à l'épreuve sur données
@@ -374,10 +374,10 @@ limites honnête que des résultats surestimés.
 
 ```bash
 # Recalculer et inspecter la matrice
-node scripts/test-cooccurrence.mjs
+node scripts/mesures/test-cooccurrence.mjs
 
 # Rejouer la densification du corpus (idempotent)
-node scripts/seed-dummy-data-3.js
+node scripts/base/seed-dummy-data-3.js
 ```
 
 **Migrations associées**

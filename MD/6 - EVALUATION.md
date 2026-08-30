@@ -26,7 +26,7 @@ Fabriquer la vérité terrain qu'on souhaite mesurer est la façon la plus sûre
 beau tableau qui ne dit rien.
 
 > **Note ajoutée après coup.** La table `Candidature` a depuis été peuplée
-> ([scripts/seed-candidatures.mjs](../scripts/seed-candidatures.mjs)), pour que la boucle
+> ([scripts/base/seed-candidatures.mjs](../scripts/base/seed-candidatures.mjs)), pour que la boucle
 > fonctionnelle soit démontrable — tableau de bord entreprise, suivi des candidatures,
 > historique des QCM.
 >
@@ -39,7 +39,7 @@ beau tableau qui ne dit rien.
 > Vérifié : le peuplement n'a modifié aucun des chiffres rapportés ci-dessous.
 >
 > **Second remaniement.** Le nettoyage de la base
-> ([scripts/nettoyer-base.mjs](../scripts/nettoyer-base.mjs)) a ensuite retiré trois
+> ([scripts/base/nettoyer-base.mjs](../scripts/base/nettoyer-base.mjs)) a ensuite retiré trois
 > comptes personnels ou d'essai. Toutes les mesures de ce chapitre ont été
 > **rejouées** sur les 38 étudiants restants. Aucune conclusion ne change ; les
 > écarts sont de l'ordre du point, ce qui illustre concrètement la sensibilité au
@@ -241,13 +241,13 @@ les CV), celle de la recommandation est un proxy.
 ## 8. Reproduire
 
 ```bash
-node scripts/evaluer-recommandations.mjs            # A, B, C, D + sensibilité
-node scripts/evaluer-recommandations.mjs --detail   # ablations où le NDCG diffère
-node scripts/test-ingestion-cv.mjs                  # extraction : précision / rappel / F1
+node scripts/mesures/evaluer-recommandations.mjs            # A, B, C, D + sensibilité
+node scripts/mesures/evaluer-recommandations.mjs --detail   # ablations où le NDCG diffère
+node scripts/mesures/test-ingestion-cv.mjs                  # extraction : précision / rappel / F1
 ```
 
 | Fichier | Rôle |
 |---|---|
-| [scripts/evaluer-recommandations.mjs](../scripts/evaluer-recommandations.mjs) | les quatre protocoles et l'analyse de sensibilité |
+| [scripts/mesures/evaluer-recommandations.mjs](../scripts/mesures/evaluer-recommandations.mjs) | les quatre protocoles et l'analyse de sensibilité |
 | [src/lib/cooccurrence.js](../src/lib/cooccurrence.js) | `construireMatrice(client, contextesExclus)` |
 | [src/lib/appariement.js](../src/lib/appariement.js) | `evaluerCouple({ …, matrice })` — le paramètre qui porte l'A/B |

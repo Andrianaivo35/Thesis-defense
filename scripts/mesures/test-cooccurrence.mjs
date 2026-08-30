@@ -1,7 +1,7 @@
 /* Script de vérification de la matrice de co-occurrence.
    Usage : node scripts/test-cooccurrence.mjs */
 import pg from 'pg';
-import { construireMatrice, similarite, competencesProches } from '../src/lib/cooccurrence.js';
+import { construireMatrice, similarite, competencesProches } from '../../src/lib/cooccurrence.js';
 
 const pool = new pg.Pool({
   user: process.env.DB_USER || 'postgres',

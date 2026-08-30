@@ -258,7 +258,7 @@ Les mesures en ligne de commande passaient toutes. Contre le conteneur :
 ## 6. Résultats
 
 Sur les **38 CV** du corpus de vérité terrain
-([voir sa génération](../scripts/generer-cv-test.js)) — 168 compétences à
+([voir sa génération](../scripts/corpus/generer-cv-test.js)) — 168 compétences à
 retrouver et 492 termes parasites à ignorer.
 
 ```
@@ -281,7 +281,7 @@ C'est le comportement souhaitable — le pipeline préfère taire une compétenc
 qu'en inventer une.
 
 > Ces chiffres ont été **remesurés** après le nettoyage de la base
-> ([scripts/nettoyer-base.mjs](../scripts/nettoyer-base.mjs)), qui a retiré trois
+> ([scripts/base/nettoyer-base.mjs](../scripts/base/nettoyer-base.mjs)), qui a retiré trois
 > comptes personnels ou d'essai : le corpus est passé de 41 à 38 CV. Les écarts
 > avec la mesure précédente (précision 98,8 %, rappel 96,0 %) sont de l'ordre du
 > demi-point, ce qui donne une idée concrète du bruit à cette taille
@@ -290,9 +290,9 @@ qu'en inventer une.
 ### Reproduire
 
 ```bash
-node scripts/generer-cv-test.js        # régénère le corpus + la vérité terrain
-node scripts/test-ingestion-cv.mjs     # mesure précision / rappel / F1
-node scripts/test-ingestion-bout-en-bout.mjs   # chaîne complète par HTTP
+node scripts/corpus/generer-cv-test.js        # régénère le corpus + la vérité terrain
+node scripts/mesures/test-ingestion-cv.mjs     # mesure précision / rappel / F1
+node scripts/mesures/test-ingestion-bout-en-bout.mjs   # chaîne complète par HTTP
 ```
 
 ---
@@ -355,6 +355,6 @@ scan, elles ne le sont pas. Les chiffres du §6 sont à lire comme une borne
 | [src/app/api/cv/[idCV]/analyse/route.js](../src/app/api/cv/%5BidCV%5D/analyse/route.js) | `POST` analyser, `GET` relire, `PUT` confirmer |
 | [src/components/revueCompetencesCV.js](../src/components/revueCompetencesCV.js) | écran de revue et de confirmation |
 | [scripts/migrations/007-analyse-cv.sql](../scripts/migrations/007-analyse-cv.sql) | colonnes d'analyse sur `CV`, table `CompetenceDetectee` |
-| [scripts/generer-cv-test.js](../scripts/generer-cv-test.js) | corpus synthétique + vérité terrain |
-| [scripts/test-ingestion-cv.mjs](../scripts/test-ingestion-cv.mjs) | mesure précision / rappel / F1 |
-| [scripts/test-ingestion-bout-en-bout.mjs](../scripts/test-ingestion-bout-en-bout.mjs) | chaîne complète par HTTP |
+| [scripts/corpus/generer-cv-test.js](../scripts/corpus/generer-cv-test.js) | corpus synthétique + vérité terrain |
+| [scripts/mesures/test-ingestion-cv.mjs](../scripts/mesures/test-ingestion-cv.mjs) | mesure précision / rappel / F1 |
+| [scripts/mesures/test-ingestion-bout-en-bout.mjs](../scripts/mesures/test-ingestion-bout-en-bout.mjs) | chaîne complète par HTTP |

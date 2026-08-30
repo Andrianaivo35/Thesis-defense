@@ -40,12 +40,14 @@ import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
 import { randomUUID } from 'crypto';
-import { trouverOuCreerPromotion, anneeUniversitaireCourante } from '../src/lib/promotions.js';
+import { trouverOuCreerPromotion, anneeUniversitaireCourante } from '../../src/lib/promotions.js';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-const RACINE = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const CORPUS = path.join(RACINE, 'scripts', 'cv-test');
+/* Le script vit dans scripts/base/ : il faut remonter DEUX niveaux
+   pour atteindre la racine du projet. */
+const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const CORPUS = path.join(RACINE, 'scripts', 'corpus', 'cv-test');
 const CONTENEUR = process.env.CONTENEUR_APP || 'stage-share-app';
 
 const pool = new pg.Pool({
