@@ -47,7 +47,49 @@ except ImportError:
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.abspath(os.path.join(ICI, '..', '..'))
 FIGURES = os.path.join(RACINE, 'chapitre3', 'figures')
-SORTIE = os.path.join(RACINE, 'chapitre3', 'Chapitre3.docx')
+DOSSIER_SORTIE = os.path.join(RACINE, 'chapitre3')
+
+# Deux documents, pour deux usages.
+#
+#   Essentiel  ce qui porte le memoire : le moteur de recommandation, la
+#              lecture des CV, l'import de promotion, les mecanismes de
+#              securite. C'est le chapitre qu'on defend.
+#
+#   Complet    les 44 ecrans, y compris ceux dont on peut se passer. Il
+#              sert de reserve : on y prend une figure au besoin, et le
+#              niveau de chaque ecran y est indique pour savoir ce qui se
+#              retire sans dommage.
+DOCUMENTS = [
+    {
+        'fichier': 'Chapitre3-Essentiel.docx',
+        'niveaux': ('coeur',),
+        'sous_titre': "Les ecrans qui portent la contribution",
+        'annonce': [
+            "Ce chapitre présente la plateforme par ce qu'elle apporte : le moteur de "
+            "recommandation et son explication, la lecture automatique des CV, la gestion "
+            "par promotion, et les mécanismes de sécurité qui les rendent utilisables.",
+
+            "Les écrans secondaires — modification de profil, changement de mot de passe, "
+            "connexion des différents rôles — sont réunis dans la version complète du "
+            "chapitre, où ils sont signalés comme tels.",
+        ],
+    },
+    {
+        'fichier': 'Chapitre3-Complet.docx',
+        'niveaux': ('coeur', 'utile', 'accessoire'),
+        'sous_titre': "Tous les ecrans de l'application",
+        'annonce': [
+            "Ce chapitre présente les quarante-quatre écrans de la plateforme. Il suit les "
+            "quatre acteurs — l'étudiant, l'entreprise, l'établissement et l'administration — "
+            "plutôt que l'arborescence des fichiers : c'est le parcours de chacun qui "
+            "explique les choix d'interface, non l'inverse. Les mécanismes qui les traversent "
+            "tous sont réunis en fin de chapitre.",
+
+            "Les figures signalées « secondaire » peuvent être retirées sans nuire à la "
+            "démonstration : elles documentent des écrans de service.",
+        ],
+    },
+]
 
 NUMERO_CHAPITRE = 3
 LARGEUR_IMAGE_CM = 15.5     # tient dans une page A4 avec marges de 2,5 cm
@@ -97,44 +139,44 @@ def inserer_image(doc, chemin):
     p.paragraph_format.space_after = Pt(2)
     p.add_run().add_picture(chemin, width=Cm(LARGEUR_IMAGE_CM))
 
+LIBELLES_NIVEAU = {
+    'coeur': None,                 # rien à signaler : c'est la norme
+    'utile': 'complément',
+    'accessoire': 'secondaire',
+}
 
-def main():
-    config_path = os.path.join(ICI, 'ecrans.json')
-    with io.open(config_path, encoding='utf-8') as f:
-        config = json.load(f)
 
-    if not os.path.isdir(FIGURES):
-        print('Aucune figure. Lancez dans l\'ordre :')
-        print('  node scripts/memoire/capturer-ecrans.mjs')
-        print('  python scripts/memoire/annoter-captures.py')
-        sys.exit(1)
-
-    legendes = charger('legendes.json', {})
-
+def composer(config, legendes, definition):
+    """Compose un document, en ne retenant que les niveaux demandés."""
     doc = Document()
     styles(doc)
 
-    doc.add_heading('Chapitre %d — Présentation de l\'application' % NUMERO_CHAPITRE, level=1)
+    doc.add_heading("Chapitre %d — Présentation de l'application" % NUMERO_CHAPITRE, level=1)
 
-    intro = doc.add_paragraph()
-    intro.add_run(
-        "Ce chapitre présente la plateforme telle qu'elle se donne à voir. "
-        "Il suit les quatre acteurs — l'étudiant, l'entreprise, l'établissement "
-        "et l'administration — plutôt que l'arborescence des écrans : c'est le "
-        "parcours de chacun qui explique les choix d'interface, non l'inverse. "
-        "Les mécanismes qui les traversent tous sont réunis en fin de chapitre."
-    )
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run(definition['sous_titre'])
+    r.italic = True
+    r.font.color.rgb = GRIS
+
+    for bloc in definition['annonce']:
+        doc.add_paragraph(bloc)
 
     figure = 0
     table_des_figures = []
     manquantes = []
 
     for section in config['sections']:
+        retenus = [e for e in section['ecrans']
+                   if e.get('importance', 'utile') in definition['niveaux']]
+        if not retenus:
+            continue
+
         doc.add_heading(section['titre'], level=2)
         if section.get('introduction'):
             doc.add_paragraph(section['introduction'])
 
-        for ecran in section['ecrans']:
+        for ecran in retenus:
             nom = ecran['fichier']
             annote = os.path.join(FIGURES, nom + '-annote.png')
             brute = os.path.join(FIGURES, nom + '.png')
@@ -145,23 +187,32 @@ def main():
                 continue
 
             figure += 1
-            # Le titre vient du bloc « titres », regroupé en tête du
-            # fichier de configuration pour se modifier d'un seul endroit.
-            # Le titre inline reste accepté, en repli.
+            # Le titre vient du bloc « titres », regroupé en tête du fichier
+            # de configuration pour se modifier d'un seul endroit.
             titre = config.get('titres', {}).get(nom) or ecran.get('titre') or nom
-            doc.add_heading(titre, level=3)
 
-            # Le paragraphe désigne sa figure : un renvoi explicite évite
-            # au lecteur de chercher de quelle image on parle.
-            p = doc.add_paragraph()
-            p.add_run(ecran.get('texte', ''))
-            renvoi = p.add_run(' (figure %d.%d)' % (NUMERO_CHAPITRE, figure))
+            entete = doc.add_heading(titre, level=3)
+            mention = LIBELLES_NIVEAU.get(ecran.get('importance'))
+            if mention:
+                # Signalé dans le document complet, pour qu'on sache d'un
+                # coup d'oeil ce qui peut être retiré.
+                marque = entete.add_run('   (%s)' % mention)
+                marque.italic = True
+                marque.font.size = Pt(10)
+                marque.font.color.rgb = GRIS
+
+            # Le paragraphe désigne sa figure : un renvoi explicite évite au
+            # lecteur de chercher de quelle image on parle.
+            para = doc.add_paragraph()
+            para.add_run(ecran.get('texte', ''))
+            renvoi = para.add_run(' (figure %d.%d)' % (NUMERO_CHAPITRE, figure))
             renvoi.bold = True
 
             inserer_image(doc, image)
             legende(doc, figure, titre)
 
-            # Les pastilles de l'image, reprises en toutes lettres.
+            # Les pastilles de l'image, reprises en toutes lettres et dans
+            # le même ordre : la puce 1 correspond à la pastille 1.
             for entree in legendes.get(nom, []):
                 item = doc.add_paragraph(style='List Number')
                 item.paragraph_format.space_after = Pt(2)
@@ -178,12 +229,33 @@ def main():
         etiquette.bold = True
         p.add_run(titre)
 
-    os.makedirs(os.path.dirname(SORTIE), exist_ok=True)
-    doc.save(SORTIE)
+    cible = os.path.join(DOSSIER_SORTIE, definition['fichier'])
+    os.makedirs(DOSSIER_SORTIE, exist_ok=True)
+    doc.save(cible)
 
-    print('%d figure(s) dans %s' % (figure, os.path.relpath(SORTIE, RACINE)))
+    return figure, manquantes
+
+
+def main():
+    with io.open(os.path.join(ICI, 'ecrans.json'), encoding='utf-8') as f:
+        config = json.load(f)
+
+    if not os.path.isdir(FIGURES):
+        print("Aucune figure. Lancez dans l'ordre :")
+        print('  node scripts/memoire/capturer-ecrans.mjs')
+        print('  python scripts/memoire/annoter-captures.py')
+        sys.exit(1)
+
+    legendes = charger('legendes.json', {})
+    manquantes = set()
+
+    for definition in DOCUMENTS:
+        figures, absentes = composer(config, legendes, definition)
+        manquantes.update(absentes)
+        print('%-28s %2d figure(s)' % (definition['fichier'], figures))
+
     if manquantes:
-        print('Images absentes, écrans ignorés : %s' % ', '.join(manquantes))
+        print('\nImages absentes, écrans ignorés : %s' % ', '.join(sorted(manquantes)))
         print('  (relancez capturer-ecrans.mjs)')
 
 

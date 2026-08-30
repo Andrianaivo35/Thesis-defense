@@ -3,12 +3,16 @@
 Quatre familles, selon ce qu'on cherche à faire. **Toutes les commandes se lancent depuis
 la racine du projet**, jamais depuis un sous-dossier.
 
+Chaque dossier porte son propre `README.md`, qui explique le fonctionnement de ses scripts,
+ce qu'ils attendent en entrée et ce qu'ils produisent. Cette page-ci n'en donne que la vue
+d'ensemble.
+
 | Dossier | Pour quoi faire | Touche à la base ? |
 |---|---|---|
-| [`base/`](#base--cycle-de-vie-de-la-base) | créer, peupler, nettoyer, exporter la base | **oui, en écriture** |
-| [`corpus/`](#corpus--jeu-de-cv-de-référence) | engendrer le corpus de CV du mémoire | non |
-| [`mesures/`](#mesures--ce-qui-produit-les-chiffres-du-mémoire) | mesurer extraction et recommandations | lecture seule |
-| [`memoire/`](#memoire--chapitre-3-du-mémoire) | captures d'écran et document du chapitre 3 | lecture seule |
+| [`base/`](base/README.md) | créer, peupler, nettoyer, exporter la base | **oui, en écriture** |
+| [`corpus/`](corpus/README.md) | engendrer le corpus de CV du mémoire | non |
+| [`mesures/`](mesures/README.md) | mesurer extraction et recommandations | lecture seule |
+| [`memoire/`](memoire/README.md) | captures d'écran et document du chapitre 3 | lecture seule |
 | [`migrations/`](migrations/README.md) | les 14 migrations SQL **historiques**, plus exécutées | — |
 
 ---
@@ -50,6 +54,8 @@ node scripts/base/seed-candidatures.mjs    # attribue CV, candidatures, promotio
 > [MD/5](../MD/5%20-%20INGESTION-CV.md) et [MD/6](../MD/6%20-%20EVALUATION.md) si les valeurs
 > bougent.
 
+Détail de chaque script : [`base/README.md`](base/README.md).
+
 ---
 
 ## `corpus/` — jeu de CV de référence
@@ -64,6 +70,9 @@ termes il contient **sans** être des compétences.
 
 C'est cette double liste qui rend les mesures possibles : la première donne le rappel, la
 seconde la précision. Voir [MD/5](../MD/5%20-%20INGESTION-CV.md).
+
+Ce qui rend le corpus exigeant — quatre maquettes, trois natures de PDF dont un cas mixte —
+et ce qu'il faut refaire après une régénération : [`corpus/README.md`](corpus/README.md).
 
 ---
 
@@ -85,6 +94,9 @@ node scripts/mesures/evaluer-recommandations.mjs
 node scripts/mesures/test-ingestion-bout-en-bout.mjs   # exige l'application démarrée
 ```
 
+Ce que mesure chaque protocole, et quoi regarder quand un chiffre ne correspond plus :
+[`mesures/README.md`](mesures/README.md).
+
 ---
 
 ## `memoire/` — chapitre 3 du mémoire
@@ -101,7 +113,9 @@ python scripts/memoire/generer-chapitre3.py   # 3. le document .docx
 Ce qu'il faut avant : l'application démarrée sur `http://localhost:3000`, et
 `npx playwright install chromium` fait une fois.
 
-Ce qui est produit : `chapitre3/figures/*.png` et `chapitre3/Chapitre3.docx`.
+Ce qui est produit : `chapitre3/figures/*.png`, puis **deux documents** —
+`Chapitre3-Essentiel.docx` (17 figures, ce qui porte le mémoire) et `Chapitre3-Complet.docx`
+(les 44 écrans, chacun marqué selon qu'on peut le retirer ou non).
 
 Ce qui se règle sans toucher au code : `scripts/memoire/ecrans.json` — la liste des pages,
 leur rôle, leur légende et leurs annotations. Voir

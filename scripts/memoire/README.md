@@ -27,7 +27,37 @@ L'application doit tourner sur `http://localhost:3000` — ou passez `--url` à 
 |---|---|---|
 | 1 | `ecrans.json` | `chapitre3/figures/*.png` et `reperes.json` |
 | 2 | les images et `reperes.json` | `*-annote.png` et `legendes.json` |
-| 3 | `ecrans.json` et les images | `chapitre3/Chapitre3.docx` |
+| 3 | `ecrans.json` et les images | `Chapitre3-Essentiel.docx` **et** `Chapitre3-Complet.docx` |
+
+---
+
+## Deux documents, pour deux usages
+
+L'étape 3 produit **deux fichiers** à partir des mêmes captures :
+
+| Document | Figures | Ce qu'il contient |
+|---|---|---|
+| `Chapitre3-Essentiel.docx` | 17 | ce qui porte la contribution : recommandation et son explication, lecture des CV, gestion par promotion, sécurité |
+| `Chapitre3-Complet.docx` | 44 | tous les écrans, chacun marqué « complément » ou « secondaire » quand on peut s'en passer |
+
+Le tri vient du champ **`importance`** de chaque écran dans `ecrans.json` :
+
+| Valeur | Sens | Dans quel document |
+|---|---|---|
+| `coeur` | on ne peut pas défendre le mémoire sans | les deux |
+| `utile` | éclaire, sans être indispensable | complet, marqué « complément » |
+| `accessoire` | écran de service — connexion, mot de passe oublié | complet, marqué « secondaire » |
+
+Actuellement : **17 cœur, 16 utiles, 11 accessoires**.
+
+**Pourquoi deux documents plutôt qu'un.** Retirer une figure d'un document Word déjà rédigé
+casse la numérotation, les renvois et la table des figures. Ici, on change une valeur dans
+`ecrans.json`, on relance l'étape 3, et les deux documents se renumérotent seuls. La version
+complète sert de réserve : on y prend une figure quand une section a besoin d'un appui.
+
+Pour ajouter un troisième découpage, il suffit d'une entrée dans la liste `DOCUMENTS` en
+tête de `generer-chapitre3.py` — son nom de fichier, les niveaux retenus, et son texte
+d'annonce.
 
 ---
 
@@ -68,6 +98,9 @@ Dans une adresse, `{{idEtudiant}}` est remplacé par la valeur du bloc `identifi
   ses données après l'affichage : sans lui, la capture montre un écran vide.
 - **`reperes`** — chaque entrée devient une pastille numérotée sur l'image **et** une puce
   numérotée sous la figure dans le document.
+- **`importance`** — `coeur`, `utile` ou `accessoire`. Détermine dans lequel des deux
+  documents l'écran apparaît (voir plus haut). En l'absence du champ, l'écran est traité
+  comme `utile`.
 
 ### Désigner un repère
 

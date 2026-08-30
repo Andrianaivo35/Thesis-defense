@@ -132,12 +132,28 @@ async function creerLien(demande) {
 
 /* Localise un repère. Deux écritures acceptées :
      "texte:Mes promotions"  -> le premier élément contenant ce texte
-     "input[type=file]"      -> un sélecteur CSS */
+     "input[type=file]"      -> un sélecteur CSS
+
+   On ne prend PAS bêtement la première correspondance : on prend la
+   première qui possède une boîte englobante.
+
+   La différence n'est pas théorique. « Filière » correspondait à trois
+   éléments, dont le premier était une <option> de liste déroulante —
+   invisible, donc sans boîte. Le repère était déclaré introuvable alors
+   que le libellé recherché figurait bien à l'écran, deux rangs plus
+   loin. */
 async function localiser(page, cible) {
-  if (cible.startsWith('texte:')) {
-    return page.getByText(cible.slice(6), { exact: false }).first();
+  const ensemble = cible.startsWith('texte:')
+    ? page.getByText(cible.slice(6), { exact: false })
+    : page.locator(cible);
+
+  const total = Math.min(await ensemble.count(), 8);
+  for (let i = 0; i < total; i++) {
+    const candidat = ensemble.nth(i);
+    const boite = await candidat.boundingBox().catch(() => null);
+    if (boite && boite.width > 0 && boite.height > 0) return candidat;
   }
-  return page.locator(cible).first();
+  return ensemble.first();   // aucune boîte : l'appelant le signalera
 }
 
 const attendre = (ms) => new Promise(r => setTimeout(r, ms));
@@ -229,7 +245,11 @@ async function capturer(navigateur, ecran, session) {
     const refus = await detecterRefus(page);
 
     const fichier = path.join(SORTIE, ecran.fichier + '.png');
-    await page.screenshot({ path: fichier, fullPage: false });
+    /* « pleinePage » photographie le document entier plutot que la
+       fenetre. Indispensable pour les formulaires longs : le champ
+       « Filiere » de l'inscription se trouve sous la ligne de flottaison,
+       il etait absent de la capture ET introuvable comme repere. */
+    await page.screenshot({ path: fichier, fullPage: Boolean(ecran.pleinePage) });
 
     const mention = refus.length
       ? `  ⚠ REFUS DÉTECTÉ : « ${refus[0]} »`
