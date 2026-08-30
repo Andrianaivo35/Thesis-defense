@@ -25,8 +25,11 @@
    ===================================================================== */
 import { execFileSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
+import { createRequire } from 'module';
 import path from 'path';
 import pg from 'pg';
+
+const require = createRequire(import.meta.url);
 
 const RACINE = process.cwd();
 const SEED = path.join(RACINE, 'prisma', 'seed.sql');
@@ -42,9 +45,14 @@ const pool = new pg.Pool({
 /* --- 1. Migrations ---------------------------------------------------- */
 console.log('[base] application des migrations...');
 try {
-  execFileSync('npx', ['prisma', 'migrate', 'deploy'], {
-    stdio: 'inherit', cwd: RACINE, shell: process.platform === 'win32'
-  });
+  /* On appelle le CLI de Prisma par son point d'entree plutot que par
+     `npx`. Passer par un shell obligerait a l'activer sous Windows, ce
+     que Node signale comme une faiblesse — les arguments y sont
+     concatenes et non echappes. Ici, aucun shell n'intervient, et le
+     comportement est le meme sur les trois systemes. */
+  execFileSync(process.execPath, [require.resolve('prisma/build/index.js'),
+                                  'migrate', 'deploy'],
+    { stdio: 'inherit', cwd: RACINE });
 } catch {
   console.error('[base] les migrations ont echoue — le demarrage est interrompu');
   process.exit(1);

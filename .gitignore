@@ -48,3 +48,9 @@ public/uploads/
 # Fichiers televerses (CV, lettres) : volume local pour `npm run dev`.
 # Ce sont des donnees personnelles, elles n'ont rien a faire dans le depot.
 /uploads/
+
+# Artefacts de reprise sur un autre poste : ils contiennent des CV, donc
+# des donnees personnelles, et se transmettent hors du depot.
+# La procedure, elle, est versionnee : export/INSTALLATION.md.
+/export/*
+!/export/INSTALLATION.md
