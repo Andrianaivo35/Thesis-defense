@@ -145,7 +145,11 @@ def main():
                 continue
 
             figure += 1
-            doc.add_heading(ecran['titre'], level=3)
+            # Le titre vient du bloc « titres », regroupé en tête du
+            # fichier de configuration pour se modifier d'un seul endroit.
+            # Le titre inline reste accepté, en repli.
+            titre = config.get('titres', {}).get(nom) or ecran.get('titre') or nom
+            doc.add_heading(titre, level=3)
 
             # Le paragraphe désigne sa figure : un renvoi explicite évite
             # au lecteur de chercher de quelle image on parle.
@@ -155,7 +159,7 @@ def main():
             renvoi.bold = True
 
             inserer_image(doc, image)
-            legende(doc, figure, ecran['titre'])
+            legende(doc, figure, titre)
 
             # Les pastilles de l'image, reprises en toutes lettres.
             for entree in legendes.get(nom, []):
@@ -163,7 +167,7 @@ def main():
                 item.paragraph_format.space_after = Pt(2)
                 item.add_run(entree['texte'])
 
-            table_des_figures.append((figure, ecran['titre']))
+            table_des_figures.append((figure, titre))
 
     doc.add_page_break()
     doc.add_heading('Table des figures', level=2)

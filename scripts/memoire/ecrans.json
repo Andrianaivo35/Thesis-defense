@@ -1,20 +1,94 @@
 {
   "_lisezMoi": [
-    "Liste des écrans du chapitre 3. Ce fichier se modifie sans toucher au code.",
+    "Configuration du chapitre 3. Tout se règle ici, sans toucher au code.",
     "",
-    "  role        public | etudiant | entreprise | universite | admin",
-    "  chemin      l'adresse, relative à la racine du site",
-    "  fichier     nom de l'image produite, sans extension",
-    "  titre       titre de la figure, repris comme légende",
-    "  texte       le paragraphe d'explication du mémoire",
-    "  attendre    sélecteur CSS à attendre avant de capturer (facultatif)",
-    "  avant       actions à jouer avant la capture : clic, saisie, pause",
-    "  reperes     zones à annoter — un numéro par entrée, dans l'ordre",
+    "TROIS BLOCS À CONNAÎTRE",
     "",
-    "Un repère se désigne par un sélecteur CSS, ou par du texte visible",
-    "(prefixe 'texte:'). L'annotation est posée aux coordonnées réelles de",
-    "l'élément, relevées dans le navigateur — jamais à l'oeil."
+    "  titres        le titre de chaque figure, regroupés en un seul endroit.",
+    "                C'est le bloc à modifier pour renommer : inutile d'aller",
+    "                chercher l'écran au milieu des sections.",
+    "  identifiants  les identifiants employés dans les adresses. Changer un",
+    "                étudiant d'exemple se fait ici, en une ligne.",
+    "  sections      l'ordre du chapitre, et pour chaque écran son rôle, son",
+    "                adresse, son explication et ses repères.",
+    "",
+    "UN ÉCRAN",
+    "",
+    "  role       public | etudiant | entreprise | universite | admin",
+    "  chemin     l'adresse. {{identifiant}} y est remplacé par sa valeur.",
+    "  fichier    nom de l'image produite, et clé dans le bloc « titres »",
+    "  texte      le paragraphe qui accompagnera la figure",
+    "  attendre   sélecteur à attendre avant de déclencher (facultatif)",
+    "  avant      actions préalables : clic, saisie, pause",
+    "  jeton      crée un lien à usage unique et l'ajoute à l'adresse",
+    "  reperes    zones à annoter — une pastille numérotée par entrée",
+    "",
+    "UN REPÈRE se désigne par du texte visible (« texte:Mes promotions ») ou",
+    "par un sélecteur CSS. L'annotation est posée aux coordonnées réelles",
+    "relevées dans le navigateur, jamais à l'oeil."
   ],
+
+  "titres": {
+    "accueil": "Page d'accueil",
+    "a-propos": "À propos de la plateforme",
+    "connexion-etudiant": "Connexion — étudiant",
+    "connexion-entreprise": "Connexion — entreprise",
+    "connexion-universite": "Connexion — université",
+    "connexion-admin": "Connexion — administration",
+    "inscription-etudiant": "Inscription d'un étudiant",
+    "inscription-entreprise": "Inscription d'une entreprise",
+    "inscription-universite": "Inscription d'un établissement",
+
+    "etudiant-offres": "Offres et recommandations",
+    "etudiant-profil": "Profil de l'étudiant",
+    "etudiant-modifier-profil": "Modification du profil",
+    "etudiant-cv": "Bibliothèque de CV",
+    "etudiant-candidatures": "Suivi des candidatures",
+    "etudiant-conseiller": "Conseiller d'orientation",
+    "etudiant-qcm": "Questionnaire de candidature",
+    "etudiant-recherche-entreprise": "Recherche d'entreprise",
+    "etudiant-liste-entreprises": "Annuaire des entreprises",
+
+    "entreprise-tableau": "Tableau de bord de l'entreprise",
+    "entreprise-offre": "Publication d'une offre",
+    "entreprise-modifier-offre": "Modification d'une offre",
+    "entreprise-candidatures": "Traitement des candidatures",
+    "entreprise-candidats-suggeres": "Candidats suggérés pour une offre",
+    "entreprise-recherche-candidat": "Recherche de candidats",
+    "entreprise-profil": "Fiche publique de l'entreprise",
+    "entreprise-modifier-profil": "Modification du profil",
+    "entreprise-mot-de-passe": "Changement de mot de passe",
+
+    "universite-tableau": "Tableau de bord de l'université",
+    "universite-etudiants": "Étudiants et promotions",
+    "universite-import": "Import d'une promotion",
+    "universite-ajout-etudiant": "Ajout d'un étudiant",
+    "universite-cohortes": "Annonces de cohorte",
+    "universite-cohorte-nouvelle": "Nouvelle annonce de cohorte",
+    "universite-cohorte-detail": "Détail d'une annonce",
+    "universite-recherche": "Recherche d'offres et d'entreprises",
+    "universite-profil": "Fiche publique de l'établissement",
+    "universite-modifier-profil": "Modification du profil",
+    "universite-mot-de-passe": "Changement de mot de passe",
+
+    "admin-tableau": "Tableau de bord d'administration",
+    "admin-creer-admin": "Création d'un compte administrateur",
+
+    "messagerie": "Messagerie interne",
+    "mot-de-passe-oublie": "Demande de réinitialisation",
+    "reinitialiser-mot-de-passe": "Choix d'un nouveau mot de passe",
+    "activer-compte": "Activation d'un compte"
+  },
+
+  "identifiants": {
+    "_idEtudiant": "celui du compte de capture : un etudiant ne consulte que son propre profil",
+    "idEtudiant": 23,
+    "idEntreprise": 2,
+    "idUniversite": 2,
+    "idOffre": 60,
+    "idOffreSansCandidature": 25,
+    "idAnnonceCohorte": 3
+  },
 
   "comptes": {
     "etudiant":   { "route": "/api/etudiantLogin",   "email": "lova.razanadrakoto@demo.stageshare.mg" },
@@ -27,115 +101,177 @@
   "sections": [
     {
       "titre": "Vue d'ensemble",
-      "introduction": "Avant de suivre chaque acteur, une vue de ce que la plateforme présente à un visiteur et de la façon dont on y entre.",
+      "introduction": "Ce que la plateforme présente à un visiteur, et les portes par lesquelles on y entre. Chaque rôle dispose de son écran de connexion et d'inscription : les informations demandées n'ont rien de commun entre un étudiant, une entreprise et un établissement.",
       "ecrans": [
-        {
-          "role": "public", "chemin": "/", "fichier": "accueil",
-          "titre": "Page d'accueil",
-          "texte": "La page d'accueil s'adresse aux trois publics de la plateforme sans en privilégier aucun : l'étudiant qui cherche un stage, l'entreprise qui en propose, et l'établissement qui accompagne ses promotions.",
+        { "role": "public", "chemin": "/", "fichier": "accueil",
+          "texte": "La page d'accueil s'adresse aux trois publics sans en privilégier aucun : l'étudiant qui cherche un stage, l'entreprise qui en propose, l'établissement qui accompagne ses promotions." },
+
+        { "role": "public", "chemin": "/pages/aPropos", "fichier": "a-propos",
+          "texte": "La présentation de la démarche et du fonctionnement de la plateforme, accessible sans compte." },
+
+        { "role": "public", "chemin": "/pages/etudiantLogin", "fichier": "connexion-etudiant",
+          "texte": "L'adresse électronique sert d'identifiant. Elle est comparée sans tenir compte de la casse : « Jean@Univ.mg » et « jean@univ.mg » désignent le même compte, ce qui n'était pas le cas à l'origine.",
           "reperes": [
-            { "cible": "texte:Stage Share", "legende": "l'identité de la plateforme" }
-          ]
-        },
-        {
-          "role": "public", "chemin": "/pages/etudiantLogin", "fichier": "connexion-etudiant",
-          "titre": "Connexion",
-          "texte": "L'authentification est commune aux quatre rôles, chacun disposant de son écran. Le lien de récupération de mot de passe mène au parcours par jeton à usage unique décrit plus loin.",
-          "reperes": [
-            { "cible": "input[type=email]", "legende": "identifiant : l'adresse électronique, comparée sans tenir compte de la casse" },
+            { "cible": "input[type=email]", "legende": "l'identifiant : l'adresse électronique" },
             { "cible": "texte:oublié", "legende": "récupération par lien à usage unique" }
-          ]
-        }
+          ] },
+
+        { "role": "public", "chemin": "/pages/entrepriseLogin", "fichier": "connexion-entreprise",
+          "texte": "L'entreprise dispose de son propre écran : son compte donne accès à la publication d'offres et au suivi des candidatures." },
+
+        { "role": "public", "chemin": "/pages/universiteLogin", "fichier": "connexion-universite",
+          "texte": "L'établissement accède à la gestion de ses promotions et à la validation des rattachements." },
+
+        { "role": "public", "chemin": "/pages/adminLogin", "fichier": "connexion-admin",
+          "texte": "L'administration valide les comptes entreprise et université avant qu'ils n'obtiennent leur badge de vérification." },
+
+        { "role": "public", "chemin": "/pages/etudiantRegistreInfo", "fichier": "inscription-etudiant",
+          "texte": "L'inscription d'un étudiant recueille son établissement, son niveau, sa filière et ses compétences. L'université se choisit dans une liste plutôt que de se saisir librement, et la filière est restreinte à ce que l'établissement enseigne réellement.",
+          "reperes": [
+            { "cible": "texte:université", "legende": "l'établissement se choisit, il ne se devine pas" }
+          ] },
+
+        { "role": "public", "chemin": "/pages/entrepriseRegistreInfo", "fichier": "inscription-entreprise",
+          "texte": "L'entreprise déclare son identité juridique et son secteur. Son compte reste non vérifié jusqu'à la validation par l'administration." },
+
+        { "role": "public", "chemin": "/pages/universiteRegistreInfo", "fichier": "inscription-universite",
+          "texte": "L'établissement s'inscrit avec ses coordonnées et son sigle. Il déclarera ensuite les filières qu'il enseigne, ce qui contraindra les inscriptions de ses étudiants." }
       ]
     },
 
     {
       "titre": "Le parcours de l'étudiant",
-      "introduction": "L'étudiant est l'utilisateur central : c'est pour lui que le moteur de recommandation et la lecture automatique des CV ont été conçus.",
+      "introduction": "L'étudiant est l'utilisateur central : c'est pour lui qu'ont été conçus le moteur de recommandation et la lecture automatique des CV, qui constituent le coeur de ce travail.",
       "ecrans": [
-        {
-          "role": "etudiant", "chemin": "/pages/listeOffre", "fichier": "etudiant-offres",
-          "titre": "Offres et recommandations",
-          "texte": "L'écran d'arrivée de l'étudiant. Au-dessus de la liste complète figurent les offres que le moteur lui destine, chacune accompagnée du motif de son rapprochement — c'est cette explication qui distingue une recommandation d'un simple classement.",
+        { "role": "etudiant", "chemin": "/pages/listeOffre", "fichier": "etudiant-offres",
+          "texte": "L'écran d'arrivée. Au-dessus de la liste complète figurent les offres que le moteur destine à l'étudiant, chacune accompagnée du motif de son rapprochement — c'est cette explication qui distingue une recommandation d'un simple classement.",
           "attendre": "text=Toutes les offres",
           "reperes": [
             { "cible": "texte:Toutes les offres", "legende": "la liste complète, paginée côté serveur" }
-          ]
-        },
-        {
-          "role": "etudiant", "chemin": "/pages/etudiantCV", "fichier": "etudiant-cv",
-          "titre": "Bibliothèque de CV",
-          "texte": "L'étudiant conserve plusieurs versions de son CV et choisit celle qu'il joint à chaque candidature. Le bouton d'analyse déclenche la lecture automatique du document.",
+          ] },
+
+        { "role": "etudiant", "chemin": "/pages/etudiantProfil/{{idEtudiant}}", "fichier": "etudiant-profil",
+          "texte": "Le profil rassemble les compétences déclarées, le parcours et les préférences de stage. C'est lui qu'interroge le moteur de recommandation.",
+          "attendre": "text=Compétences" },
+
+        { "role": "etudiant", "chemin": "/pages/etudiantModifierProfil", "fichier": "etudiant-modifier-profil",
+          "texte": "Les compétences se choisissent dans le référentiel et non en texte libre : c'est cette contrainte qui rend le rapprochement calculable." },
+
+        { "role": "etudiant", "chemin": "/pages/etudiantCV", "fichier": "etudiant-cv",
+          "texte": "L'étudiant conserve plusieurs versions de son CV et choisit celle qu'il joint à chaque candidature. Le bouton d'analyse déclenche la lecture automatique du document, OCR compris si celui-ci est numérisé.",
           "reperes": [
-            { "cible": "texte:Analyser", "legende": "lance la lecture du document, OCR compris" }
-          ]
-        },
-        {
-          "role": "etudiant", "chemin": "/pages/etudiantCandidature", "fichier": "etudiant-candidatures",
-          "titre": "Suivi des candidatures",
-          "texte": "Chaque candidature porte son statut et, le cas échéant, la note obtenue au questionnaire. L'étudiant est averti par la messagerie interne dès qu'une entreprise se prononce."
-        },
-        {
-          "role": "etudiant", "chemin": "/pages/etudiantConseiller", "fichier": "etudiant-conseiller",
-          "titre": "Conseiller d'orientation",
-          "texte": "Pour chaque compétence qu'il ne possède pas encore, le profil de l'étudiant est réévalué comme s'il la maîtrisait, sur l'ensemble des offres. Ne sont retenues que celles qui ouvrent de véritables opportunités."
-        }
+            { "cible": "texte:Analyser", "legende": "lance la lecture du document" }
+          ] },
+
+        { "role": "etudiant", "chemin": "/pages/etudiantCandidature", "fichier": "etudiant-candidatures",
+          "texte": "Chaque candidature porte son statut et, le cas échéant, la note obtenue au questionnaire. L'étudiant est averti par la messagerie interne dès qu'une entreprise se prononce." },
+
+        { "role": "etudiant", "chemin": "/pages/etudiantConseiller", "fichier": "etudiant-conseiller",
+          "texte": "Pour chaque compétence qu'il ne possède pas encore, le profil est réévalué comme si l'étudiant la maîtrisait, sur l'ensemble des offres. Ne sont retenues que celles qui ouvrent de véritables opportunités — non celles qui franchissent tout juste le seuil d'affichage." },
+
+        { "role": "etudiant", "chemin": "/pages/qcm/{{idOffreSansCandidature}}", "fichier": "etudiant-qcm",
+          "texte": "Le questionnaire accompagne obligatoirement la candidature. L'étudiant est averti avant de commencer qu'il n'aura qu'une tentative : une fermeture d'onglet en cours de route coûterait définitivement l'offre." },
+
+        { "role": "etudiant", "chemin": "/pages/rechercheEntreprise", "fichier": "etudiant-recherche-entreprise",
+          "texte": "L'étudiant peut aussi partir des entreprises plutôt que des offres, et découvrir celles de son secteur." },
+
+        { "role": "etudiant", "chemin": "/pages/listeEntreprises", "fichier": "etudiant-liste-entreprises",
+          "texte": "L'annuaire présente les entreprises inscrites, leur secteur et leur nombre d'offres actives." }
       ]
     },
 
     {
       "titre": "Le parcours de l'entreprise",
-      "introduction": "L'entreprise publie ses offres et reçoit des candidatures ; elle dispose aussi du sens inverse de la recommandation.",
+      "introduction": "L'entreprise publie ses offres et reçoit des candidatures. Elle dispose aussi du sens inverse de la recommandation : à partir d'une offre, la plateforme lui désigne les profils qui s'en rapprochent.",
       "ecrans": [
-        {
-          "role": "entreprise", "chemin": "/pages/entrepriseDashboard", "fichier": "entreprise-tableau",
-          "titre": "Tableau de bord de l'entreprise",
-          "texte": "L'entreprise voit d'un coup d'oeil ses offres actives, les candidatures reçues et celles qui restent à traiter."
-        },
-        {
-          "role": "entreprise", "chemin": "/pages/entrepriseRegistreOffre", "fichier": "entreprise-offre",
-          "titre": "Publication d'une offre",
-          "texte": "Les compétences exigées sont choisies dans le référentiel et non saisies librement : c'est cette contrainte qui rend le rapprochement calculable.",
+        { "role": "entreprise", "chemin": "/pages/entrepriseDashboard", "fichier": "entreprise-tableau",
+          "texte": "L'entreprise voit d'un coup d'oeil ses offres actives, les candidatures reçues et celles qui restent à traiter." },
+
+        { "role": "entreprise", "chemin": "/pages/entrepriseRegistreOffre", "fichier": "entreprise-offre",
+          "texte": "Les compétences exigées sont choisies dans le référentiel, et le niveau, la ville et la durée suivent des listes fermées. Sans cette discipline, aucun rapprochement ne serait calculable.",
           "reperes": [
-            { "cible": "texte:Publier une offre", "legende": "les champs suivent des listes fermées : niveau, ville, durée" }
-          ]
-        },
-        {
-          "role": "entreprise", "chemin": "/pages/entrepriseCandidature", "fichier": "entreprise-candidatures",
-          "titre": "Traitement des candidatures",
-          "texte": "L'entreprise consulte le CV, la note au questionnaire et le profil de chaque candidat avant de se prononcer."
-        }
+            { "cible": "texte:Publier une offre", "legende": "les champs suivent des listes fermées" }
+          ] },
+
+        { "role": "entreprise", "chemin": "/pages/entrepriseModifierOffre/{{idOffre}}", "fichier": "entreprise-modifier-offre",
+          "texte": "Une offre publiée reste modifiable, y compris ses compétences exigées — le rapprochement se recalcule alors pour tous les candidats." },
+
+        { "role": "entreprise", "chemin": "/pages/entrepriseCandidature", "fichier": "entreprise-candidatures",
+          "texte": "L'entreprise consulte le CV, la note au questionnaire et le profil de chaque candidat avant de se prononcer. Sa décision déclenche une notification à l'étudiant." },
+
+        { "role": "entreprise", "chemin": "/pages/offreCandidats/{{idOffre}}", "fichier": "entreprise-candidats-suggeres",
+          "texte": "Le sens inverse de la recommandation : à partir d'une offre, la plateforme désigne les profils qui s'en rapprochent, y compris ceux qui n'ont pas postulé. Chaque suggestion porte l'explication du rapprochement.",
+          "attendre": "text=Candidats" },
+
+        { "role": "entreprise", "chemin": "/pages/rechercheCandidat", "fichier": "entreprise-recherche-candidat",
+          "texte": "L'entreprise peut aussi chercher directement un profil, ou consulter les annonces de cohorte publiées par les établissements." },
+
+        { "role": "public", "chemin": "/pages/entrepriseProfil/{{idEntreprise}}", "fichier": "entreprise-profil",
+          "texte": "La fiche publique d'une entreprise : son identité, son secteur et ses offres en cours. Elle ne divulgue ni adresse électronique ni téléphone — le contact passe par la messagerie interne." },
+
+        { "role": "entreprise", "chemin": "/pages/entrepriseModifierProfil", "fichier": "entreprise-modifier-profil",
+          "texte": "L'entreprise complète son identité, son logo et sa description, qui alimentent sa fiche publique." },
+
+        { "role": "entreprise", "chemin": "/pages/entrepriseChangerMotDePasse", "fichier": "entreprise-mot-de-passe",
+          "texte": "Le changement de mot de passe exige l'ancien, et le nouveau doit respecter la politique de robustesse." }
       ]
     },
 
     {
       "titre": "Le parcours de l'université",
-      "introduction": "L'université gère ses effectifs par promotion, et non individu par individu.",
+      "introduction": "Une université ne raisonne pas en individus mais en promotions. Toute cette partie en découle : l'import crée une promotion, les actions de fin de cursus s'appliquent à une promotion entière, et l'écran principal s'organise autour d'elles.",
       "ecrans": [
-        {
-          "role": "universite", "chemin": "/pages/universiteDashboard", "fichier": "universite-tableau",
-          "titre": "Tableau de bord de l'université",
-          "texte": "L'établissement suit ses étudiants, ses demandes de rattachement et ses annonces de cohorte."
-        },
-        {
-          "role": "universite", "chemin": "/pages/universiteImport", "fichier": "universite-import",
-          "titre": "Import d'une promotion",
-          "texte": "Le fichier est intégralement vérifié avant la moindre écriture. L'établissement voit combien de comptes seront créés, quelles lignes sont rejetées et pourquoi, puis confirme.",
-          "reperes": [
-            { "cible": "input[type=file]", "legende": "le fichier, au format CSV" },
-            { "cible": "texte:modèle", "legende": "un modèle prérempli, encodé pour Excel" }
-          ]
-        },
-        {
-          "role": "universite", "chemin": "/pages/universiteEtudiant", "fichier": "universite-etudiants",
-          "titre": "Étudiants et promotions",
-          "texte": "L'écran s'organise autour des promotions : une université raisonne en groupes, pas en individus. Les étudiants actifs et les anciens sont séparés.",
+        { "role": "universite", "chemin": "/pages/universiteDashboard", "fichier": "universite-tableau",
+          "texte": "L'établissement suit ses étudiants, ses demandes de rattachement en attente et ses annonces de cohorte." },
+
+        { "role": "universite", "chemin": "/pages/universiteEtudiant", "fichier": "universite-etudiants",
+          "texte": "L'écran s'organise autour des promotions : une liste de plusieurs centaines de noms ne se pilote pas, quelques groupes si. Les étudiants actifs et les anciens — diplômés ou sortis — sont séparés.",
           "attendre": "text=Mes promotions",
           "reperes": [
             { "cible": "texte:Mes promotions", "legende": "les promotions, avec leurs effectifs" },
             { "cible": "texte:Anciens", "legende": "diplômés et sortis, séparés des actifs" }
-          ]
-        }
+          ] },
+
+        { "role": "universite", "chemin": "/pages/universiteImport", "fichier": "universite-import",
+          "texte": "Le fichier est intégralement vérifié avant la moindre écriture. L'établissement voit combien de comptes seront créés, quelles lignes sont rejetées et pourquoi, puis confirme. Un import qui échouerait à la ligne 47 sans prévisualisation laisserait la base dans un état incompréhensible.",
+          "reperes": [
+            { "cible": "input[type=file]", "legende": "le fichier, au format CSV" },
+            { "cible": "texte:modèle", "legende": "un modèle prérempli, encodé pour Excel" }
+          ] },
+
+        { "role": "universite", "chemin": "/pages/universiteAjoutEtudiant", "fichier": "universite-ajout-etudiant",
+          "texte": "Pour un étudiant isolé. L'établissement ne choisit pas son mot de passe : l'étudiant reçoit un lien d'activation à usage unique et le définit lui-même.",
+          "reperes": [
+            { "cible": "texte:lien d'activation", "legende": "aucun mot de passe provisoire ne circule" }
+          ] },
+
+        { "role": "universite", "chemin": "/pages/universiteCohortes", "fichier": "universite-cohortes",
+          "texte": "Une annonce de cohorte est une demande adressée aux entreprises : « je cherche des stages pour cette promotion »." },
+
+        { "role": "universite", "chemin": "/pages/universiteCohortes/nouveau", "fichier": "universite-cohorte-nouvelle",
+          "texte": "L'annonce désigne une promotion réelle plutôt qu'une liste de noms saisie à la main : l'entreprise intéressée voit ainsi de véritables profils, avec compétences et CV, et peut contacter les étudiants." },
+
+        { "role": "universite", "chemin": "/pages/universiteCohortes/{{idAnnonceCohorte}}", "fichier": "universite-cohorte-detail",
+          "texte": "Le détail d'une annonce, et les étudiants de la promotion qu'elle concerne." },
+
+        { "role": "universite", "chemin": "/pages/universiteRecherche", "fichier": "universite-recherche",
+          "texte": "L'établissement consulte les offres et les entreprises pour orienter ses étudiants." },
+
+        { "role": "public", "chemin": "/pages/universiteProfil/{{idUniversite}}", "fichier": "universite-profil",
+          "texte": "La fiche publique d'un établissement, consultable par les entreprises et les étudiants." },
+
+        { "role": "universite", "chemin": "/pages/universiteModifierProfil", "fichier": "universite-modifier-profil",
+          "texte": "L'établissement y déclare notamment les filières qu'il enseigne. Cette déclaration contraint ensuite les inscriptions : un étudiant qui le choisit ne pourra pas se déclarer dans une filière qu'il ne propose pas.",
+          "avant": [
+            { "clic": "text=Filières enseignées" },
+            { "pause": 600 }
+          ],
+          "reperes": [
+            { "cible": "texte:Filières enseignées", "legende": "ce que l'établissement enseigne réellement" }
+          ] },
+
+        { "role": "universite", "chemin": "/pages/universiteChangerMotDePasse", "fichier": "universite-mot-de-passe",
+          "texte": "Le changement de mot de passe, soumis à la même politique que pour les autres rôles." }
       ]
     },
 
@@ -143,31 +279,35 @@
       "titre": "L'administration",
       "introduction": "L'administration valide les comptes et surveille le fonctionnement de la plateforme.",
       "ecrans": [
-        {
-          "role": "admin", "chemin": "/pages/adminDashboard", "fichier": "admin-tableau",
-          "titre": "Tableau de bord d'administration",
-          "texte": "Les comptes entreprise et université sont vérifiés avant d'obtenir leur badge. L'administration dispose aussi de l'état de la file de courriels."
-        }
+        { "role": "admin", "chemin": "/pages/adminDashboard", "fichier": "admin-tableau",
+          "texte": "Les comptes entreprise et université sont vérifiés avant d'obtenir leur badge. L'administration dispose aussi de l'état de la file de courriels : un envoi silencieux ne serait pas vérifiable." },
+
+        { "role": "admin", "chemin": "/pages/adminRegistreInfo", "fichier": "admin-creer-admin",
+          "texte": "La création d'un compte administrateur, atteignable depuis le tableau de bord et y ramenant." }
       ]
     },
 
     {
       "titre": "Mécanismes transverses",
-      "introduction": "Trois dispositifs traversent tous les rôles : la messagerie, l'activation de compte et la récupération de mot de passe.",
+      "introduction": "Trois dispositifs traversent tous les rôles : la messagerie interne, l'activation d'un compte créé par un tiers, et la récupération d'un mot de passe oublié. Les deux derniers reposent sur la même mécanique de lien à usage unique.",
       "ecrans": [
-        {
-          "role": "etudiant", "chemin": "/pages/messages", "fichier": "messagerie",
-          "titre": "Messagerie interne",
-          "texte": "Toute communication passe par la plateforme : ni l'étudiant ni l'entreprise n'a besoin de divulguer son adresse. Les messages sont regroupés par jour et l'envoi s'affiche avant même la réponse du serveur."
-        },
-        {
-          "role": "public", "chemin": "/pages/motDePasseOublie", "fichier": "mot-de-passe-oublie",
-          "titre": "Récupération de mot de passe",
-          "texte": "La réponse est identique que l'adresse existe ou non — et sa durée l'est aussi. Sans cette seconde précaution, le formulaire deviendrait un moyen d'apprendre qui est inscrit sur la plateforme.",
+        { "role": "etudiant", "chemin": "/pages/messages", "fichier": "messagerie",
+          "texte": "Toute communication passe par la plateforme : ni l'étudiant ni l'entreprise n'a besoin de divulguer son adresse. Les messages sont regroupés par jour, et l'envoi s'affiche avant même la réponse du serveur — sur une connexion lente, attendre donnait l'impression que rien n'était parti." },
+
+        { "role": "public", "chemin": "/pages/motDePasseOublie", "fichier": "mot-de-passe-oublie",
+          "texte": "La réponse est identique que l'adresse existe ou non — et sa durée l'est aussi. Sans cette seconde précaution, le formulaire deviendrait un moyen d'apprendre qui est inscrit sur la plateforme, ce qui, sur un site d'étudiants en recherche de stage, revient à publier qui cherche du travail.",
           "reperes": [
             { "cible": "input[type=email]", "legende": "aucune réponse ne distingue une adresse connue d'une inconnue" }
-          ]
-        }
+          ] },
+
+        { "role": "public", "chemin": "/pages/reinitialiserMotDePasse", "fichier": "reinitialiser-mot-de-passe",
+          "jeton": { "type": "reinitialisation", "compte": "etudiant" },
+          "texte": "Le lien reçu par courriel mène à ce formulaire. Il est vérifié avant affichage : inutile de faire saisir deux fois un mot de passe pour annoncer ensuite que le lien avait expiré. Le mot de passe est validé avant que le lien ne soit consommé, afin qu'une faute de frappe ne le brûle pas." },
+
+        { "role": "public", "chemin": "/pages/activerCompte",
+          "fichier": "activer-compte",
+          "jeton": { "type": "activation", "compte": "etudiant" },
+          "texte": "Un étudiant inscrit par son établissement reçoit ce lien plutôt qu'un mot de passe provisoire. Rien de réutilisable ne circule, et c'est lui qui choisit son mot de passe — donc il respecte la politique de robustesse." }
       ]
     }
   ]

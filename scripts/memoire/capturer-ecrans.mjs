@@ -31,6 +31,8 @@ import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pg from 'pg';
+import { creerJeton } from '../../src/lib/jetons.js';
 
 const ICI = path.dirname(fileURLToPath(import.meta.url));
 const RACINE = path.resolve(ICI, '..', '..');
@@ -69,6 +71,65 @@ async function ouvrirSession(role) {
   return { token: data.token, utilisateur: data.utilisateur };
 }
 
+/* Remplace les {{identifiants}} d'une adresse par leurs valeurs.
+
+   Sans cela, chaque page paramétrée porterait un identifiant en dur, et
+   changer l'étudiant d'exemple obligerait à modifier cinq adresses. */
+function resoudre(chemin) {
+  return chemin.replace(/\{\{(\w+)\}\}/g, (_, cle) => {
+    const valeur = config.identifiants?.[cle];
+    if (valeur === undefined) {
+      console.log(`    identifiant inconnu : {{${cle}}}`);
+      return '';
+    }
+    return String(valeur);
+  });
+}
+
+/* Crée un lien à usage unique pour les écrans qui en attendent un.
+
+   Sans jeton, ces pages n'affichent que leur état d'échec — « ce lien ne
+   fonctionne plus » — au lieu du formulaire, qui est ce que le mémoire
+   doit montrer.
+
+   Les jetons créés sont INVALIDÉS à la fin de la capture : un script qui
+   produit des images n'a pas à laisser derrière lui des accès vivants,
+   même limités dans le temps et jamais expédiés. */
+const bdd = new pg.Pool({
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'stage-share',
+  password: process.env.DB_PASSWORD || 'fafah',
+  port: Number(process.env.DB_PORT) || 5432,
+});
+
+const jetonsCrees = [];
+
+async function creerLien(demande) {
+  const compte = config.comptes[demande.compte];
+  if (!compte) throw new Error(`Compte « ${demande.compte} » inconnu`);
+
+  const client = await bdd.connect();
+  try {
+    const { rows } = await client.query(
+      'SELECT "idUtilisateur" FROM utilisateur WHERE lower("emailUtilisateur") = $1',
+      [compte.email.toLowerCase()]
+    );
+    if (rows.length === 0) throw new Error(`Aucun compte pour ${compte.email}`);
+
+    await client.query('BEGIN');
+    const { jeton } = await creerJeton(client, rows[0].idUtilisateur, demande.type);
+    await client.query('COMMIT');
+    jetonsCrees.push({ idUtilisateur: rows[0].idUtilisateur, type: demande.type });
+    return jeton;
+  } catch (erreur) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw erreur;
+  } finally {
+    client.release();
+  }
+}
+
 /* Localise un repère. Deux écritures acceptées :
      "texte:Mes promotions"  -> le premier élément contenant ce texte
      "input[type=file]"      -> un sélecteur CSS */
@@ -80,6 +141,31 @@ async function localiser(page, cible) {
 }
 
 const attendre = (ms) => new Promise(r => setTimeout(r, ms));
+
+/* Une capture peut « réussir » tout en photographiant un refus.
+
+   C'est arrivé : le profil d'un étudiant avait été demandé avec
+   l'identifiant d'un AUTRE étudiant que celui connecté, et la page
+   affichait « vous ne pouvez consulter que votre propre profil ». Le
+   script n'y voyait rien — la page avait bien répondu — et l'image
+   serait partie telle quelle dans le mémoire.
+
+   On cherche donc les formulations d'échec de l'application. Mieux vaut
+   un faux signalement, qu'on écarte d'un coup d'oeil, qu'une page
+   d'erreur imprimée dans un chapitre. */
+const REFUS = [
+  'ne pouvez consulter',
+  'Non autorisé',
+  'introuvable',
+  'Erreur serveur',
+  'Accès refusé',
+  'Chargement impossible'
+];
+
+async function detecterRefus(page) {
+  const texte = await page.locator('body').innerText().catch(() => '');
+  return REFUS.filter(m => texte.toLowerCase().includes(m.toLowerCase()));
+}
 
 async function capturer(navigateur, ecran, session) {
   const contexte = await navigateur.newContext({
@@ -102,7 +188,14 @@ async function capturer(navigateur, ecran, session) {
   const reperes = [];
 
   try {
-    await page.goto(BASE + ecran.chemin, { waitUntil: 'networkidle', timeout: 30000 });
+    let adresse = resoudre(ecran.chemin);
+
+    if (ecran.jeton) {
+      const jeton = await creerLien(ecran.jeton);
+      adresse += (adresse.includes('?') ? '&' : '?') + 'jeton=' + encodeURIComponent(jeton);
+    }
+
+    await page.goto(BASE + adresse, { waitUntil: 'networkidle', timeout: 30000 });
 
     if (ecran.attendre) {
       await page.locator(ecran.attendre).first()
@@ -133,11 +226,17 @@ async function capturer(navigateur, ecran, session) {
       reperes.push({ ...boite, legende: repere.legende });
     }
 
+    const refus = await detecterRefus(page);
+
     const fichier = path.join(SORTIE, ecran.fichier + '.png');
     await page.screenshot({ path: fichier, fullPage: false });
-    console.log(`    ${ecran.fichier}.png  (${reperes.length} repère(s))`);
 
-    return { fichier: ecran.fichier, reperes };
+    const mention = refus.length
+      ? `  ⚠ REFUS DÉTECTÉ : « ${refus[0]} »`
+      : `  (${reperes.length} repère(s))`;
+    console.log(`    ${ecran.fichier}.png${mention}`);
+
+    return { fichier: ecran.fichier, reperes, refus };
 
   } catch (erreur) {
     console.log(`    ÉCHEC ${ecran.fichier} : ${erreur.message.split('\n')[0]}`);
@@ -167,6 +266,7 @@ const navigateur = await chromium.launch({
 });
 const sessions = {};
 const releve = {};
+const refusees = [];
 let reussies = 0, echouees = 0;
 
 try {
@@ -182,12 +282,30 @@ try {
         }
       }
       const resultat = await capturer(navigateur, ecran, sessions[ecran.role]);
-      if (resultat) { releve[resultat.fichier] = resultat.reperes; reussies++; }
-      else echouees++;
+      if (resultat) {
+        releve[resultat.fichier] = resultat.reperes;
+        reussies++;
+        if (resultat.refus?.length) refusees.push(resultat.fichier);
+      } else echouees++;
     }
   }
 } finally {
   await navigateur.close();
+
+  /* Les jetons engendrés pour les captures sont marqués utilisés. */
+  for (const { idUtilisateur, type } of jetonsCrees) {
+    await bdd.query(
+      `UPDATE "JetonUtilisateur" SET "dateUtilisation" = now()
+        WHERE "idUtilisateur" = $1 AND "type" = $2 AND "dateUtilisation" IS NULL`,
+      [idUtilisateur, type]
+    ).catch(() => {});
+  }
+  if (jetonsCrees.length) {
+    console.log(`
+${jetonsCrees.length} jeton(s) de capture invalidé(s).`);
+  }
+
+  await bdd.end();
 }
 
 writeFileSync(path.join(SORTIE, 'reperes.json'), JSON.stringify(releve, null, 2));
