@@ -14,6 +14,7 @@ plusieurs scripts résolvent leurs chemins à partir du dossier courant.
 |---|---|---|
 | `verifier-base.mjs` | contrôle que l'installation est complète — ne modifie rien | **oui**, lecture seule |
 | `charger-donnees.mjs` | importe les données dans une base dont les tables existent déjà | écrit, mais refuse d'écraser sans `--remplacer` |
+| `installer-cv.mjs` | recopie les 38 PDF depuis le corpus versionné vers `uploads/cv/` | **oui**, idempotent |
 | `initialiser-base.mjs` | applique les migrations, puis charge les données **si la base est vide** | **oui** |
 | `exporter-donnees.mjs` | produit `export/donnees.sql` et `export/uploads.tar.gz` | **oui**, lecture seule |
 | `seed-candidatures.mjs` | (re)crée CV, candidatures, réponses au QCM, promotions | **non** — *efface* d'abord |
@@ -45,6 +46,32 @@ Trois situations où `base:init` **annonce sa réussite sans rien charger** :
 
 `charger-donnees.mjs` ne fait qu'une chose, et la dit. Il refuse d'écraser des données
 existantes sans `--remplacer`, charge en **une transaction**, puis recompte table par table.
+
+---
+
+## `installer-cv.mjs` — les fichiers PDF, sans rien transmettre
+
+```bash
+npm run base:cv
+```
+
+Les 38 PDF de `uploads/cv/` sont, **octet pour octet**, les 38 PDF de
+`scripts/corpus/cv-test/`, qui sont versionnés. Seul le nom diffère : l'application range
+ses dépôts sous un identifiant unique, le corpus les nomme lisiblement.
+
+Les transmettre à part — archive sur clé, ou dossier `uploads/` ajouté au dépôt —
+reviendrait à livrer **deux fois les mêmes octets**, et à mettre dans git un dossier
+volontairement exclu parce qu'il reçoit les fichiers déposés par de vrais utilisateurs.
+
+La correspondance entre les deux noms est déjà en base, dans la table `CV` :
+`nomFichierOriginal` désigne le fichier du corpus, `nomFichier` le nom attendu par
+l'application. Le script suit cette table — jamais une liste écrite à la main, qui se
+désynchroniserait au premier changement.
+
+Il crée aussi `uploads/lettres/`, et se relance sans risque : ce qui est en place n'est pas
+recopié.
+
+> À lancer **après** le chargement des données : il lit la table `CV`.
 
 ---
 
