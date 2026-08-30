@@ -12,11 +12,37 @@ plusieurs scripts résolvent leurs chemins à partir du dossier courant.
 
 | Script | Ce qu'il fait | Sans danger ? |
 |---|---|---|
+| `verifier-base.mjs` | contrôle que l'installation est complète — ne modifie rien | **oui**, lecture seule |
 | `initialiser-base.mjs` | applique les migrations, puis charge les données **si la base est vide** | **oui** |
 | `exporter-donnees.mjs` | produit `export/donnees.sql` et `export/uploads.tar.gz` | **oui**, lecture seule |
 | `seed-candidatures.mjs` | (re)crée CV, candidatures, réponses au QCM, promotions | **non** — *efface* d'abord |
 | `nettoyer-base.mjs` | retire comptes d'essai et incohérences | **non** — supprime des comptes |
 | `seed-dummy-data*.js` | peuplement d'origine : entreprises, universités, offres | **non** — pour base vide |
+
+---
+
+## `verifier-base.mjs` — l'installation est-elle complète ?
+
+```bash
+npm run base:verifier
+```
+
+Ne modifie rien. Répond à une seule question, et dit **laquelle** des cinq étapes a manqué :
+le serveur répond, la base existe, les tables existent, les données sont chargées, les PDF
+sont sur le disque.
+
+**Pourquoi elles se confondent.** Vues de l'application, ces cinq pannes se ressemblent
+toutes — une page vide, un CV qui ne s'ouvre pas — alors qu'elles appellent cinq
+corrections différentes. Le script les sépare et donne la commande à taper.
+
+**Le cas le plus traître est la base à moitié remplie.** `base:init` ne charge les données
+que si la table `utilisateur` est vide : une base partielle garde son contenu incomplet à
+chaque relance, sans le moindre message d'erreur. Le script détecte ce cas nommément et
+indique qu'il faut repartir de zéro.
+
+Les nombres attendus sont **comptés dans `prisma/seed.sql`** à l'exécution, jamais écrits en
+dur : un attendu recopié devient faux le jour où le jeu de données change, et un script de
+vérification qui se trompe est pire que pas de script du tout.
 
 ---
 

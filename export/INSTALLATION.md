@@ -173,7 +173,33 @@ Tous les comptes de démonstration partagent le mot de passe **`Demo1234!`**.
 
 ## 9. Vérifier que tout fonctionne
 
-Trois gestes qui éprouvent la chaîne entière :
+**D'abord, une commande.** Elle contrôle les cinq étapes d'un coup — serveur, base, tables,
+données, fichiers — et dit laquelle a manqué :
+
+```bash
+npm run base:verifier
+```
+
+Attendu :
+
+```
+Connexion
+  OK    connecte a « stage-share »
+Schema
+  OK    29 tables
+  OK    index complementaires appliques
+Donnees
+  OK    21 tables peuplees, 2059 lignes — conforme au jeu de donnees
+Fichiers deposes
+  OK    38 PDF dans uploads/cv
+
+Installation complete — npm run dev, puis http://localhost:3000
+```
+
+Les nombres attendus sont **comptés dans `prisma/seed.sql`** à l'exécution, jamais recopiés :
+ils restent justes si le jeu de données change.
+
+**Ensuite, trois gestes** qui éprouvent la chaîne entière :
 
 1. **Connectez-vous en étudiant** et ouvrez « Offres de stage ». Le bloc de recommandations
    doit afficher des offres avec le motif du rapprochement.
