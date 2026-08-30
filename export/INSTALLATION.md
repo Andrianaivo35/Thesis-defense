@@ -119,8 +119,19 @@ Les fichiers PDF ne sont **pas** dans le dépôt : ce sont des données personne
 `uploads/` est volontairement exclu de git.
 
 ```bash
-tar -xzf chemin/vers/uploads.tar.gz -C uploads/
+mkdir -p uploads
+tar --force-local -xzf ../uploads.tar.gz -C uploads/
 ```
+
+**Le `mkdir` n'est pas facultatif.** `uploads/` est exclu de git : il n'existe pas après un
+clone, et `tar` ne crée jamais son dossier de destination. Sans lui :
+`tar: uploads: Cannot open: No such file or directory`.
+
+**`--force-local` est nécessaire sous Windows** dès que le chemin de l'archive commence par
+une lettre de lecteur. `tar` lit le `C:` de `C:/Users/...` comme un nom de machine distante
+et tente de s'y connecter : `tar (child): Cannot connect to c: resolve failed`. L'option lui
+dit que le chemin est local. Un chemin **relatif** (`../uploads.tar.gz`) évite le problème
+sans elle.
 
 Sous Windows sans `tar`, décompressez l'archive avec l'explorateur de façon à obtenir :
 
