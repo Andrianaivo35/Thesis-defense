@@ -13,11 +13,38 @@ plusieurs scripts résolvent leurs chemins à partir du dossier courant.
 | Script | Ce qu'il fait | Sans danger ? |
 |---|---|---|
 | `verifier-base.mjs` | contrôle que l'installation est complète — ne modifie rien | **oui**, lecture seule |
+| `charger-donnees.mjs` | importe les données dans une base dont les tables existent déjà | écrit, mais refuse d'écraser sans `--remplacer` |
 | `initialiser-base.mjs` | applique les migrations, puis charge les données **si la base est vide** | **oui** |
 | `exporter-donnees.mjs` | produit `export/donnees.sql` et `export/uploads.tar.gz` | **oui**, lecture seule |
 | `seed-candidatures.mjs` | (re)crée CV, candidatures, réponses au QCM, promotions | **non** — *efface* d'abord |
 | `nettoyer-base.mjs` | retire comptes d'essai et incohérences | **non** — supprime des comptes |
 | `seed-dummy-data*.js` | peuplement d'origine : entreprises, universités, offres | **non** — pour base vide |
+
+---
+
+## `charger-donnees.mjs` — importer les données, sans condition
+
+```bash
+npm run base:charger                        # depuis prisma/seed.sql
+npm run base:charger -- ../donnees.sql      # depuis un autre fichier
+npm run base:charger -- --remplacer         # vide tout, puis recharge
+```
+
+**Pourquoi il existe à côté de `base:init`.** Le chargement de `base:init` est
+*conditionnel* : il n'a lieu que si la table `utilisateur` est vide. Cette prudence est
+nécessaire au démarrage d'un conteneur, où le script tourne à chaque fois et écraserait le
+travail en cours — mais elle devient un piège quand on veut justement importer.
+
+Trois situations où `base:init` **annonce sa réussite sans rien charger** :
+
+| Ce qu'il affiche | Ce que ça veut dire |
+|---|---|
+| `demarrage a blanc` | le fichier de données est **absent** |
+| `deja presents` | la table `utilisateur` n'est pas vide |
+| rien | les tables ont été créées à part, par `migrate deploy` |
+
+`charger-donnees.mjs` ne fait qu'une chose, et la dit. Il refuse d'écraser des données
+existantes sans `--remplacer`, charge en **une transaction**, puis recompte table par table.
 
 ---
 

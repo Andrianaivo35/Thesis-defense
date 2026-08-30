@@ -77,9 +77,16 @@ try {
        On ne touche qu'aux lignes ENTIERES commencant par une barre
        oblique inverse : une barre a l'interieur d'une valeur inseree est
        du texte legitime. */
+    /* Le registre `_prisma_migrations` est ecarte lui aussi. Les
+       migrations viennent d'etre appliquees juste au-dessus, et Prisma y
+       a inscrit SES identifiants. Recharger ceux du dump ne provoque
+       aucune erreur — les UUID different — mais laisse deux lignes par
+       migration, et fait echouer tout rechargement ulterieur sur un
+       conflit de cle. Ce registre appartient a Prisma. */
     const contenu = readFileSync(SEED, 'utf8')
       .split('\n')
       .filter(l => !l.startsWith('\\'))
+      .filter(l => !l.startsWith('INSERT INTO public._prisma_migrations'))
       .join('\n');
 
     /* Le dump est joue en UNE transaction : une base a moitie peuplee

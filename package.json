@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "base:init": "node scripts/base/initialiser-base.mjs",
+    "base:charger": "node scripts/base/charger-donnees.mjs",
     "base:verifier": "node scripts/base/verifier-base.mjs",
     "base:migrer": "prisma migrate deploy",
     "base:etat": "prisma migrate status"
