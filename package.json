@@ -32,6 +32,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.2",
     "pdf-lib": "^1.17.1",
+    "prisma": "^7.10.0",
     "pureimage": "^0.4.20",
     "tailwindcss": "^4"
   }

@@ -1,0 +1,458 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AnnonceCohorte {
+  idAnnonceCohorte   Int        @id @default(autoincrement())
+  idUniversite       Int
+  titre              String     @db.VarChar(255)
+  description        String?
+  filiereConcernee   String?    @db.VarChar(255)
+  niveauAcademique   String?    @db.VarChar(100)
+  domainesRecherche  String?
+  periodeDebut       DateTime?  @db.Date
+  periodeFin         DateTime?  @db.Date
+  dureeStage         String?    @db.VarChar(50)
+  villePreferee      String?    @db.VarChar(100)
+  accepteTeletravail String?    @db.VarChar(20)
+  statut             String?    @default("Active") @db.VarChar(20)
+  datePublication    DateTime?  @default(now()) @db.Timestamp(6)
+  dateLimite         DateTime?  @db.Date
+  idPromotion        Int?
+  Promotion          Promotion? @relation(fields: [idPromotion], references: [idPromotion], onUpdate: NoAction)
+  universite         universite @relation(fields: [idUniversite], references: [idUniversite], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([idPromotion], map: "idx_annonce_promotion")
+}
+
+model CV {
+  idCV               Int                  @id @default(autoincrement())
+  idEtudiant         Int                  @unique(map: "idx_cv_principal_unique", where: raw("\"estPrincipal\""))
+  libelle            String               @db.VarChar(150)
+  nomFichier         String               @db.VarChar(255)
+  nomFichierOriginal String?              @db.VarChar(255)
+  tailleOctets       Int?
+  estPrincipal       Boolean              @default(false)
+  dateAjout          DateTime             @default(now()) @db.Timestamp(6)
+  statutAnalyse      String               @default("en_attente") @db.VarChar(20)
+  texteExtrait       String?
+  nombrePages        Int?
+  pagesOcr           Int?
+  confianceOcr       Decimal?             @db.Decimal(5, 2)
+  dateAnalyse        DateTime?            @db.Timestamp(6)
+  messageAnalyse     String?
+  etudiant           etudiant             @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, onUpdate: NoAction)
+  Candidature        Candidature[]
+  CompetenceDetectee CompetenceDetectee[]
+
+  @@index([idEtudiant], map: "idx_cv_etudiant")
+}
+
+model Candidature {
+  idCandidature    Int               @id @default(autoincrement())
+  idEtudiant       Int
+  idOffre          Int
+  lettreMotivation String?
+  cv               String?           @db.VarChar(500)
+  dateCandidature  DateTime?         @default(now()) @db.Timestamp(6)
+  statut           String?           @default("En attente") @db.VarChar(30)
+  noteQCM          Decimal?          @db.Decimal(5, 2)
+  idCV             Int?
+  nomFichierLettre String?           @db.VarChar(255)
+  CV               CV?               @relation(fields: [idCV], references: [idCV], onUpdate: NoAction)
+  etudiant         etudiant          @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, onUpdate: NoAction)
+  offre            offre             @relation(fields: [idOffre], references: [idOffre], onDelete: Cascade, onUpdate: NoAction)
+  ReponseEtudiant  ReponseEtudiant[]
+
+  @@unique([idEtudiant, idOffre])
+}
+
+model ChoixReponse {
+  idChoix         Int               @id @default(autoincrement())
+  idQuestion      Int
+  enonce          String
+  ordre           Int               @default(0)
+  estCorrect      Boolean           @default(false)
+  Question        Question          @relation(fields: [idQuestion], references: [idQuestion], onDelete: Cascade, onUpdate: NoAction)
+  ReponseEtudiant ReponseEtudiant[]
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model CompetenceDetectee {
+  idCompetenceDetectee  Int                  @id @default(autoincrement())
+  idCV                  Int
+  idCompetenceReference Int?
+  termeDetecte          String               @db.VarChar(150)
+  methode               String               @db.VarChar(20)
+  confiance             Decimal              @db.Decimal(4, 3)
+  page                  Int?
+  section               String?              @db.VarChar(40)
+  contexte              String?
+  decision              String?              @db.VarChar(15)
+  dateDecision          DateTime?            @db.Timestamp(6)
+  dateDetection         DateTime             @default(now()) @db.Timestamp(6)
+  CV                    CV                   @relation(fields: [idCV], references: [idCV], onDelete: Cascade, onUpdate: NoAction)
+  CompetenceReference   CompetenceReference? @relation(fields: [idCompetenceReference], references: [idCompetenceReference], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([idCV], map: "idx_competence_detectee_cv")
+}
+
+model CompetenceEtudiant {
+  idCompetenceEtudiant  Int                 @id @default(autoincrement())
+  idEtudiant            Int
+  idCompetenceReference Int
+  niveau                String?             @db.VarChar(50)
+  dateAjout             DateTime?           @default(now()) @db.Timestamp(6)
+  etudiant              etudiant            @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, onUpdate: NoAction, map: "fk_competenceetudiant_etudiant")
+  CompetenceReference   CompetenceReference @relation(fields: [idCompetenceReference], references: [idCompetenceReference], onDelete: Cascade, onUpdate: NoAction, map: "fk_competenceetudiant_reference")
+
+  @@unique([idEtudiant, idCompetenceReference], map: "uq_competenceetudiant")
+}
+
+model CompetenceOffre {
+  idCompetenceOffre     Int                 @id @default(autoincrement())
+  idOffre               Int
+  idCompetenceReference Int
+  niveauSouhaitee       String?             @default("D‚butant") @db.VarChar(30)
+  estObligatoire        Boolean?            @default(false)
+  CompetenceReference   CompetenceReference @relation(fields: [idCompetenceReference], references: [idCompetenceReference], onDelete: Cascade, onUpdate: NoAction)
+  offre                 offre               @relation(fields: [idOffre], references: [idOffre], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([idOffre, idCompetenceReference])
+}
+
+model CompetenceReference {
+  idCompetenceReference        Int                  @id @default(autoincrement())
+  nomCompetenceReference       String               @unique @db.VarChar(100)
+  categorieCompetenceReference String?              @db.VarChar(50)
+  description                  String?
+  CompetenceDetectee           CompetenceDetectee[]
+  CompetenceEtudiant           CompetenceEtudiant[]
+  CompetenceOffre              CompetenceOffre[]
+}
+
+model Conversation {
+  idConversation          Int                       @id @default(autoincrement())
+  dateCreation            DateTime?                 @default(now()) @db.Timestamp(6)
+  dateDernierMessage      DateTime?                 @default(now()) @db.Timestamp(6)
+  Message                 Message[]
+  participantConversation participantConversation[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model FileCourriel {
+  idCourriel     Int       @id @default(autoincrement())
+  destinataire   String    @db.VarChar(254)
+  sujet          String    @db.VarChar(300)
+  corpsHtml      String
+  statut         String    @default("en_attente") @db.VarChar(20)
+  tentatives     Int       @default(0)
+  derniereErreur String?
+  categorie      String?   @db.VarChar(30)
+  dateCreation   DateTime  @default(now()) @db.Timestamp(6)
+  dateEnvoi      DateTime? @db.Timestamp(6)
+
+  @@index([statut, idCourriel], map: "idx_file_courriel_attente", where: raw("((statut)::text = 'en_attente'::text)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model JetonUtilisateur {
+  idJeton         Int         @id @default(autoincrement())
+  idUtilisateur   Int
+  type            String      @db.VarChar(20)
+  jetonHache      String      @unique(map: "idx_jeton_hache") @db.Char(64)
+  dateExpiration  DateTime    @db.Timestamp(6)
+  dateUtilisation DateTime?   @db.Timestamp(6)
+  dateCreation    DateTime    @default(now()) @db.Timestamp(6)
+  utilisateur     utilisateur @relation(fields: [idUtilisateur], references: [idUtilisateur], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([idUtilisateur, type], map: "idx_jeton_utilisateur")
+}
+
+model Message {
+  idMessage      Int          @id @default(autoincrement())
+  idConversation Int
+  idExpediteur   Int
+  contenu        String
+  dateEnvoi      DateTime?    @default(now()) @db.Timestamp(6)
+  estLu          Boolean?     @default(false)
+  pieceJointe    String?      @db.VarChar(255)
+  Conversation   Conversation @relation(fields: [idConversation], references: [idConversation], onDelete: Cascade, onUpdate: NoAction)
+  utilisateur    utilisateur  @relation(fields: [idExpediteur], references: [idUtilisateur], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model Promotion {
+  idPromotion      Int              @id @default(autoincrement())
+  idUniversite     Int
+  libelle          String           @db.VarChar(120)
+  annee            String           @db.VarChar(9)
+  niveauAcademique String?          @db.VarChar(50)
+  filiere          String?          @db.VarChar(150)
+  specialisation   String?          @db.VarChar(150)
+  statut           String           @default("Active") @db.VarChar(20)
+  dateCreation     DateTime         @default(now()) @db.Timestamp(6)
+  AnnonceCohorte   AnnonceCohorte[]
+  universite       universite       @relation(fields: [idUniversite], references: [idUniversite], onDelete: Cascade, onUpdate: NoAction)
+  etudiant         etudiant[]
+
+  @@index([idUniversite], map: "idx_promotion_universite")
+}
+
+model QCM {
+  idQCM        Int        @id @default(autoincrement())
+  idOffre      Int        @unique
+  titre        String?    @db.VarChar(200)
+  description  String?
+  duree        Int?
+  noteMinimal  Int?       @default(0)
+  dateCreation DateTime?  @default(now()) @db.Timestamp(6)
+  estActif     Boolean?   @default(true)
+  offre        offre      @relation(fields: [idOffre], references: [idOffre], onDelete: Cascade, onUpdate: NoAction)
+  Question     Question[]
+}
+
+model Question {
+  idQuestion      Int               @id @default(autoincrement())
+  idQCM           Int
+  enonce          String
+  ordre           Int               @default(0)
+  points          Int               @default(1)
+  explication     String?
+  ChoixReponse    ChoixReponse[]
+  QCM             QCM               @relation(fields: [idQCM], references: [idQCM], onDelete: Cascade, onUpdate: NoAction)
+  ReponseEtudiant ReponseEtudiant[]
+}
+
+model ReponseEtudiant {
+  idReponse     Int          @id @default(autoincrement())
+  idCandidature Int
+  idQuestion    Int
+  idChoixOffre  Int
+  enonce        String?
+  estCorrecte   Boolean      @default(false)
+  ordre         Int          @default(0)
+  Candidature   Candidature  @relation(fields: [idCandidature], references: [idCandidature], onDelete: Cascade, onUpdate: NoAction)
+  ChoixReponse  ChoixReponse @relation(fields: [idChoixOffre], references: [idChoix], onDelete: Cascade, onUpdate: NoAction)
+  Question      Question     @relation(fields: [idQuestion], references: [idQuestion], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([idCandidature, idQuestion])
+}
+
+model UniversiteDomaine {
+  idUniversiteDomaine Int        @id @default(autoincrement())
+  idUniversite        Int
+  domaine             String     @db.VarChar(150)
+  dateAjout           DateTime   @default(now()) @db.Timestamp(6)
+  universite          universite @relation(fields: [idUniversite], references: [idUniversite], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([idUniversite, domaine], map: "idx_universite_domaine_unique")
+}
+
+model admin {
+  idAdmin       Int         @id @default(autoincrement())
+  idUtilisateur Int         @unique
+  nomAdmin      String      @db.VarChar(100)
+  prenomAdmin   String      @db.VarChar(100)
+  telephone     String?     @db.VarChar(30)
+  dateCreation  DateTime?   @default(now()) @db.Timestamp(6)
+  utilisateur   utilisateur @relation(fields: [idUtilisateur], references: [idUtilisateur], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model centre_interet {
+  idCentreInteret Int       @id @default(autoincrement())
+  idEtudiant      Int?
+  domaineInteret  String?
+  missionPreferee String?
+  etudiant        etudiant? @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, map: "idEtudiant")
+
+  @@map("centre-interet")
+}
+
+model entreprise {
+  idEntreprise               Int          @id @default(autoincrement())
+  idUtilisateur              Int?         @unique
+  nomEntreprise              String?
+  numeroIdentificationFiscal String?
+  numeroStat                 String?
+  formeJuridique             String?
+  secteurActivitePrincipal   String?
+  adresseSiegeSocial         String?
+  telephonePrincipal         String?
+  telephoneSecondaire        String?
+  siteWeb                    String?
+  reseauxSociaux             String?
+  description                String?
+  logo                       String?
+  dateInscription            DateTime?    @db.Date
+  estVerifie                 Boolean?
+  dateVerification           DateTime?    @db.Date
+  utilisateur                utilisateur? @relation(fields: [idUtilisateur], references: [idUtilisateur], onDelete: Cascade, map: "idUtilisateur")
+  offre                      offre[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model etudiant {
+  idEtudiant           Int                    @id @default(autoincrement())
+  idUtilisateur        Int?                   @unique
+  nomEtudiant          String?
+  prenomEtudiant       String?
+  telephoneEtudiant    String?
+  genre                String?
+  adresse              String?
+  photoProfil          String?
+  bio                  String?
+  idUniversite         Int?
+  matricule            String?
+  filiere              String?
+  specialisation       String?
+  niveauAcademique     String?
+  dateInscription      DateTime?              @db.Date
+  estActif             Boolean?
+  nomUniversiteSaisi   String?
+  statutRattachement   String?                @db.VarChar(20)
+  dateRattachement     DateTime?              @db.Timestamp(6)
+  idPromotion          Int?
+  dateFinRattachement  DateTime?              @db.Timestamp(6)
+  motifFinRattachement String?
+  CV                   CV?
+  Candidature          Candidature[]
+  CompetenceEtudiant   CompetenceEtudiant[]
+  centre_interet       centre_interet[]
+  Promotion            Promotion?             @relation(fields: [idPromotion], references: [idPromotion], onUpdate: NoAction)
+  utilisateur          utilisateur?           @relation(fields: [idUtilisateur], references: [idUtilisateur], onDelete: Cascade, map: "idUtilisateur")
+  parcours_realisation parcours_realisation[]
+  preference_stage     preference_stage[]
+  recommandation       recommandation[]
+
+  @@index([idPromotion], map: "idx_etudiant_promotion")
+  @@index([idUniversite, statutRattachement], map: "idx_etudiant_rattachement")
+  @@index([idUniversite, statutRattachement], map: "idx_etudiant_universite_statut")
+}
+
+model offre {
+  idOffre            Int               @id @default(autoincrement())
+  idEntreprise       Int
+  titre              String            @db.VarChar(200)
+  description        String
+  domaine            String?           @db.VarChar(100)
+  niveauRequis       String?           @db.VarChar(50)
+  duree              String?           @db.VarChar(50)
+  dateDebut          DateTime?         @db.Date
+  dateFin            DateTime?         @db.Date
+  remuneration       String?           @db.VarChar(100)
+  lieu               String?           @db.VarChar(200)
+  ville              String?           @db.VarChar(100)
+  accepteTeletravail String?           @db.VarChar(20)
+  typeStage          String?           @db.VarChar(50)
+  statut             String?           @default("Active") @db.VarChar(20)
+  datePublication    DateTime?         @default(now()) @db.Timestamp(6)
+  dateLimites        DateTime?         @db.Date
+  Candidature        Candidature[]
+  CompetenceOffre    CompetenceOffre[]
+  QCM                QCM?
+  entreprise         entreprise        @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: NoAction)
+  recommandation     recommandation[]
+}
+
+model parcours_realisation {
+  idParcoursRealisation Int       @id @default(autoincrement())
+  idEtudiant            Int?
+  type                  String?
+  titre                 String?
+  description           String?
+  entreprise            String?
+  dateDebut             DateTime? @db.Date
+  dateFin               DateTime? @db.Date
+  lien                  String?
+  etudiant              etudiant? @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, map: "idEtudiant")
+
+  @@map("parcours-realisation")
+}
+
+model participantConversation {
+  idParticipantConversation Int          @id @default(autoincrement())
+  idConversation            Int
+  idUtilisateur             Int
+  Conversation              Conversation @relation(fields: [idConversation], references: [idConversation], onDelete: Cascade, onUpdate: NoAction)
+  utilisateur               utilisateur  @relation(fields: [idUtilisateur], references: [idUtilisateur], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([idConversation, idUtilisateur])
+}
+
+model preference_stage {
+  idPreferenceStage      Int       @id @default(autoincrement())
+  idEtudiant             Int?
+  villePreferee          String?
+  accepteTeletravail     String?   @db.VarChar(20)
+  rayonDeplacement       String?
+  mobiliteNational       Boolean?
+  typeStagePreferee      String?
+  dureeSouhaitee         String?
+  dateDebutDisponibilite DateTime? @db.Date
+  dateFinDisponibilite   DateTime? @db.Date
+  typeEntreprisePreferee String?
+  disponibiliteImmediate Boolean?
+  etudiant               etudiant? @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, map: "idEtudiant")
+
+  @@map("preference-stage")
+}
+
+model recommandation {
+  idRecommandation  Int       @id @default(autoincrement())
+  idEtudiant        Int
+  idOffre           Int
+  scoresGlobal      Decimal?  @db.Decimal(5, 2)
+  scoresCompetence  Decimal?  @db.Decimal(5, 2)
+  scoresFiliere     Decimal?  @db.Decimal(5, 2)
+  scoreNiveau       Decimal?  @db.Decimal(5, 2)
+  scoreLocalisation Decimal?  @db.Decimal(5, 2)
+  scorePreference   Decimal?  @db.Decimal(5, 2)
+  dateGeneration    DateTime? @default(now()) @db.Timestamp(6)
+  etudiant          etudiant  @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, onUpdate: NoAction, map: "fk_recommandation_etudiant")
+  offre             offre     @relation(fields: [idOffre], references: [idOffre], onDelete: Cascade, onUpdate: NoAction, map: "fk_recommandation_offre")
+
+  @@unique([idEtudiant, idOffre], map: "uq_recommandation")
+}
+
+model universite {
+  idUniversite        Int                 @id @default(autoincrement())
+  idUtilisateur       Int?                @unique
+  nomUniversite       String?
+  sigleUniversitaire  String?
+  telephoneUniversite String?
+  adresseUniversite   String?
+  ville               String?
+  siteWeb             String?
+  logo                String?
+  dateInscription     DateTime?           @db.Date
+  estVerifie          Boolean?
+  dateVerification    DateTime?           @db.Date
+  AnnonceCohorte      AnnonceCohorte[]
+  Promotion           Promotion[]
+  UniversiteDomaine   UniversiteDomaine[]
+  utilisateur         utilisateur?        @relation(fields: [idUtilisateur], references: [idUtilisateur], onDelete: Cascade, map: "idUtilisateur")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model utilisateur {
+  idUtilisateur           Int                       @id @default(autoincrement())
+  typeUtilisateur         String?
+  emailUtilisateur        String?
+  motDePasse              String?
+  compteActive            Boolean                   @default(true)
+  JetonUtilisateur        JetonUtilisateur[]
+  Message                 Message[]
+  admin                   admin?
+  entreprise              entreprise?
+  etudiant                etudiant?
+  participantConversation participantConversation[]
+  universite              universite?
+}

@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { fetchAuth, getUtilisateur, logout } from '@/lib/auth'
 import {
   DashboardContainer,
   NotificationBanner,
   LoadingState, ErrorState,
-  AdminHeader, HeaderTitle, HeaderRight, AdminName, LogoutButton,
+  AdminHeader, HeaderTitle, HeaderRight, AdminName, LogoutButton, HeaderAction,
   StatsGrid, StatCard, StatValue, StatLabel,
   TabsBar, TabButton,
   Toolbar, SearchInput,
@@ -27,6 +28,7 @@ import {
 } from 'recharts'
 
 export default function AdminDashboard() {
+  const router = useRouter()
   const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -185,6 +187,11 @@ export default function AdminDashboard() {
         <HeaderTitle>🛡️ Tableau de bord administrateur</HeaderTitle>
         <HeaderRight>
           <AdminName>{admin?.prenomAdmin} {admin?.nomAdmin}</AdminName>
+          {/* La création d'un administrateur n'était atteignable par
+              aucun lien : la page existait sans que rien n'y mène. */}
+          <HeaderAction onClick={() => router.push('/pages/adminRegistreInfo')}>
+            + Administrateur
+          </HeaderAction>
           <LogoutButton onClick={handleLogout}>Déconnexion</LogoutButton>
         </HeaderRight>
       </AdminHeader>

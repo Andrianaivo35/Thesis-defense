@@ -455,3 +455,21 @@ export const ChartSubtitle = styled.p`
   color: #64748b;
   margin: 0 0 18px 0;
 `
+/* Action secondaire de l'en-tête d'administration.
+
+   Distincte de LogoutButton : la déconnexion est destructive et doit
+   rester la seule de son apparence. Une action ordinaire qui lui
+   ressemblerait se ferait cliquer par erreur. */
+export const HeaderAction = styled.button`
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover { background: rgba(255, 255, 255, 0.26); }
+`

@@ -1,0 +1,12 @@
+# Surcharge pour eprouver un demarrage sur volume vierge, sans toucher
+# aux donnees de developpement : ports decales, volumes et noms de
+# conteneurs distincts.
+services:
+  db:
+    container_name: neuf-db
+    ports: !override
+      - "5433:5432"
+  app:
+    container_name: neuf-app
+    ports: !override
+      - "3001:3000"

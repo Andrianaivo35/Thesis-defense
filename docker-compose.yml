@@ -11,24 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./stage_share.sql:/docker-entrypoint-initdb.d/01-stage_share.sql:ro
-      # Les migrations sont rejouees apres le dump (ordre alphabetique), pour
-      # qu'un volume recree parte d'un schema a jour. L'entrypoint PostgreSQL
-      # ne parcourt pas les sous-dossiers : chaque migration est montee ici.
-      - ./scripts/migrations/001-rattachement-universite.sql:/docker-entrypoint-initdb.d/02-001-rattachement-universite.sql:ro
-      - ./scripts/migrations/002-bibliotheque-cv.sql:/docker-entrypoint-initdb.d/02-002-bibliotheque-cv.sql:ro
-      - ./scripts/migrations/003-referentiel-filieres.sql:/docker-entrypoint-initdb.d/02-003-referentiel-filieres.sql:ro
-      - ./scripts/migrations/004-renommer-noteqcm.sql:/docker-entrypoint-initdb.d/02-004-renommer-noteqcm.sql:ro
-      - ./scripts/migrations/005-categorie-react.sql:/docker-entrypoint-initdb.d/02-005-categorie-react.sql:ro
-      - ./scripts/migrations/006-descriptions-competences.sql:/docker-entrypoint-initdb.d/02-006-descriptions-competences.sql:ro
-      - ./scripts/migrations/007-analyse-cv.sql:/docker-entrypoint-initdb.d/02-007-analyse-cv.sql:ro
-      - ./scripts/migrations/008-unicite-email.sql:/docker-entrypoint-initdb.d/02-008-unicite-email.sql:ro
-      - ./scripts/migrations/009-jetons-activation.sql:/docker-entrypoint-initdb.d/02-009-jetons-activation.sql:ro
-      - ./scripts/migrations/010-promotions.sql:/docker-entrypoint-initdb.d/02-010-promotions.sql:ro
-      - ./scripts/migrations/011-cycle-vie-rattachement.sql:/docker-entrypoint-initdb.d/02-011-cycle-vie-rattachement.sql:ro
-      - ./scripts/migrations/012-file-courriels.sql:/docker-entrypoint-initdb.d/02-012-file-courriels.sql:ro
-      - ./scripts/migrations/013-annonce-promotion.sql:/docker-entrypoint-initdb.d/02-013-annonce-promotion.sql:ro
-      - ./scripts/migrations/014-domaines-universite.sql:/docker-entrypoint-initdb.d/02-014-domaines-universite.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stage-share}"]
       interval: 5s
@@ -50,6 +32,10 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-fafah}
       DB_NAME: ${DB_NAME:-stage-share}
+      # Prisma joint la base par le nom du service, pas par localhost :
+      # le DATABASE_URL du fichier .env vaut pour le poste de
+      # developpement, pas pour l'interieur du conteneur.
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-fafah}@db:5432/${DB_NAME:-stage-share}
     ports:
       - "3000:3000"
     volumes:
