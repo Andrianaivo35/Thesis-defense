@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
@@ -10,11 +10,17 @@ import {
 import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   StatsRow, StatCard, StatValue, StatLabel,
+  FiltersBar, FilterButton,
   CandidatureList, CandidatureCard, CardHeader,
-  OffreTitre, EntrepriseNom, StatutBadge,
+  OffreTitre, EntrepriseNom, ScoreBadge,
   CardMeta, MetaItem, CardFooter, ActionButton,
   EmptyState, LoadingState
 } from '@/components/styleEtudiantCandidature'
+
+const TRIS = [
+  { cle: 'score', libelle: 'Meilleur score' },
+  { cle: 'nom', libelle: 'Nom (A → Z)' }
+]
 
 /* Sens inverse des recommandations : l'entreprise voit les profils
    correspondant à son offre, avec l'explication du rapprochement. */
@@ -24,6 +30,7 @@ export default function OffreCandidats() {
   const [donnees, setDonnees] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [erreur, setErreur] = useState('')
+  const [tri, setTri] = useState('score')
 
   useEffect(() => {
     const charger = async () => {
@@ -41,7 +48,15 @@ export default function OffreCandidats() {
     charger()
   }, [idOffre])
 
-  const candidats = donnees?.candidats || []
+  const candidats = useMemo(() => {
+    const liste = donnees?.candidats || []
+    if (tri === 'nom') {
+      return [...liste].sort((a, b) =>
+        `${a.nomEtudiant} ${a.prenomEtudiant}`.localeCompare(`${b.nomEtudiant} ${b.prenomEtudiant}`)
+      )
+    }
+    return liste  // déjà trié par score décroissant côté API
+  }, [donnees, tri])
 
   return (
     <>
@@ -79,7 +94,7 @@ export default function OffreCandidats() {
                 <StatLabel>Compétences exigées</StatLabel>
               </StatCard>
               <StatCard>
-                <StatValue>{candidats[0]?.score ?? '—'}</StatValue>
+                <StatValue>{donnees.candidats[0]?.score ?? '—'}</StatValue>
                 <StatLabel>Meilleur score</StatLabel>
               </StatCard>
             </StatsRow>
@@ -102,6 +117,18 @@ export default function OffreCandidats() {
               Profils par ordre de correspondance
             </PageTitle>
 
+            <FiltersBar>
+              {TRIS.map(t => (
+                <FilterButton
+                  key={t.cle}
+                  $actif={tri === t.cle}
+                  onClick={() => setTri(t.cle)}
+                >
+                  {t.libelle}
+                </FilterButton>
+              ))}
+            </FiltersBar>
+
             {candidats.length === 0 ? (
               <EmptyState>
                 Aucun profil ne correspond suffisamment à cette offre pour le moment.
@@ -109,13 +136,11 @@ export default function OffreCandidats() {
               </EmptyState>
             ) : (
               <CandidatureList>
-                {candidats.map((c, index) => {
+                {candidats.map((c) => {
                   const proximite = c.raisons?.find(r => r.texte.includes('proche de'))
+                  const meilleurScore = c.score === Math.max(...candidats.map(x => x.score))
                   return (
-                    <CandidatureCard
-                      key={c.idEtudiant}
-                      $statut={c.score >= 70 ? 'Recruté' : 'En attente'}
-                    >
+                    <CandidatureCard key={c.idEtudiant}>
                       <CardHeader>
                         <div>
                           <OffreTitre>{c.prenomEtudiant} {c.nomEtudiant}</OffreTitre>
@@ -125,10 +150,10 @@ export default function OffreCandidats() {
                             {c.niveauAcademique ? ` — ${c.niveauAcademique}` : ''}
                           </EntrepriseNom>
                         </div>
-                        <StatutBadge $statut={c.score >= 70 ? 'Recruté' : 'En attente'}>
-                          {index === 0 && <Sparkles size={13} strokeWidth={2.5} />}
+                        <ScoreBadge>
+                          {meilleurScore && <Sparkles size={13} strokeWidth={2.5} />}
                           {c.score} / 100
-                        </StatutBadge>
+                        </ScoreBadge>
                       </CardHeader>
 
                       {c.nomUniversite && (
