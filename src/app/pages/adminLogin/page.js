@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ShieldCheck, AlertCircle, Lock } from 'lucide-react'
 import {
   PageWrapper, LoginCard, LogoSection, LogoIcon, LoginTitle, LoginSubtitle,
   Form, FieldGroup, Label, Input,
@@ -45,7 +46,7 @@ export default function AdminLogin() {
     <PageWrapper>
       <LoginCard>
         <LogoSection>
-          <LogoIcon>🛡️</LogoIcon>
+          <LogoIcon><ShieldCheck size={32} strokeWidth={2} color="white" /></LogoIcon>
           <LoginTitle>Espace Administrateur</LoginTitle>
           <LoginSubtitle>Accès réservé à l'administration de Stage Share</LoginSubtitle>
         </LogoSection>
@@ -73,7 +74,12 @@ export default function AdminLogin() {
             />
           </FieldGroup>
 
-          {error && <ErrorMessage>⚠️ {error}</ErrorMessage>}
+          {error && (
+            <ErrorMessage>
+              <AlertCircle size={15} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 6 }} />
+              {error}
+            </ErrorMessage>
+          )}
 
           <SubmitButton type="submit" disabled={isLoading}>
             {isLoading ? 'Connexion en cours...' : 'Se connecter'}
@@ -81,7 +87,8 @@ export default function AdminLogin() {
         </Form>
 
         <FooterNote>
-          🔒 Espace sécurisé — toute tentative d'accès est enregistrée.
+          <Lock size={11} strokeWidth={2} style={{ verticalAlign: -1, marginRight: 4 }} />
+          Espace sécurisé — toute tentative d'accès est enregistrée.
         </FooterNote>
       </LoginCard>
     </PageWrapper>

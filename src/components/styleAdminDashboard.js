@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 export const DashboardContainer = styled.div`
   min-height: 100vh;
-  background: #f1f5f9;
+  background: #f8fafc;
   padding-bottom: 60px;
 `
 
@@ -14,7 +14,7 @@ export const AdminHeader = styled.header`
   justify-content: space-between;
   align-items: center;
   padding: 18px 32px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   flex-wrap: wrap;
   gap: 12px;
@@ -35,7 +35,7 @@ export const HeaderRight = styled.div`
 export const AdminName = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.85);
 `
 
 export const LogoutButton = styled.button`
@@ -107,15 +107,15 @@ export const TabButton = styled.button`
   padding: 12px 18px;
   background: none;
   border: none;
-  border-bottom: 3px solid ${p => p.$active ? '#1e293b' : 'transparent'};
-  color: ${p => p.$active ? '#0f172a' : '#64748b'};
+  border-bottom: 3px solid ${p => p.$active ? '#A98B76' : 'transparent'};
+  color: ${p => p.$active ? '#1e293b' : '#64748b'};
   font-size: 14px;
   font-weight: ${p => p.$active ? 700 : 500};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    color: #0f172a;
+    color: #A98B76;
   }
 `
 
@@ -125,19 +125,35 @@ export const Toolbar = styled.div`
   padding: 20px 32px 12px 32px;
 `
 
-export const SearchInput = styled.input`
+export const SearchBarWrapper = styled.div`
+  position: relative;
   width: 100%;
   max-width: 360px;
-  padding: 10px 16px;
+`
+
+export const SearchIcon = styled.div`
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  display: flex;
+  pointer-events: none;
+`
+
+export const SearchInput = styled.input`
+  width: 100%;
+  padding: 10px 16px 10px 40px;
   font-size: 14px;
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
   outline: none;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 
   &:focus {
-    border-color: #1e293b;
-    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+    border-color: #A98B76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.15);
   }
 `
 
@@ -190,7 +206,9 @@ export const EmptyRow = styled.td`
 /* ===== BADGES & BOUTONS ===== */
 
 export const StatutBadge = styled.span`
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 11px;
@@ -205,8 +223,12 @@ export const StatutBadge = styled.span`
 `
 
 export const VerifyButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   padding: 6px 14px;
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: white;
   border: none;
   border-radius: 7px;
@@ -218,7 +240,7 @@ export const VerifyButton = styled.button`
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.35);
   }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 `
@@ -267,6 +289,9 @@ export const ActionCell = styled.div`
 `
 
 export const DetailsButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 6px 12px;
   background: white;
   color: #1e293b;
@@ -280,7 +305,7 @@ export const DetailsButton = styled.button`
 
   &:hover {
     background: #f1f5f9;
-    border-color: #1e293b;
+    border-color: #A98B76;
   }
 `
 
@@ -314,7 +339,7 @@ export const ModalHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 18px 24px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
 `
 
@@ -325,6 +350,9 @@ export const ModalTitle = styled.h2`
 `
 
 export const ModalClose = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.12);
   color: white;
   border: none;
@@ -392,6 +420,9 @@ export const NotificationBanner = styled.div`
   left: 50%;
   transform: translateX(-50%);
   z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 13px 24px;
   border-radius: 10px;
   font-size: 14px;
@@ -407,7 +438,7 @@ export const NotificationBanner = styled.div`
       return `background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;`
     if (p.$type === 'error')
       return `background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;`
-    return `background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd;`
+    return `background: #f5f3eb; color: #6b5744; border: 1px solid #d4b89d;`
   }}
 `
 /* ===== GRAPHIQUES ===== */

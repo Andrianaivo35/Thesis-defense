@@ -3,13 +3,17 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth, getUtilisateur, logout } from '@/lib/auth'
 import {
+  ShieldCheck, AlertCircle, BarChart3, PieChart as PieChartIcon, TrendingUp,
+  Search, Eye, X, Building2, GraduationCap, CheckCircle2, Info
+} from 'lucide-react'
+import {
   DashboardContainer,
   NotificationBanner,
   LoadingState, ErrorState,
   AdminHeader, HeaderTitle, HeaderRight, AdminName, LogoutButton, HeaderAction,
   StatsGrid, StatCard, StatValue, StatLabel,
   TabsBar, TabButton,
-  Toolbar, SearchInput,
+  Toolbar, SearchBarWrapper, SearchIcon, SearchInput,
   TableWrapper, Table, Th, Td, EmptyRow,
   StatutBadge, VerifyButton, UnverifyButton,
   ActionCell, DetailsButton,
@@ -26,6 +30,20 @@ import {
   Tooltip, Legend,
   ResponsiveContainer
 } from 'recharts'
+
+const ICONE_NOTIFICATION = {
+  success: CheckCircle2,
+  warning: AlertCircle,
+  error: AlertCircle,
+  info: Info
+}
+
+/* Libellé de vérification, répété sur les 4 écrans (liste entreprises, liste
+   universités, modal entreprise, modal université). */
+function LibelleVerification({ verifie }) {
+  if (!verifie) return 'En attente'
+  return <><CheckCircle2 size={11} strokeWidth={2.5} />Vérifiée</>
+}
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -90,12 +108,12 @@ export default function AdminDashboard() {
       if (nouveauStatut === true) {
         if (result.emailEnvoye) {
           afficherNotification(
-            '✓ Compte validé — email de confirmation envoyé au destinataire.',
+            'Compte validé — email de confirmation envoyé au destinataire.',
             'success'
           )
         } else {
           afficherNotification(
-            "✓ Compte validé, mais l'email n'a pas pu être envoyé (vérifiez la connexion / la configuration).",
+            "Compte validé, mais l'email n'a pas pu être envoyé (vérifiez la connexion / la configuration).",
             'warning'
           )
         }
@@ -159,7 +177,7 @@ export default function AdminDashboard() {
     return (
       <DashboardContainer>
         <ErrorState>
-          <h2>❌ Erreur</h2>
+          <h2><AlertCircle size={20} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 6 }} />Erreur</h2>
           <p>{error || 'Impossible de charger les données'}</p>
         </ErrorState>
       </DashboardContainer>
@@ -169,22 +187,28 @@ export default function AdminDashboard() {
   const { stats } = data
 
   const tabs = [
-    { key: 'stats', label: '📊 Statistiques' },
+    { key: 'stats', label: 'Statistiques', icone: BarChart3 },
     { key: 'entreprises', label: `Entreprises (${data.entreprises.length})` },
     { key: 'universites', label: `Universités (${data.universites.length})` },
     { key: 'etudiants', label: `Étudiants (${data.etudiants.length})` },
     { key: 'offres', label: `Offres (${data.offres.length})` }
   ]
 
+  const IconeNotification = notification ? ICONE_NOTIFICATION[notification.type] : null
+
   return (
     <DashboardContainer>
       {notification && (
         <NotificationBanner $type={notification.type}>
+          {IconeNotification && <IconeNotification size={16} strokeWidth={2.5} />}
           {notification.message}
         </NotificationBanner>
       )}
       <AdminHeader>
-        <HeaderTitle>🛡️ Tableau de bord administrateur</HeaderTitle>
+        <HeaderTitle>
+          <ShieldCheck size={20} strokeWidth={2} style={{ verticalAlign: -4, marginRight: 8 }} />
+          Tableau de bord administrateur
+        </HeaderTitle>
         <HeaderRight>
           <AdminName>{admin?.prenomAdmin} {admin?.nomAdmin}</AdminName>
           {/* La création d'un administrateur n'était atteignable par
@@ -212,6 +236,7 @@ export default function AdminDashboard() {
         {tabs.map(t => (
           <TabButton key={t.key} $active={activeTab === t.key}
             onClick={() => { setActiveTab(t.key); setSearch('') }}>
+            {t.icone && <t.icone size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 6 }} />}
             {t.label}
           </TabButton>
         ))}
@@ -220,8 +245,11 @@ export default function AdminDashboard() {
       {/* Cache la barre de recherche dans l'onglet stats */}
       {activeTab !== 'stats' && (
         <Toolbar>
-          <SearchInput type="text" placeholder="🔍 Rechercher..."
-            value={search} onChange={(e) => setSearch(e.target.value)} />
+          <SearchBarWrapper>
+            <SearchIcon><Search size={16} strokeWidth={2} /></SearchIcon>
+            <SearchInput type="text" placeholder="Rechercher..."
+              value={search} onChange={(e) => setSearch(e.target.value)} />
+          </SearchBarWrapper>
         </Toolbar>
       )}
 
@@ -231,14 +259,14 @@ export default function AdminDashboard() {
           <ChartsGrid>
             {/* === 1. BAR CHART : Répartition par type === */}
             <ChartCard>
-              <ChartTitle>📊 Répartition des utilisateurs</ChartTitle>
+              <ChartTitle><BarChart3 size={17} strokeWidth={2} />Répartition des utilisateurs</ChartTitle>
               <ChartSubtitle>Nombre total par type de compte</ChartSubtitle>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart
                   data={[
-                    { type: 'Étudiants', total: stats.totalEtudiants, fill: '#10b981' },
-                    { type: 'Entreprises', total: stats.totalEntreprises, fill: '#6366f1' },
-                    { type: 'Universités', total: stats.totalUniversites, fill: '#3b82f6' }
+                    { type: 'Étudiants', total: stats.totalEtudiants, fill: '#A98B76' },
+                    { type: 'Entreprises', total: stats.totalEntreprises, fill: '#4d5e2c' },
+                    { type: 'Universités', total: stats.totalUniversites, fill: '#d97706' }
                   ]}
                   margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
                 >
@@ -260,7 +288,7 @@ export default function AdminDashboard() {
 
             {/* === 2. PIE CHART : Statut de vérification === */}
             <ChartCard>
-              <ChartTitle>🥧 Comptes en attente vs vérifiés</ChartTitle>
+              <ChartTitle><PieChartIcon size={17} strokeWidth={2} />Comptes en attente vs vérifiés</ChartTitle>
               <ChartSubtitle>Entreprises et universités confondues</ChartSubtitle>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -285,8 +313,8 @@ export default function AdminDashboard() {
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     dataKey="value"
                   >
-                    <Cell fill="#10b981" />
-                    <Cell fill="#f59e0b" />
+                    <Cell fill="#4d5e2c" />
+                    <Cell fill="#d97706" />
                   </Pie>
                   <Tooltip
                     contentStyle={{
@@ -303,7 +331,7 @@ export default function AdminDashboard() {
 
             {/* === 3. LINE CHART : Évolution sur 12 mois === */}
             <ChartCard $wide>
-              <ChartTitle>📈 Évolution des inscriptions</ChartTitle>
+              <ChartTitle><TrendingUp size={17} strokeWidth={2} />Évolution des inscriptions</ChartTitle>
               <ChartSubtitle>Nouveaux comptes sur les 12 derniers mois</ChartSubtitle>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart
@@ -322,9 +350,9 @@ export default function AdminDashboard() {
                     }}
                   />
                   <Legend />
-                  <Line type="monotone" dataKey="Étudiants" stroke="#10b981" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="Entreprises" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="Universités" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Étudiants" stroke="#A98B76" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Entreprises" stroke="#4d5e2c" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Universités" stroke="#d97706" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -351,13 +379,13 @@ export default function AdminDashboard() {
                   <Td>{formatDate(e.dateInscription)}</Td>
                   <Td>
                     <StatutBadge $variant={e.estVerifie ? 'verifie' : 'attente'}>
-                      {e.estVerifie ? '✓ Vérifiée' : 'En attente'}
+                      <LibelleVerification verifie={e.estVerifie} />
                     </StatutBadge>
                   </Td>
                   <Td>
                     <ActionCell>
                       <DetailsButton onClick={() => openDetails('entreprise', e)}>
-                        👁 Détails
+                        <Eye size={13} strokeWidth={2} /> Détails
                       </DetailsButton>
                       {e.estVerifie ? (
                         <UnverifyButton
@@ -369,7 +397,9 @@ export default function AdminDashboard() {
                           disabled={updatingId === `entreprise-${e.idEntreprise}`}
                           onClick={() => handleVerification('entreprise', e.idEntreprise, true)}
                         >
-                          {updatingId === `entreprise-${e.idEntreprise}` ? '...' : '✓ Valider'}
+                          {updatingId === `entreprise-${e.idEntreprise}`
+                            ? '...'
+                            : <><CheckCircle2 size={13} strokeWidth={2.5} /> Valider</>}
                         </VerifyButton>
                       )}
                     </ActionCell>
@@ -400,13 +430,13 @@ export default function AdminDashboard() {
                   <Td>{formatDate(u.dateInscription)}</Td>
                   <Td>
                     <StatutBadge $variant={u.estVerifie ? 'verifie' : 'attente'}>
-                      {u.estVerifie ? '✓ Vérifiée' : 'En attente'}
+                      <LibelleVerification verifie={u.estVerifie} />
                     </StatutBadge>
                   </Td>
                   <Td>
                     <ActionCell>
                       <DetailsButton onClick={() => openDetails('universite', u)}>
-                        👁 Détails
+                        <Eye size={13} strokeWidth={2} /> Détails
                       </DetailsButton>
                       {u.estVerifie ? (
                         <UnverifyButton
@@ -418,7 +448,9 @@ export default function AdminDashboard() {
                           disabled={updatingId === `universite-${u.idUniversite}`}
                           onClick={() => handleVerification('universite', u.idUniversite, true)}
                         >
-                          {updatingId === `universite-${u.idUniversite}` ? '...' : '✓ Valider'}
+                          {updatingId === `universite-${u.idUniversite}`
+                            ? '...'
+                            : <><CheckCircle2 size={13} strokeWidth={2.5} /> Valider</>}
                         </VerifyButton>
                       )}
                     </ActionCell>
@@ -498,10 +530,10 @@ export default function AdminDashboard() {
             <ModalHeader>
               <ModalTitle>
                 {detailType === 'entreprise'
-                  ? "🏢 Détails de l'entreprise"
-                  : "🎓 Détails de l'université"}
+                  ? <><Building2 size={17} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 7 }} />Détails de l&apos;entreprise</>
+                  : <><GraduationCap size={17} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 7 }} />Détails de l&apos;université</>}
               </ModalTitle>
-              <ModalClose onClick={() => setDetailItem(null)}>✕</ModalClose>
+              <ModalClose onClick={() => setDetailItem(null)}><X size={15} strokeWidth={2.5} /></ModalClose>
             </ModalHeader>
 
             <ModalBody>
@@ -526,7 +558,7 @@ export default function AdminDashboard() {
                     <DetailLabel>Statut</DetailLabel>
                     <DetailValue>
                       <StatutBadge $variant={detailItem.estVerifie ? 'verifie' : 'attente'}>
-                        {detailItem.estVerifie ? '✓ Vérifiée' : 'En attente'}
+                        <LibelleVerification verifie={detailItem.estVerifie} />
                       </StatutBadge>
                       {detailItem.estVerifie && detailItem.dateVerification &&
                         ` le ${formatDate(detailItem.dateVerification)}`}
@@ -547,7 +579,7 @@ export default function AdminDashboard() {
                     <DetailLabel>Statut</DetailLabel>
                     <DetailValue>
                       <StatutBadge $variant={detailItem.estVerifie ? 'verifie' : 'attente'}>
-                        {detailItem.estVerifie ? '✓ Vérifiée' : 'En attente'}
+                        <LibelleVerification verifie={detailItem.estVerifie} />
                       </StatutBadge>
                       {detailItem.estVerifie && detailItem.dateVerification &&
                         ` le ${formatDate(detailItem.dateVerification)}`}
@@ -570,7 +602,7 @@ export default function AdminDashboard() {
                 ) : (
                   <VerifyButton disabled={enCours}
                     onClick={() => handleVerification(detailType, id, true)}>
-                    {enCours ? 'Traitement...' : '✓ Valider ce compte'}
+                    {enCours ? 'Traitement...' : <><CheckCircle2 size={13} strokeWidth={2.5} /> Valider ce compte</>}
                   </VerifyButton>
                 )
               })()}

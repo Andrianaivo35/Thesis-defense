@@ -7,16 +7,17 @@ export const PageWrapper = styled.div`
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%);
+  background: linear-gradient(160deg, #f5f3eb 0%, #eef0d9 100%);
 `
 
 export const LoginCard = styled.div`
   width: 100%;
   max-width: 420px;
   background: white;
+  border: 1px solid #e2e8f0;
   border-radius: 20px;
   padding: 40px 32px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 50px rgba(169, 139, 118, 0.18);
 
   @media (max-width: 480px) {
     padding: 32px 22px;
@@ -33,12 +34,12 @@ export const LogoIcon = styled.div`
   height: 70px;
   margin: 0 auto 16px auto;
   border-radius: 18px;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.4);
+  box-shadow: 0 8px 20px rgba(169, 139, 118, 0.3);
 `
 
 export const LoginTitle = styled.h1`
@@ -84,9 +85,9 @@ export const Input = styled.input`
   box-sizing: border-box;
 
   &:focus {
-    border-color: #1e293b;
+    border-color: #A98B76;
     background: white;
-    box-shadow: 0 0 0 4px rgba(30, 41, 59, 0.1);
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.15);
   }
 
   &::placeholder {
@@ -108,7 +109,7 @@ export const SubmitButton = styled.button`
   width: 100%;
   padding: 13px;
   margin-top: 4px;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -119,7 +120,7 @@ export const SubmitButton = styled.button`
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.4);
+    box-shadow: 0 10px 22px rgba(169, 139, 118, 0.42);
   }
 
   &:disabled {
