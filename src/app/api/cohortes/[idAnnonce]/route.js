@@ -50,7 +50,7 @@ export async function GET(req, { params }) {
       ? await client.query(`
           SELECT e."idEtudiant", e."nomEtudiant" AS "nom", e."prenomEtudiant" AS "prenom",
                  e."niveauAcademique", e."filiere", e."specialisation", e."photoProfil",
-                 u."idUtilisateur",
+                 u."idUtilisateur", u."compteActive",
                  EXISTS (SELECT 1 FROM "CV" cv WHERE cv."idEtudiant" = e."idEtudiant") AS "aUnCV",
                  COALESCE(json_agg(DISTINCT cr."nomCompetenceReference")
                           FILTER (WHERE cr."nomCompetenceReference" IS NOT NULL), '[]') AS "competences"

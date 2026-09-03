@@ -48,7 +48,7 @@ export const PageTitle = styled.h1`
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -168,7 +168,7 @@ export const Input = styled.input`
   transition: all 0.15s ease;
 
   &::placeholder { color: #94a3b8; }
-  &:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
+  &:focus { border-color: #A98B76; box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.12); }
 `
 
 export const Textarea = styled.textarea`
@@ -184,7 +184,7 @@ export const Textarea = styled.textarea`
   transition: all 0.15s ease;
 
   &::placeholder { color: #94a3b8; }
-  &:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
+  &:focus { border-color: #A98B76; box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.12); }
 `
 
 /* ===== SECTION LOGO ===== */
@@ -194,8 +194,8 @@ export const LogoSection = styled.div`
   gap: 24px;
   align-items: flex-start;
   padding: 20px;
-  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-  border: 1px solid #c7d2fe;
+  background: linear-gradient(135deg, #f5f3eb 0%, #eef0d9 100%);
+  border: 1px solid #d4b89d;
   border-radius: 12px;
 
   @media (max-width: 640px) {
@@ -219,7 +219,7 @@ export const LogoEmpty = styled.div`
   width: 110px;
   height: 110px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -227,7 +227,7 @@ export const LogoEmpty = styled.div`
   font-size: 44px;
   font-weight: 700;
   border: 3px solid white;
-  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 6px 18px rgba(169, 139, 118, 0.3);
   flex-shrink: 0;
 `
 
@@ -250,7 +250,7 @@ export const LogoUploadLabel = styled.label`
   justify-content: center;
   align-self: flex-start;
   padding: 10px 18px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   border-radius: 9px;
   font-size: 13.5px;
@@ -261,11 +261,14 @@ export const LogoUploadLabel = styled.label`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.35);
+    box-shadow: 0 8px 18px rgba(169, 139, 118, 0.35);
   }
 `
 
 export const LogoRemoveButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   align-self: flex-start;
   padding: 7px 14px;
   background: white;
@@ -292,8 +295,8 @@ export const SecurityLink = styled.button`
   margin-top: 12px;
   padding: 11px 18px;
   background: white;
-  color: #4f46e5;
-  border: 2px dashed #c7d2fe;
+  color: #A98B76;
+  border: 2px dashed #d4b89d;
   border-radius: 10px;
   font-size: 13.5px;
   font-weight: 600;
@@ -302,8 +305,8 @@ export const SecurityLink = styled.button`
   align-self: flex-start;
 
   &:hover {
-    background: #eef2ff;
-    border-color: #4f46e5;
+    background: #f5f3eb;
+    border-color: #A98B76;
     border-style: solid;
     transform: translateX(2px);
   }
@@ -350,7 +353,7 @@ export const CancelButton = styled.button`
 
 export const SaveButton = styled.button`
   padding: 11px 28px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -364,7 +367,7 @@ export const SaveButton = styled.button`
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 10px 24px rgba(169, 139, 118, 0.4);
   }
 
   &:disabled { opacity: 0.65; cursor: not-allowed; }

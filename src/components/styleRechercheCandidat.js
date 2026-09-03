@@ -13,6 +13,47 @@ export const PageContainer = styled.div`
   }
 `
 
+/* Même hiérarchie d'accueil que rechercheEntreprise (côté étudiant) : un titre
+   et un court texte de contexte avant les onglets/la recherche. */
+export const HeroSection = styled.section`
+  text-align: center;
+  padding: 50px 24px 30px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  @media (max-width: 640px) {
+    padding: 30px 16px 20px 16px;
+  }
+`
+
+export const HeroTitle = styled.h1`
+  font-size: 34px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 14px 0;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  @media (max-width: 640px) { font-size: 26px; }
+`
+
+export const HeroDescription = styled.p`
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 640px) { font-size: 14px; }
+`
+
 export const HeaderSection = styled.div`
   margin-bottom: 32px;
   display: flex;

@@ -296,10 +296,13 @@ export const ActionLink = styled.a`
   padding: 6px 12px;
   background: #f5f3eb;
   color: #7a5a3f;
+  border: none;
   border-radius: 6px;
   font-size: 12px;
+  font-family: inherit;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -357,6 +360,22 @@ export const ScoreLabel = styled.div`
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+`
+
+/* Score de pertinence CV/profil (EN4) : volontairement plus discret que le
+   grand cercle du score QCM — c'est un signal complémentaire, pas la seule
+   mesure. */
+export const PertinenceBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #f5f3eb;
+  color: #6b5744;
+  border: 1px solid #d4b89d;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
 `
 
 /* ===== États ===== */
@@ -467,6 +486,51 @@ export const RecruteBadge = styled.div`
   background: #d1fae5;
   color: #065f46;
   border: 1.5px solid #6ee7b7;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+`
+
+export const RefuserButton = styled.button`
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 14px;
+  background: white;
+  color: #b91c1c;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #ef4444;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`
+
+export const RefuseBadge = styled.div`
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 14px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1.5px solid #fca5a5;
   border-radius: 8px;
   font-size: 12.5px;
   font-weight: 700;

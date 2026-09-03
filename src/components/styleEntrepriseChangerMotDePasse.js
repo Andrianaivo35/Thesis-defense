@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 export const PwdContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+  background: linear-gradient(160deg, #f5f3eb 0%, #eef0d9 100%);
   padding: 40px 20px;
 `
 
@@ -29,8 +29,8 @@ export const PwdCard = styled.div`
   background: white;
   border-radius: 16px;
   padding: 36px 32px;
-  box-shadow: 0 20px 50px rgba(79, 70, 229, 0.12);
-  border: 1px solid #c7d2fe;
+  box-shadow: 0 20px 50px rgba(169, 139, 118, 0.18);
+  border: 1px solid #d4b89d;
 
   @media (max-width: 480px) { padding: 26px 20px; }
 `
@@ -43,6 +43,10 @@ export const PwdHeader = styled.div`
 `
 
 export const PwdTitle = styled.h1`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: 22px;
   font-weight: 800;
   color: #0f172a;
@@ -57,6 +61,10 @@ export const PwdSubtitle = styled.p`
 `
 
 export const PwdAlert = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 12px 14px;
   margin-bottom: 18px;
   border-radius: 9px;
@@ -100,8 +108,8 @@ export const PwdInput = styled.input`
   background: white;
 
   &:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    border-color: #A98B76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.12);
   }
 
   &:disabled { background: #f1f5f9; cursor: not-allowed; }
@@ -142,9 +150,13 @@ export const PwdCancelButton = styled.button`
 `
 
 export const PwdSubmitButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   flex: 2;
   padding: 11px 18px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   border: none;
   border-radius: 9px;
@@ -155,7 +167,7 @@ export const PwdSubmitButton = styled.button`
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 8px 20px rgba(169, 139, 118, 0.4);
   }
 
   &:disabled { opacity: 0.65; cursor: not-allowed; }

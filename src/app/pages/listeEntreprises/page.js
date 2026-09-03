@@ -7,7 +7,7 @@ import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   FiltersBar, FilterButton,
   CandidatureList, CandidatureCard, CardHeader,
-  OffreTitre, EntrepriseNom, StatutBadge,
+  OffreTitre, EntrepriseNom, ScoreBadge,
   CardMeta, MetaItem, CardFooter, ActionButton,
   EmptyState, LoadingState
 } from '@/components/styleEtudiantCandidature'
@@ -97,7 +97,7 @@ export default function ListeEntreprises() {
 
             <CandidatureList>
               {entreprises.map(e => (
-                <CandidatureCard key={e.idEntreprise} $statut={e.estVerifie ? 'Recruté' : 'En attente'}>
+                <CandidatureCard key={e.idEntreprise}>
                   <CardHeader>
                     <div>
                       <OffreTitre>{e.nomEntreprise}</OffreTitre>
@@ -107,10 +107,10 @@ export default function ListeEntreprises() {
                       </EntrepriseNom>
                     </div>
                     {e.estVerifie && (
-                      <StatutBadge $statut="Recruté">
+                      <ScoreBadge>
                         <BadgeCheck size={13} strokeWidth={2.5} />
                         Vérifiée
-                      </StatutBadge>
+                      </ScoreBadge>
                     )}
                   </CardHeader>
 

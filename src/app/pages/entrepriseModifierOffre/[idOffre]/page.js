@@ -7,6 +7,10 @@ import {
 } from '@/lib/referentiels'
 import AppNavbar from '@/components/appNavbar'
 import {
+  CheckCircle2, AlertCircle, ClipboardList, Calendar, Wrench, Sparkles,
+  X, FileEdit, TriangleAlert, Trash2, Save
+} from 'lucide-react'
+import {
   PageContainer, BackButton,
   PageHeader, PageTitle, PageSubtitle,
   AccordionSection, AccordionHeader, AccordionTitle, AccordionToggle,
@@ -331,7 +335,7 @@ export default function EntrepriseModifierOffrePage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || data.details || 'Erreur')
 
-      setSuccess('✓ Offre mise à jour avec succès !')
+      setSuccess('Offre mise à jour avec succès !')
       setCompetencesActions([])
       setQuestionsActions([])
 
@@ -349,7 +353,7 @@ export default function EntrepriseModifierOffrePage() {
   // === Suppression ===
   const handleDelete = async () => {
     const confirmation = confirm(
-      "⚠️ Êtes-vous ABSOLUMENT sûr de vouloir supprimer cette offre ?\n\n" +
+      "Êtes-vous ABSOLUMENT sûr de vouloir supprimer cette offre ?\n\n" +
       "Cette action est IRRÉVERSIBLE et entraînera la suppression de :\n" +
       "• L'offre elle-même\n" +
       "• Le QCM et ses questions\n" +
@@ -369,7 +373,7 @@ export default function EntrepriseModifierOffrePage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erreur')
 
-      setSuccess('✓ Offre supprimée. Redirection...')
+      setSuccess('Offre supprimée. Redirection...')
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('utilisateur') || '{}')
         router.push(`/pages/entrepriseProfil/${user.idEntreprise}`)
@@ -402,13 +406,23 @@ export default function EntrepriseModifierOffrePage() {
           </PageSubtitle>
         </PageHeader>
 
-        {error && <AlertMessage $type="error">❌ {error}</AlertMessage>}
-        {success && <AlertMessage $type="success">{success}</AlertMessage>}
+        {error && (
+          <AlertMessage $type="error">
+            <AlertCircle size={16} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 6 }} />
+            {error}
+          </AlertMessage>
+        )}
+        {success && (
+          <AlertMessage $type="success">
+            <CheckCircle2 size={16} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 6 }} />
+            {success}
+          </AlertMessage>
+        )}
 
         {/* ========== 1. INFORMATIONS GÉNÉRALES ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('general')}>
-            <AccordionTitle>📋 Informations générales</AccordionTitle>
+            <AccordionTitle><ClipboardList size={16} strokeWidth={2} />Informations générales</AccordionTitle>
             <AccordionToggle>{openSections.general ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.general && (
@@ -505,7 +519,7 @@ export default function EntrepriseModifierOffrePage() {
         {/* ========== 2. DATES ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('dates')}>
-            <AccordionTitle>📅 Dates importantes</AccordionTitle>
+            <AccordionTitle><Calendar size={16} strokeWidth={2} />Dates importantes</AccordionTitle>
             <AccordionToggle>{openSections.dates ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.dates && (
@@ -535,7 +549,7 @@ export default function EntrepriseModifierOffrePage() {
         {/* ========== 3. COMPÉTENCES REQUISES ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('competences')}>
-            <AccordionTitle>🛠 Compétences requises ({formData.competences.length})</AccordionTitle>
+            <AccordionTitle><Wrench size={16} strokeWidth={2} />Compétences requises ({formData.competences.length})</AccordionTitle>
             <AccordionToggle>{openSections.competences ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.competences && (
@@ -546,9 +560,12 @@ export default function EntrepriseModifierOffrePage() {
                 formData.competences.map((c, idx) => (
                   <ItemCard key={c.idCompetenceOffre}>
                     <ItemHeader>
-                      <ItemBadge>{c._isNew ? '✨ Nouvelle' : c.nom || `Compétence ${idx + 1}`}</ItemBadge>
+                      <ItemBadge>
+                        {c._isNew && <Sparkles size={12} strokeWidth={2.5} />}
+                        {c._isNew ? 'Nouvelle' : c.nom || `Compétence ${idx + 1}`}
+                      </ItemBadge>
                       <ItemDeleteButton onClick={() => supprimerCompetence(idx)}>
-                        ✕ Supprimer
+                        <X size={12} strokeWidth={2.5} /> Supprimer
                       </ItemDeleteButton>
                     </ItemHeader>
                     <FormGrid>
@@ -613,7 +630,10 @@ export default function EntrepriseModifierOffrePage() {
         {/* ========== 4. QCM ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('qcm')}>
-            <AccordionTitle>📝 Questionnaire de pré-sélection ({formData.questions.length} question{formData.questions.length > 1 ? 's' : ''})</AccordionTitle>
+            <AccordionTitle>
+              <FileEdit size={16} strokeWidth={2} />
+              Questionnaire de pré-sélection ({formData.questions.length} question{formData.questions.length > 1 ? 's' : ''})
+            </AccordionTitle>
             <AccordionToggle>{openSections.qcm ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.qcm && (
@@ -660,9 +680,12 @@ export default function EntrepriseModifierOffrePage() {
                 formData.questions.map((q, qIdx) => (
                   <ItemCard key={q.idQuestion}>
                     <ItemHeader>
-                      <ItemBadge>{q._isNew ? '✨ Nouvelle' : `Question ${qIdx + 1}`}</ItemBadge>
+                      <ItemBadge>
+                        {q._isNew && <Sparkles size={12} strokeWidth={2.5} />}
+                        {q._isNew ? 'Nouvelle' : `Question ${qIdx + 1}`}
+                      </ItemBadge>
                       <ItemDeleteButton onClick={() => supprimerQuestion(qIdx)}>
-                        ✕ Supprimer
+                        <X size={12} strokeWidth={2.5} /> Supprimer
                       </ItemDeleteButton>
                     </ItemHeader>
 
@@ -701,7 +724,7 @@ export default function EntrepriseModifierOffrePage() {
                         />
                         {q.choix.length > 2 && (
                           <RemoveChoiceButton onClick={() => supprimerChoix(qIdx, cIdx)}>
-                            ✕
+                            <X size={13} strokeWidth={2.5} />
                           </RemoveChoiceButton>
                         )}
                       </ChoiceRow>
@@ -722,7 +745,7 @@ export default function EntrepriseModifierOffrePage() {
         {/* ========== 5. ZONE DE DANGER ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('danger')}>
-            <AccordionTitle>⚠️ Zone de danger</AccordionTitle>
+            <AccordionTitle><TriangleAlert size={16} strokeWidth={2} />Zone de danger</AccordionTitle>
             <AccordionToggle>{openSections.danger ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.danger && (
@@ -734,7 +757,9 @@ export default function EntrepriseModifierOffrePage() {
                   ainsi que <strong>toutes les candidatures déjà reçues</strong>. Cette opération est irréversible.
                 </DangerText>
                 <DeleteButton onClick={handleDelete} disabled={isDeleting}>
-                  {isDeleting ? 'Suppression...' : '🗑️ Supprimer définitivement cette offre'}
+                  {isDeleting ? 'Suppression...' : (
+                    <><Trash2 size={14} strokeWidth={2} /> Supprimer définitivement cette offre</>
+                  )}
                 </DeleteButton>
               </DangerSection>
             </AccordionBody>
@@ -747,7 +772,9 @@ export default function EntrepriseModifierOffrePage() {
             Annuler
           </CancelButton>
           <SaveButton onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Enregistrement...' : '💾 Enregistrer les modifications'}
+            {isSaving ? 'Enregistrement...' : (
+              <><Save size={15} strokeWidth={2} /> Enregistrer les modifications</>
+            )}
           </SaveButton>
         </ActionBar>
       </PageContainer>

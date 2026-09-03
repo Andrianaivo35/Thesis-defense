@@ -4,6 +4,10 @@ import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
+  AlertCircle, CheckCircle2, Building2, Phone, ImageIcon, FolderOpen,
+  Trash2, Lightbulb, Lock, Save
+} from 'lucide-react'
+import {
   PageContainer, BackButton,
   PageHeader, PageTitle, PageSubtitle,
   AccordionSection, AccordionHeader, AccordionTitle, AccordionToggle,
@@ -124,7 +128,7 @@ export default function EntrepriseModifierProfilPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || data.details || 'Erreur')
 
-      setSuccess('✓ Profil mis à jour avec succès !')
+      setSuccess('Profil mis à jour avec succès !')
 
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('utilisateur') || '{}')
@@ -159,13 +163,23 @@ export default function EntrepriseModifierProfilPage() {
           </PageSubtitle>
         </PageHeader>
 
-        {error && <AlertMessage $type="error">❌ {error}</AlertMessage>}
-        {success && <AlertMessage $type="success">{success}</AlertMessage>}
+        {error && (
+          <AlertMessage $type="error">
+            <AlertCircle size={16} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 6 }} />
+            {error}
+          </AlertMessage>
+        )}
+        {success && (
+          <AlertMessage $type="success">
+            <CheckCircle2 size={16} strokeWidth={2} style={{ verticalAlign: -3, marginRight: 6 }} />
+            {success}
+          </AlertMessage>
+        )}
 
         {/* ========== 1. INFORMATIONS GÉNÉRALES ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('general')}>
-            <AccordionTitle>🏢 Informations générales</AccordionTitle>
+            <AccordionTitle><Building2 size={16} strokeWidth={2} />Informations générales</AccordionTitle>
             <AccordionToggle>{openSections.general ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.general && (
@@ -211,9 +225,8 @@ export default function EntrepriseModifierProfilPage() {
                 />
               </ContainerLabelInput>
 
-              {/* ✅ Lien vers le changement de mot de passe */}
               <SecurityLink onClick={() => router.push('/pages/entrepriseChangerMotDePasse')}>
-                🔐 Changer mon mot de passe →
+                <Lock size={14} strokeWidth={2} /> Changer mon mot de passe →
               </SecurityLink>
             </AccordionBody>
           )}
@@ -222,7 +235,7 @@ export default function EntrepriseModifierProfilPage() {
         {/* ========== 2. CONTACT ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('contact')}>
-            <AccordionTitle>📞 Contact et coordonnées</AccordionTitle>
+            <AccordionTitle><Phone size={16} strokeWidth={2} />Contact et coordonnées</AccordionTitle>
             <AccordionToggle>{openSections.contact ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.contact && (
@@ -281,7 +294,7 @@ export default function EntrepriseModifierProfilPage() {
         {/* ========== 3. LOGO ========== */}
         <AccordionSection>
           <AccordionHeader onClick={() => toggleSection('logo')}>
-            <AccordionTitle>🖼️ Logo de l'entreprise</AccordionTitle>
+            <AccordionTitle><ImageIcon size={16} strokeWidth={2} />Logo de l'entreprise</AccordionTitle>
             <AccordionToggle>{openSections.logo ? '−' : '+'}</AccordionToggle>
           </AccordionHeader>
           {openSections.logo && (
@@ -298,7 +311,7 @@ export default function EntrepriseModifierProfilPage() {
                   <Label>Logo de l'entreprise</Label>
 
                   <LogoUploadLabel htmlFor="logo-upload-input">
-                    📁 Choisir une image depuis mon ordinateur
+                    <FolderOpen size={14} strokeWidth={2} /> Choisir une image depuis mon ordinateur
                   </LogoUploadLabel>
                   <HiddenFileInput
                     id="logo-upload-input"
@@ -309,12 +322,13 @@ export default function EntrepriseModifierProfilPage() {
 
                   {formData.logo && (
                     <LogoRemoveButton onClick={() => updateField('logo', '')}>
-                      🗑️ Retirer le logo
+                      <Trash2 size={13} strokeWidth={2} /> Retirer le logo
                     </LogoRemoveButton>
                   )}
 
                   <InfoNote>
-                    💡 Formats acceptés : JPG, PNG, WebP. Taille maximum : 2 Mo.
+                    <Lightbulb size={12} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 4 }} />
+                    Formats acceptés : JPG, PNG, WebP. Taille maximum : 2 Mo.
                     Un format carré est recommandé pour un meilleur affichage.
                   </InfoNote>
                 </LogoControls>
@@ -329,7 +343,9 @@ export default function EntrepriseModifierProfilPage() {
             Annuler
           </CancelButton>
           <SaveButton onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Enregistrement...' : '💾 Enregistrer les modifications'}
+            {isSaving ? 'Enregistrement...' : (
+              <><Save size={15} strokeWidth={2} /> Enregistrer les modifications</>
+            )}
           </SaveButton>
         </ActionBar>
       </PageContainer>

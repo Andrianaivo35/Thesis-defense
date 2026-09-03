@@ -5,19 +5,19 @@ import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   Search, GraduationCap, School, BookMarked, Target, Building,
-  Briefcase, Heart, ArrowRight, BadgeCheck, Clock, MapPin,
+  ArrowRight, BadgeCheck, Clock, MapPin,
   CalendarClock, Users, Eye, Megaphone, X, Building2,
   MessageCircle, FileText, ClipboardList, Mail, Download
 } from 'lucide-react'
 import {
-  PageContainer, HeaderSection,
+  PageContainer, HeroSection, HeroTitle, HeroDescription, HeaderSection,
   SearchBarWrapper, SearchBarIcon, SearchBar,
   PageTitle,
   CandidatsGrid, CandidatCard, CandidatTop, CandidatAvatar,
   CandidatHeader, CandidatName, CandidatLevel,
   CandidatInfo, CandidatInfoItem,
   CandidatBio,
-  CandidatFooter, StatsRow, StatBadge, ViewProfileButton,
+  CandidatFooter, ViewProfileButton,
   EmptyState, LoadingState,
   TabsRow, TabButton,
   CohortesGrid, CohorteCard,
@@ -155,6 +155,14 @@ export default function RechercheCandidat() {
     <>
       <AppNavbar />
       <PageContainer>
+        <HeroSection>
+          <HeroTitle>Trouver le candidat qui vous correspond</HeroTitle>
+          <HeroDescription>
+            Parcourez les profils étudiants disponibles ou consultez les cohortes
+            proposées par les universités partenaires.
+          </HeroDescription>
+        </HeroSection>
+
         <HeaderSection>
           {/* === Onglets === */}
           <TabsRow>
@@ -250,16 +258,6 @@ export default function RechercheCandidat() {
                   {e.bio && <CandidatBio>{truncate(e.bio)}</CandidatBio>}
 
                   <CandidatFooter>
-                    <StatsRow>
-                      <StatBadge>
-                        <Briefcase size={11} strokeWidth={2} />
-                        {e.nombreParcours || 0} parcours
-                      </StatBadge>
-                      <StatBadge>
-                        <Heart size={11} strokeWidth={2} />
-                        {e.nombreInterets || 0} intérêts
-                      </StatBadge>
-                    </StatsRow>
                     <ViewProfileButton>
                       Voir le profil
                       <ArrowRight size={13} strokeWidth={2.5} />
@@ -505,10 +503,18 @@ export default function RechercheCandidat() {
                                 .filter(Boolean).join(' · ') || 'Profil à compléter'}
                             </EtudiantEmail>
                           </EtudiantInfoModal>
-                          <EtudiantCvAction
-                            onClick={() => router.push(`/pages/etudiantProfil/${e.idEtudiant}`)}>
-                            Voir le profil
-                          </EtudiantCvAction>
+                          {/* Compte importé mais jamais activé : le profil est quasi
+                              vide et n'a rien à montrer pour l'instant. */}
+                          {!e.compteActive ? (
+                            <EtudiantSansCv>Compte en cours d&apos;activation</EtudiantSansCv>
+                          ) : e.aUnCV ? (
+                            <EtudiantCvAction
+                              onClick={() => router.push(`/pages/etudiantProfil/${e.idEtudiant}`)}>
+                              Voir le profil
+                            </EtudiantCvAction>
+                          ) : (
+                            <EtudiantSansCv>Pas encore de CV</EtudiantSansCv>
+                          )}
                         </EtudiantRow>
                       ))}
                     </EtudiantsListModal>

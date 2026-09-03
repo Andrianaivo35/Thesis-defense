@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
+import { Lock, AlertCircle, CheckCircle2 } from 'lucide-react'
 import {
   PwdContainer, PwdCard, PwdHeader, PwdTitle, PwdSubtitle,
   PwdForm, PwdField, PwdLabel, PwdInput,
@@ -50,7 +51,7 @@ export default function EntrepriseChangerMotDePassePage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erreur')
 
-      setSuccess('✓ Mot de passe modifié avec succès. Vous allez être redirigé...')
+      setSuccess('Mot de passe modifié avec succès. Vous allez être redirigé...')
       setAncien(''); setNouveau(''); setConfirmation('')
 
       setTimeout(() => router.push('/pages/entrepriseModifierProfil'), 2000)
@@ -69,14 +70,18 @@ export default function EntrepriseChangerMotDePassePage() {
 
         <PwdCard>
           <PwdHeader>
-            <PwdTitle>🔐 Changer mon mot de passe</PwdTitle>
+            <PwdTitle><Lock size={19} strokeWidth={2} />Changer mon mot de passe</PwdTitle>
             <PwdSubtitle>
               Pour des raisons de sécurité, veuillez saisir votre ancien mot de passe.
             </PwdSubtitle>
           </PwdHeader>
 
-          {error && <PwdAlert $type="error">❌ {error}</PwdAlert>}
-          {success && <PwdAlert $type="success">{success}</PwdAlert>}
+          {error && (
+            <PwdAlert $type="error"><AlertCircle size={14} strokeWidth={2} />{error}</PwdAlert>
+          )}
+          {success && (
+            <PwdAlert $type="success"><CheckCircle2 size={14} strokeWidth={2} />{success}</PwdAlert>
+          )}
 
           <PwdForm onSubmit={handleSubmit}>
             <PwdField>
@@ -122,7 +127,7 @@ export default function EntrepriseChangerMotDePassePage() {
                 Annuler
               </PwdCancelButton>
               <PwdSubmitButton type="submit" disabled={loading}>
-                {loading ? 'Modification...' : '🔐 Modifier'}
+                {loading ? 'Modification...' : <><Lock size={14} strokeWidth={2} /> Modifier</>}
               </PwdSubmitButton>
             </PwdButtons>
           </PwdForm>

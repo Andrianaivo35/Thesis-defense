@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { fetchAuth } from '@/lib/auth'
+import { fetchAuth, getToken } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   Users, GraduationCap, BookMarked, Building, Calendar,
-  FileText, FileEdit, MessageCircle, UserCheck, CheckCircle2, Search
+  FileText, FileEdit, MessageCircle, UserCheck, UserX, CheckCircle2, XCircle, Search,
+  Paperclip, Sparkles
 } from 'lucide-react'
 import {
   PageContainer, PageHeader, PageTitle,
@@ -15,9 +16,10 @@ import {
   CandidaturesList, CandidatCard, CandidatLeft, CandidatAvatar,
   CandidatInfo, CandidatName, CandidatEmail, CandidatMeta, CandidatMetaItem,
   CandidatMiddle, OfferBadge, DateInfo, StatutBadge,
-  CandidatRight, ScoreCircle, ScoreLabel,
+  CandidatRight, ScoreCircle, ScoreLabel, PertinenceBadge,
   CandidatActions, ActionLink,
   ActionButtonsRow, MessageButton, RecruterButton, RecruteBadge,
+  RefuserButton, RefuseBadge,
   EmptyState, LoadingState
 } from '@/components/styleCandidatureEntreprise'
 
@@ -30,7 +32,7 @@ export default function EntrepriseCandidatures() {
 
   const [filterOffre, setFilterOffre] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('score')
+  const [sortBy, setSortBy] = useState('pertinence')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,6 +86,46 @@ export default function EntrepriseCandidatures() {
     }
   }
 
+  const handleRefuser = async (idCandidature, prenom, nom) => {
+    if (!confirm(`Confirmer le refus de la candidature de ${prenom} ${nom} ?`)) return
+
+    setUpdatingId(idCandidature)
+    try {
+      const res = await fetchAuth(`/api/valideRecrutementEtudiant/${idCandidature}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut: 'Refusé' })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`)
+
+      setCandidatures(prev => prev.map(c =>
+        c.idCandidature === idCandidature ? { ...c, statut: 'Refusé' } : c
+      ))
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  /* Le document n'est pas accessible publiquement : on le récupère avec le
+     jeton puis on l'ouvre depuis un blob (même pattern que etudiantCV).
+     categorie : 'cv' | 'lettre' | 'document', id : idCV | idCandidature | idDocument
+     selon la catégorie (même convention que /api/fichier/[categorie]/[id]). */
+  const handleOuvrirDocument = async (categorie, id) => {
+    try {
+      const res = await fetch(`/api/fichier/${categorie}/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      })
+      if (!res.ok) throw new Error('Document indisponible')
+      const blob = await res.blob()
+      window.open(URL.createObjectURL(blob), '_blank')
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    }
+  }
+
   const offresList = useMemo(() => {
     const map = new Map()
     candidatures.forEach(c => {
@@ -112,7 +154,9 @@ export default function EntrepriseCandidatures() {
     }
 
     const sorted = [...filtered]
-    if (sortBy === 'score') {
+    if (sortBy === 'pertinence') {
+      sorted.sort((a, b) => (b.scorePertinence ?? 0) - (a.scorePertinence ?? 0))
+    } else if (sortBy === 'score') {
       sorted.sort((a, b) => (parseFloat(b.noteQCM) || 0) - (parseFloat(a.noteQCM) || 0))
     } else if (sortBy === 'date') {
       sorted.sort((a, b) => new Date(b.dateCandidature) - new Date(a.dateCandidature))
@@ -125,14 +169,15 @@ export default function EntrepriseCandidatures() {
 
   const stats = useMemo(() => {
     if (candidaturesFiltrees.length === 0) {
-      return { total: 0, average: 0, max: 0, recrutes: 0 }
+      return { total: 0, average: 0, max: 0, recrutes: 0, refuses: 0 }
     }
     const scores = candidaturesFiltrees.map(c => parseFloat(c.noteQCM) || 0)
     return {
       total: candidaturesFiltrees.length,
       average: (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1),
       max: Math.max(...scores).toFixed(1),
-      recrutes: candidaturesFiltrees.filter(c => c.statut === 'Recruté').length
+      recrutes: candidaturesFiltrees.filter(c => c.statut === 'Recruté').length,
+      refuses: candidaturesFiltrees.filter(c => c.statut === 'Refusé').length
     }
   }, [candidaturesFiltrees])
 
@@ -182,6 +227,10 @@ export default function EntrepriseCandidatures() {
             <StatValue>{stats.recrutes}</StatValue>
             <StatLabel>Recrutés</StatLabel>
           </StatCard>
+          <StatCard>
+            <StatValue>{stats.refuses}</StatValue>
+            <StatLabel>Refusés</StatLabel>
+          </StatCard>
         </StatsRow>
 
         <FilterBar>
@@ -198,7 +247,8 @@ export default function EntrepriseCandidatures() {
           <FilterGroup>
             <FilterLabel>Trier par</FilterLabel>
             <FilterSelect value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="score">Score (décroissant)</option>
+              <option value="pertinence">Pertinence (CV + profil)</option>
+              <option value="score">Score QCM (décroissant)</option>
               <option value="date">Date (récent → ancien)</option>
               <option value="nom">Nom (A → Z)</option>
             </FilterSelect>
@@ -261,6 +311,15 @@ export default function EntrepriseCandidatures() {
                         </CandidatMetaItem>
                       )}
                     </CandidatMeta>
+                    {c.raisonsPertinence?.length > 0 && (
+                      <CandidatMeta style={{ marginTop: 2 }}>
+                        {c.raisonsPertinence.slice(0, 2).map((r, i) => (
+                          <CandidatMetaItem key={i} style={{ fontWeight: r.fort ? 600 : 400 }}>
+                            • {r.texte}
+                          </CandidatMetaItem>
+                        ))}
+                      </CandidatMeta>
+                    )}
                   </CandidatInfo>
                 </CandidatLeft>
 
@@ -273,18 +332,37 @@ export default function EntrepriseCandidatures() {
                   <StatutBadge $statut={c.statut}>{c.statut}</StatutBadge>
 
                   <CandidatActions>
-                    {c.cv && (
-                      <ActionLink href={c.cv} target="_blank" rel="noopener noreferrer">
+                    {c.idCV && (
+                      <ActionLink
+                        as="button"
+                        type="button"
+                        onClick={() => handleOuvrirDocument('cv', c.idCV)}
+                      >
                         <FileText size={13} strokeWidth={2} />
                         Voir CV
                       </ActionLink>
                     )}
-                    {c.lettreMotivation && (
-                      <ActionLink href={c.lettreMotivation} target="_blank" rel="noopener noreferrer">
+                    {c.nomFichierLettre && (
+                      <ActionLink
+                        as="button"
+                        type="button"
+                        onClick={() => handleOuvrirDocument('lettre', c.idCandidature)}
+                      >
                         <FileEdit size={13} strokeWidth={2} />
                         Voir lettre
                       </ActionLink>
                     )}
+                    {(c.documents || []).map(doc => (
+                      <ActionLink
+                        key={doc.idDocument}
+                        as="button"
+                        type="button"
+                        onClick={() => handleOuvrirDocument('document', doc.idDocument)}
+                      >
+                        <Paperclip size={13} strokeWidth={2} />
+                        {doc.nomFichierOriginal || 'Document'}
+                      </ActionLink>
+                    ))}
                   </CandidatActions>
 
                   <ActionButtonsRow>
@@ -298,20 +376,40 @@ export default function EntrepriseCandidatures() {
                         <CheckCircle2 size={14} strokeWidth={2.5} />
                         Recruté
                       </RecruteBadge>
+                    ) : c.statut === 'Refusé' ? (
+                      <RefuseBadge>
+                        <XCircle size={14} strokeWidth={2.5} />
+                        Refusé
+                      </RefuseBadge>
                     ) : (
-                      <RecruterButton
-                        onClick={() => handleRecruter(c.idCandidature, c.prenomEtudiant, c.nomEtudiant)}
-                        disabled={updatingId === c.idCandidature}
-                      >
-                        {updatingId === c.idCandidature ? (
-                          'Traitement...'
-                        ) : (
-                          <>
-                            <UserCheck size={14} strokeWidth={2} />
-                            Recruter
-                          </>
-                        )}
-                      </RecruterButton>
+                      <>
+                        <RecruterButton
+                          onClick={() => handleRecruter(c.idCandidature, c.prenomEtudiant, c.nomEtudiant)}
+                          disabled={updatingId === c.idCandidature}
+                        >
+                          {updatingId === c.idCandidature ? (
+                            'Traitement...'
+                          ) : (
+                            <>
+                              <UserCheck size={14} strokeWidth={2} />
+                              Recruter
+                            </>
+                          )}
+                        </RecruterButton>
+                        <RefuserButton
+                          onClick={() => handleRefuser(c.idCandidature, c.prenomEtudiant, c.nomEtudiant)}
+                          disabled={updatingId === c.idCandidature}
+                        >
+                          {updatingId === c.idCandidature ? (
+                            'Traitement...'
+                          ) : (
+                            <>
+                              <UserX size={14} strokeWidth={2} />
+                              Refuser
+                            </>
+                          )}
+                        </RefuserButton>
+                      </>
                     )}
                   </ActionButtonsRow>
                 </CandidatMiddle>
@@ -321,6 +419,12 @@ export default function EntrepriseCandidatures() {
                     {parseFloat(c.noteQCM || 0).toFixed(0)}%
                   </ScoreCircle>
                   <ScoreLabel>Score QCM</ScoreLabel>
+                  {c.scorePertinence != null && (
+                    <PertinenceBadge title="Pertinence CV + profil par rapport à l'offre">
+                      <Sparkles size={11} strokeWidth={2.5} />
+                      {c.scorePertinence}% pertinence
+                    </PertinenceBadge>
+                  )}
                 </CandidatRight>
               </CandidatCard>
             ))}

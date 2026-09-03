@@ -11,7 +11,7 @@ import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   StatsRow, StatCard, StatValue, StatLabel,
   CandidatureList, CandidatureCard, CardHeader,
-  OffreTitre, EntrepriseNom, StatutBadge,
+  OffreTitre, EntrepriseNom, StatutBadge, EtatOffreBadge,
   CardMeta, MetaItem, CardFooter, ActionButton,
   EmptyState, LoadingState
 } from '@/components/styleEtudiantCandidature'
@@ -131,7 +131,7 @@ export default function EntrepriseDashboard() {
             ) : (
               <CandidatureList style={{ marginBottom: 28 }}>
                 {donnees.offresRecentes.map(o => (
-                  <CandidatureCard key={o.idOffre} $statut={o.statut === 'Active' ? 'Recruté' : 'En attente'}>
+                  <CandidatureCard key={o.idOffre}>
                     <CardHeader>
                       <div>
                         <OffreTitre>{o.titre}</OffreTitre>
@@ -140,9 +140,9 @@ export default function EntrepriseDashboard() {
                           {o.ville ? ` — ${o.ville}` : ''}
                         </EntrepriseNom>
                       </div>
-                      <StatutBadge $statut={o.statut === 'Active' ? 'Recruté' : 'En attente'}>
+                      <EtatOffreBadge $active={o.statut === 'Active'}>
                         {o.statut === 'Active' ? 'Active' : o.statut}
-                      </StatutBadge>
+                      </EtatOffreBadge>
                     </CardHeader>
                     <CardMeta>
                       <MetaItem>

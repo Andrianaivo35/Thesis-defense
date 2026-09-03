@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
+import { X } from 'lucide-react'
 import { VILLES, DUREES_STAGE, LIBELLES_DOMAINES } from '@/lib/referentiels'
 import {
   PageContainer, ContainerForm, ContainerTexte, FormGrid, ColumnForm,
@@ -309,7 +310,7 @@ export default function EntrepriseCreerOffre() {
               <ItemHeader $tone="sauge">
                 <ItemLabel $tone="sauge">Compétence {idx + 1}</ItemLabel>
                 {competences.length > 1 && (
-                  <Button type="button" onClick={() => supprimerCompetence(idx)} $variant="secondary" style={{ padding: '5px 10px', fontSize: '12px' }}>✕ Supprimer</Button>
+                  <Button type="button" onClick={() => supprimerCompetence(idx)} $variant="secondary" style={{ padding: '5px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><X size={12} strokeWidth={2.5} /> Supprimer</Button>
                 )}
               </ItemHeader>
 
@@ -403,7 +404,7 @@ export default function EntrepriseCreerOffre() {
               <ItemHeader $tone="argile">
                 <ItemLabel $tone="argile">Question {qIdx + 1}</ItemLabel>
                 {questions.length > 1 && (
-                  <Button type="button" onClick={() => supprimerQuestion(qIdx)} $variant="secondary" style={{ padding: '5px 10px', fontSize: '12px' }}>✕ Supprimer</Button>
+                  <Button type="button" onClick={() => supprimerQuestion(qIdx)} $variant="secondary" style={{ padding: '5px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><X size={12} strokeWidth={2.5} /> Supprimer</Button>
                 )}
               </ItemHeader>
 
@@ -433,7 +434,7 @@ export default function EntrepriseCreerOffre() {
                   <input type="radio" name={`correct-${qIdx}`} checked={c.estCorrect} onChange={() => marquerCommeCorrect(qIdx, cIdx)} />
                   <Input type="text" value={c.enonce} onChange={(e) => modifierChoixEnonce(qIdx, cIdx, e.target.value)} placeholder={`Choix ${cIdx + 1}`} style={{ flex: 1 }} />
                   {q.choix.length > 2 && (
-                    <Button type="button" onClick={() => supprimerChoix(qIdx, cIdx)} $variant="secondary" style={{ padding: '5px 10px', fontSize: '12px' }}>✕</Button>
+                    <Button type="button" onClick={() => supprimerChoix(qIdx, cIdx)} $variant="secondary" style={{ padding: '5px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center' }}><X size={12} strokeWidth={2.5} /></Button>
                   )}
                 </ChoixRow>
               ))}

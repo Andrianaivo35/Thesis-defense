@@ -48,7 +48,7 @@ export const PageTitle = styled.h1`
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -168,7 +168,7 @@ export const Input = styled.input`
   transition: all 0.15s ease;
 
   &::placeholder { color: #94a3b8; }
-  &:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
+  &:focus { border-color: #A98B76; box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.12); }
   &:disabled { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
 `
 
@@ -182,7 +182,7 @@ export const Select = styled.select`
   cursor: pointer;
   transition: all 0.15s ease;
 
-  &:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
+  &:focus { border-color: #A98B76; box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.12); }
 `
 
 export const Textarea = styled.textarea`
@@ -198,7 +198,7 @@ export const Textarea = styled.textarea`
   transition: all 0.15s ease;
 
   &::placeholder { color: #94a3b8; }
-  &:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
+  &:focus { border-color: #A98B76; box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.12); }
 `
 
 /* ===== CARTE D'ITEM (compétence, question) ===== */
@@ -221,16 +221,21 @@ export const ItemHeader = styled.div`
 `
 
 export const ItemBadge = styled.span`
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 4px 11px;
-  background: #e0e7ff;
-  color: #3730a3;
+  background: #f5f3eb;
+  color: #6b5744;
   border-radius: 6px;
   font-size: 12.5px;
   font-weight: 700;
 `
 
 export const ItemDeleteButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: white;
   color: #dc2626;
   border: 1.5px solid #fecaca;
@@ -247,7 +252,7 @@ export const ItemDeleteButton = styled.button`
 export const AddItemButton = styled.button`
   width: 100%;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -259,7 +264,7 @@ export const AddItemButton = styled.button`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.35);
+    box-shadow: 0 8px 18px rgba(169, 139, 118, 0.35);
   }
 `
 
@@ -276,13 +281,13 @@ export const ChoiceRow = styled.div`
   border-radius: 9px;
   transition: border-color 0.15s ease;
 
-  &:focus-within { border-color: #4f46e5; }
+  &:focus-within { border-color: #A98B76; }
 `
 
 export const ChoiceCheckbox = styled.input`
   width: 20px;
   height: 20px;
-  accent-color: #4f46e5;
+  accent-color: #A98B76;
   cursor: pointer;
   flex-shrink: 0;
 `
@@ -296,10 +301,13 @@ export const ChoiceInput = styled.input`
   background: white;
   outline: none;
 
-  &:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); }
+  &:focus { border-color: #A98B76; box-shadow: 0 0 0 2px rgba(169, 139, 118, 0.1); }
 `
 
 export const RemoveChoiceButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 28px;
   height: 28px;
   background: white;
@@ -319,8 +327,8 @@ export const AddChoiceButton = styled.button`
   margin-top: 8px;
   padding: 8px 14px;
   background: white;
-  color: #4f46e5;
-  border: 1.5px dashed #c7d2fe;
+  color: #A98B76;
+  border: 1.5px dashed #d4b89d;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -328,8 +336,8 @@ export const AddChoiceButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: #eef2ff;
-    border-color: #4f46e5;
+    background: #f5f3eb;
+    border-color: #A98B76;
     border-style: solid;
   }
 `
@@ -361,6 +369,10 @@ export const DangerText = styled.p`
 `
 
 export const DeleteButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 11px 22px;
   background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
   color: white;
@@ -420,7 +432,7 @@ export const CancelButton = styled.button`
 
 export const SaveButton = styled.button`
   padding: 11px 28px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -434,7 +446,7 @@ export const SaveButton = styled.button`
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 10px 24px rgba(169, 139, 118, 0.4);
   }
 
   &:disabled { opacity: 0.65; cursor: not-allowed; }
