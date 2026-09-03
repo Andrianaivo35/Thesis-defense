@@ -69,8 +69,21 @@ model Candidature {
   etudiant         etudiant          @relation(fields: [idEtudiant], references: [idEtudiant], onDelete: Cascade, onUpdate: NoAction)
   offre            offre             @relation(fields: [idOffre], references: [idOffre], onDelete: Cascade, onUpdate: NoAction)
   ReponseEtudiant  ReponseEtudiant[]
+  DocumentCandidature DocumentCandidature[]
 
   @@unique([idEtudiant, idOffre])
+}
+
+model DocumentCandidature {
+  idDocument         Int         @id @default(autoincrement())
+  idCandidature      Int
+  nomFichier         String      @db.VarChar(255)
+  nomFichierOriginal String?     @db.VarChar(255)
+  tailleOctets       Int?
+  dateAjout          DateTime    @default(now()) @db.Timestamp(6)
+  Candidature        Candidature @relation(fields: [idCandidature], references: [idCandidature], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([idCandidature], map: "idx_document_candidature")
 }
 
 model ChoixReponse {
@@ -322,6 +335,8 @@ model etudiant {
   idPromotion          Int?
   dateFinRattachement  DateTime?              @db.Timestamp(6)
   motifFinRattachement String?
+  estVerifieIdentite   Boolean?               @default(false)
+  dateVerificationIdentite DateTime?          @db.Date
   CV                   CV?
   Candidature          Candidature[]
   CompetenceEtudiant   CompetenceEtudiant[]
