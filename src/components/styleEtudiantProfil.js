@@ -293,6 +293,63 @@ export const ParcoursLink = styled.a`
   }
 `
 
+/* Conteneur de bloc pour la liste de documents : SectionTitle est en
+   inline-flex (h2), et DocumentLink est un <button> — tous deux
+   inline-level, ils s'alignaient donc côte à côte sur la même ligne au
+   lieu de passer sous le titre. Ce wrapper, en display: flex (block-level
+   par défaut), force le retour à la ligne comme les autres sections
+   (BioText, InfoList, SkillList...). */
+export const DocumentList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+`
+
+/* Lien de document protégé (CV) : mêmes teintes que ParcoursLink, en
+   <button> puisque l'ouverture passe par fetch+blob authentifié, pas par
+   un href direct. */
+export const DocumentLink = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  color: #6b5744;
+  font-weight: 600;
+  background: #f5f3eb;
+  border: 1px solid #d4b89d;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg { color: #A98B76; flex-shrink: 0; }
+
+  &:hover { background: #eef0d9; border-color: #A98B76; }
+`
+
+/* ===== COMPÉTENCES : pastilles, groupées par catégorie ===== */
+
+export const SkillList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`
+
+export const SkillChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: #f5f3eb;
+  color: #6b5744;
+  border: 1px solid #d4b89d;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+
+  small { color: #A98B76; font-weight: 700; }
+`
+
 /* ===== CENTRES D'INTÉRÊT : texte simple, sans pastille ===== */
 
 export const InterestList = styled.div`

@@ -10,7 +10,7 @@ import RevueCompetencesCV from '@/components/revueCompetencesCV'
 import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   CandidatureList, CandidatureCard, CardHeader,
-  OffreTitre, EntrepriseNom, StatutBadge,
+  OffreTitre, EntrepriseNom, ScoreBadge,
   CardMeta, MetaItem, CardFooter, ActionButton,
   EmptyState, LoadingState
 } from '@/components/styleEtudiantCandidature'
@@ -260,7 +260,7 @@ export default function EtudiantCV() {
         ) : (
           <CandidatureList>
             {cvs.map(cv => (
-              <CandidatureCard key={cv.idCV} $statut={cv.estPrincipal ? 'Recruté' : 'En attente'}>
+              <CandidatureCard key={cv.idCV}>
                 <CardHeader>
                   <div>
                     <OffreTitre>{cv.libelle}</OffreTitre>
@@ -270,10 +270,10 @@ export default function EtudiantCV() {
                     </EntrepriseNom>
                   </div>
                   {cv.estPrincipal && (
-                    <StatutBadge $statut="Recruté">
+                    <ScoreBadge>
                       <Star size={13} strokeWidth={2.5} />
                       CV principal
-                    </StatutBadge>
+                    </ScoreBadge>
                   )}
                 </CardHeader>
 
@@ -307,7 +307,7 @@ export default function EtudiantCV() {
                     c'est le seul cas qui mérite d'attirer son attention. */}
                 {cv.statutAnalyse === 'analyse' && Number(cv.detectionsEnAttente) > 0 && (
                   <CardMeta>
-                    <MetaItem style={{ fontWeight: 600, color: '#7c3aed' }}>
+                    <MetaItem style={{ fontWeight: 600, color: '#92400e' }}>
                       <Sparkles size={13} strokeWidth={2.5} />
                       {cv.detectionsEnAttente} compétence{Number(cv.detectionsEnAttente) > 1 ? 's' : ''} détectée{Number(cv.detectionsEnAttente) > 1 ? 's' : ''} en attente de votre confirmation
                     </MetaItem>

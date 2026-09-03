@@ -82,7 +82,7 @@ export default function RevueCompetencesCV({ cv, detections, onEnregistrer, onFe
   const incertaines = detections.filter(d => !d.proposee)
 
   return (
-    <CandidatureCard style={{ marginBottom: 20, borderLeftWidth: 4, borderLeftColor: '#7c3aed' }}>
+    <CandidatureCard style={{ marginBottom: 20, borderLeftWidth: 4, borderLeftColor: '#A98B76' }}>
       <OffreTitre>
         <Sparkles size={16} strokeWidth={2.5} style={{ verticalAlign: -2, marginRight: 6 }} />
         Compétences trouvées dans « {cv.libelle} »
@@ -169,8 +169,8 @@ function ListeDetections({ detections, retenues, basculer }) {
             style={{
               display: 'flex', alignItems: 'flex-start', gap: 10,
               padding: '10px 12px', borderRadius: 9, cursor: 'pointer',
-              border: `1.5px solid ${coche ? '#c4b5fd' : '#e2e8f0'}`,
-              background: coche ? '#faf8ff' : '#fff'
+              border: `1.5px solid ${coche ? '#d6dcb3' : '#e2e8f0'}`,
+              background: coche ? '#f5f3eb' : '#fff'
             }}
           >
             <input

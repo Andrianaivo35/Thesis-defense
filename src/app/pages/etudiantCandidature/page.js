@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { fetchAuth } from '@/lib/auth'
+import { fetchAuth, getToken } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   FileText, Building2, MapPin, Calendar, Clock, Award,
-  CheckCircle2, XCircle, Hourglass, MessageSquare, BadgeCheck
+  CheckCircle2, XCircle, Hourglass, MessageSquare, BadgeCheck,
+  Paperclip, FilePlus2
 } from 'lucide-react'
 import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
@@ -14,6 +15,7 @@ import {
   CandidatureList, CandidatureCard, CardHeader,
   OffreTitre, EntrepriseNom, StatutBadge,
   CardMeta, MetaItem, CardFooter, NoteQCM, ActionButton,
+  DocumentsRow, DocumentChip,
   EmptyState, LoadingState
 } from '@/components/styleEtudiantCandidature'
 
@@ -72,6 +74,46 @@ export default function EtudiantCandidatures() {
     }
     charger()
   }, [])
+
+  /* Ajout d'un document complémentaire a posteriori : même endpoint que
+     celui utilisé juste après le QCM (qcm/[idOffre]/page.js), pour ne pas
+     dupliquer la logique de validation/stockage côté serveur. */
+  const handleAjouterDocument = async (idCandidature, file) => {
+    if (!file) return
+    try {
+      const formData = new FormData()
+      formData.append('document', file)
+      const res = await fetchAuth(`/api/candidature/${idCandidature}/documents`, {
+        method: 'POST',
+        body: formData
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`)
+
+      setCandidatures(prev => prev.map(c =>
+        c.idCandidature === idCandidature
+          ? { ...c, documents: [...(c.documents || []), data.document] }
+          : c
+      ))
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    }
+  }
+
+  /* Le document n'est pas accessible publiquement : on le récupère avec le
+     jeton puis on l'ouvre depuis un blob (même pattern que etudiantCV). */
+  const handleOuvrirDocument = async (idDocument) => {
+    try {
+      const res = await fetch(`/api/fichier/document/${idDocument}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      })
+      if (!res.ok) throw new Error('Document indisponible')
+      const blob = await res.blob()
+      window.open(URL.createObjectURL(blob), '_blank')
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    }
+  }
 
   const candidaturesFiltrees = useMemo(() => {
     if (filtre === 'toutes') return candidatures
@@ -181,6 +223,43 @@ export default function EtudiantCandidatures() {
                         </MetaItem>
                       )}
                     </CardMeta>
+
+                    {(c.documents?.length > 0 || c.statut === 'En attente') && (
+                      <DocumentsRow>
+                        {(c.documents || []).map(doc => (
+                          <DocumentChip
+                            key={doc.idDocument}
+                            onClick={() => handleOuvrirDocument(doc.idDocument)}
+                            title={doc.nomFichierOriginal}
+                          >
+                            <Paperclip size={12} strokeWidth={2} />
+                            <span>{doc.nomFichierOriginal || 'Document'}</span>
+                          </DocumentChip>
+                        ))}
+                        {c.statut === 'En attente' && (c.documents?.length || 0) < 5 && (
+                          <>
+                            <input
+                              type="file"
+                              accept=".pdf,application/pdf"
+                              id={`ajout-document-${c.idCandidature}`}
+                              style={{ display: 'none' }}
+                              onChange={(e) => {
+                                handleAjouterDocument(c.idCandidature, e.target.files[0])
+                                e.target.value = ''
+                              }}
+                            />
+                            <DocumentChip
+                              as="label"
+                              htmlFor={`ajout-document-${c.idCandidature}`}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <FilePlus2 size={12} strokeWidth={2} />
+                              <span>Ajouter un document</span>
+                            </DocumentChip>
+                          </>
+                        )}
+                      </DocumentsRow>
+                    )}
 
                     <CardFooter>
                       {c.noteQCM !== null && c.noteQCM !== undefined ? (

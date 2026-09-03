@@ -171,6 +171,42 @@ export const StatutBadge = styled.span`
   }}
 `
 
+/* Badge d'état d'une offre (Active/Inactive) : notion indépendante du statut
+   d'une candidature, elle ne doit jamais emprunter son vocabulaire ni ses
+   couleurs (voir EN2 — l'ancien code réutilisait StatutBadge $statut='Recruté'
+   pour signaler « offre active », ce qui les rendait indiscernables). */
+export const EtatOffreBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  ${p => p.$active
+    ? `background: #eef0d9; color: #4d5e2c; border: 1px solid #d6dcb3;`
+    : `background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;`}
+`
+
+/* Badge neutre pour les listes de suggestions/recommandations (score de
+   correspondance) : ce ne sont pas de vraies candidatures, donc pas de
+   vocabulaire de statut (Retenu/Refusé) ni de code couleur associé. */
+export const ScoreBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #eef0d9;
+  color: #4d5e2c;
+  border: 1px solid #d6dcb3;
+`
+
 export const CardMeta = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -225,6 +261,41 @@ export const ActionButton = styled.button`
     background: #f5f3eb;
     border-color: #A98B76;
   }
+`
+
+export const DocumentsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+`
+
+export const DocumentChip = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: #f5f3eb;
+  color: #6b5744;
+  border: 1px solid #d4b89d;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  max-width: 220px;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background: #ede5d7;
+  }
+
+  svg { flex-shrink: 0; color: #A98B76; }
 `
 
 /* ===== États ===== */

@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchAuth, getUtilisateur } from '@/lib/auth'
+import { fetchAuth, getUtilisateur, getToken } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   Mail, Phone, MapPin, Pencil, MessageCircle, PartyPopper,
-  BookOpen, GraduationCap, Target, Briefcase,
+  BookOpen, GraduationCap, Target, Briefcase, FileText, Sparkles,
   ExternalLink, Heart, AlertCircle, ArrowLeft, ArrowRight
 } from 'lucide-react'
 import {
@@ -17,8 +17,10 @@ import {
   ParcoursList, ParcoursCard, ParcoursTitle,
   ParcoursDetails, ParcoursRow, ParcoursRowLabel, ParcoursRowValue, ParcoursLink,
   InterestList, InterestItem, InterestDomaine, InterestMission,
+  SkillList, SkillChip,
   BioText, EmptyState, EmptyStateLink, LoadingState, ErrorCard, ErrorIcon,
-  StageBanner, StageIcon, StageContent, StageTitle, StageDetails
+  StageBanner, StageIcon, StageContent, StageTitle, StageDetails,
+  DocumentList, DocumentLink
 } from '@/components/styleEtudiantProfil'
 
 export default function EtudiantProfilPage() {
@@ -100,7 +102,22 @@ export default function EtudiantProfilPage() {
     )
   }
 
-  const { etudiant, preferenceStage, parcours, centresInteret, stageRecrute } = data
+  const { etudiant, competences, preferenceStage, parcours, centresInteret, stageRecrute, cv } = data
+
+  /* Le CV n'est pas accessible publiquement : on le récupère avec le jeton
+     puis on l'ouvre depuis un blob (même pattern que etudiantCV). */
+  const handleOuvrirCv = async () => {
+    try {
+      const res = await fetch(`/api/fichier/cv/${cv.idCV}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      })
+      if (!res.ok) throw new Error('Document indisponible')
+      const blob = await res.blob()
+      window.open(URL.createObjectURL(blob), '_blank')
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    }
+  }
 
   const handleMessage = () => {
     if (!etudiant.idUtilisateur) {
@@ -211,6 +228,59 @@ export default function EtudiantProfilPage() {
                 <ArrowRight size={12} strokeWidth={2.5} />
               </EmptyStateLink>
             </EmptyState>
+          </Section>
+        )}
+
+        {/* === Compétences === */}
+        {competences.length > 0 ? (
+          <Section>
+            <SectionTitle>
+              <Sparkles size={16} strokeWidth={2} />
+              Compétences
+            </SectionTitle>
+            <SkillList>
+              {competences.map(c => (
+                <SkillChip key={c.idCompetenceEtudiant}>
+                  {c.nomCompetenceReference}
+                  {c.niveau && <small>· {c.niveau}</small>}
+                </SkillChip>
+              ))}
+            </SkillList>
+          </Section>
+        ) : estMonProfil && (
+          <Section>
+            <SectionTitle>
+              <Sparkles size={16} strokeWidth={2} />
+              Compétences
+            </SectionTitle>
+            <EmptyState>
+              Vous n&apos;avez pas encore de compétence déclarée.{' '}
+              <EmptyStateLink onClick={handleModifier}>
+                Ajouter une compétence
+                <ArrowRight size={12} strokeWidth={2.5} />
+              </EmptyStateLink>
+              {' '}— ou confirmez celles détectées depuis{' '}
+              <EmptyStateLink onClick={() => router.push('/pages/etudiantCV')}>
+                Mes CV
+                <ArrowRight size={12} strokeWidth={2.5} />
+              </EmptyStateLink>
+            </EmptyState>
+          </Section>
+        )}
+
+        {/* === Documents === */}
+        {cv && (
+          <Section>
+            <SectionTitle>
+              <FileText size={16} strokeWidth={2} />
+              Documents
+            </SectionTitle>
+            <DocumentList>
+              <DocumentLink onClick={handleOuvrirCv}>
+                <FileText size={14} strokeWidth={2} />
+                {cv.nomFichierOriginal || cv.libelle || 'Voir le CV'}
+              </DocumentLink>
+            </DocumentList>
           </Section>
         )}
 

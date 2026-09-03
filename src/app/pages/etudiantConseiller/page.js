@@ -10,7 +10,7 @@ import {
   PageContainer, PageHeader, PageTitle, PageSubtitle,
   StatsRow, StatCard, StatValue, StatLabel,
   CandidatureList, CandidatureCard, CardHeader,
-  OffreTitre, EntrepriseNom, StatutBadge,
+  OffreTitre, EntrepriseNom, ScoreBadge,
   CardMeta, MetaItem, CardFooter, ActionButton,
   EmptyState, LoadingState
 } from '@/components/styleEtudiantCandidature'
@@ -110,10 +110,7 @@ export default function EtudiantConseiller() {
             ) : (
               <CandidatureList>
                 {suggestions.map((s, index) => (
-                  <CandidatureCard
-                    key={s.idCompetenceReference}
-                    $statut={index === 0 ? 'Recruté' : 'En attente'}
-                  >
+                  <CandidatureCard key={s.idCompetenceReference}>
                     <CardHeader>
                       <div>
                         <OffreTitre>{s.competence}</OffreTitre>
@@ -122,10 +119,10 @@ export default function EtudiantConseiller() {
                           {s.categorie || 'Compétence'}
                         </EntrepriseNom>
                       </div>
-                      <StatutBadge $statut={index === 0 ? 'Recruté' : 'En attente'}>
+                      <ScoreBadge>
                         {index === 0 && <Sparkles size={13} strokeWidth={2.5} />}
                         +{s.offresDebloquees} offre{s.offresDebloquees > 1 ? 's' : ''}
-                      </StatutBadge>
+                      </ScoreBadge>
                     </CardHeader>
 
                     <CardMeta>

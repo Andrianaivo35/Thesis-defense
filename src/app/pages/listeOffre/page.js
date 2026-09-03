@@ -11,6 +11,7 @@ import {
   HeaderSection,
   HeaderTop,
   WelcomeText,
+  EtudiantWelcomeTitle,
   PublishButton,
   SearchBarWrapper,
   SearchIcon,
@@ -120,23 +121,19 @@ export default function ListeOffre() {
       <AppNavbar />
       <PageContainer>
         <HeaderSection>
-          <HeaderTop>
-            <WelcomeText>
-              {estEntreprise
-                ? `Bonjour ${user?.nomEntreprise || ''}`
-                : estEtudiant
-                  ? 'Trouvez le stage qui vous correspond'
-                  : ''}
-            </WelcomeText>
+          {estEtudiant && (
+            <EtudiantWelcomeTitle>Trouvez le stage qui vous correspond</EtudiantWelcomeTitle>
+          )}
 
-            {/* === Bouton reserve aux comptes Entreprise === */}
-            {estEntreprise && (
+          {estEntreprise && (
+            <HeaderTop>
+              <WelcomeText>{`Bonjour ${user?.nomEntreprise || ''}`}</WelcomeText>
               <PublishButton onClick={handlePublier}>
                 <Plus size={18} strokeWidth={2.5} />
                 Publier une nouvelle offre
               </PublishButton>
-            )}
-          </HeaderTop>
+            </HeaderTop>
+          )}
 
           <SearchBarWrapper>
             <SearchIcon>

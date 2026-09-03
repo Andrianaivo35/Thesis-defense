@@ -18,9 +18,10 @@ import { lireFichier } from '@/lib/stockage';
    Routes :
      /api/fichier/cv/{idCV}
      /api/fichier/lettre/{idCandidature}
+     /api/fichier/document/{idDocument}
    ===================================================================== */
 
-const CATEGORIES = ['cv', 'lettre'];
+const CATEGORIES = ['cv', 'lettre', 'document'];
 
 export async function GET(req, { params }) {
   const client = await pool.connect();
@@ -87,7 +88,7 @@ export async function GET(req, { params }) {
           ['Valide', 'Diplome'].includes(cv.statutRattachement);
       }
 
-    } else {
+    } else if (categorie === 'lettre') {
       const result = await client.query(`
         SELECT c."idCandidature", c."nomFichierLettre", c."idEtudiant",
                o."idEntreprise"
@@ -108,6 +109,31 @@ export async function GET(req, { params }) {
         autorise = String(payload.idEtudiant) === String(cand.idEtudiant);
       } else if (payload.typeUtilisateur === 'Entreprise') {
         autorise = String(payload.idEntreprise) === String(cand.idEntreprise);
+      }
+
+    } else {
+      // categorie === 'document' : pièces complémentaires de candidature
+      const result = await client.query(`
+        SELECT doc."idDocument", doc."nomFichier", doc."nomFichierOriginal",
+               c."idEtudiant", o."idEntreprise"
+        FROM "DocumentCandidature" doc
+        INNER JOIN "Candidature" c ON c."idCandidature" = doc."idCandidature"
+        INNER JOIN offre o ON o."idOffre" = c."idOffre"
+        WHERE doc."idDocument" = $1
+      `, [id]);
+
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'Document introuvable' }, { status: 404 });
+      }
+      const doc = result.rows[0];
+      nomFichier = doc.nomFichier;
+      nomAffiche = doc.nomFichierOriginal || `document-${doc.idDocument}.pdf`;
+      dossier = 'documents';
+
+      if (payload.typeUtilisateur === 'Etudiant') {
+        autorise = String(payload.idEtudiant) === String(doc.idEtudiant);
+      } else if (payload.typeUtilisateur === 'Entreprise') {
+        autorise = String(payload.idEntreprise) === String(doc.idEntreprise);
       }
     }
 

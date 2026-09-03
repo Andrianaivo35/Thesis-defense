@@ -39,6 +39,23 @@ export const WelcomeText = styled.div`
   min-height: 22px; /* évite un saut de mise en page pendant le chargement de user */
 `
 
+/* Titre d'accueil étudiant : contrairement au « Bonjour {entreprise} », c'est le seul
+   contenu de cette ligne (pas de bouton Publier en vis-à-vis), donc centré et mis à
+   l'échelle des titres de page du reste de l'application (28px/800, cf. PageTitle des
+   tableaux de bord université/entreprise). */
+export const EtudiantWelcomeTitle = styled.h1`
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+
+  @media (max-width: 640px) {
+    font-size: 22px;
+  }
+`
+
 export const PublishButton = styled.button`
   display: inline-flex;
   align-items: center;

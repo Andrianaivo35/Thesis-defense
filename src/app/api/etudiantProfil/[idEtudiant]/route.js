@@ -90,6 +90,24 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: 'Étudiant introuvable' }, { status: 404 });
     }
 
+    // === Compétences ===
+    // Section absente jusqu'ici : les compétences confirmées depuis un CV
+    // (appliquerDecisions, lib/ingestionCV.js) ou ajoutées à la main
+    // s'écrivent bien dans CompetenceEtudiant, mais cette page ne les a
+    // jamais lues — l'étudiant les ajoute, puis ne les revoit nulle part.
+    const competencesResult = await client.query(`
+      SELECT
+        ce."idCompetenceEtudiant",
+        ce."niveau",
+        cr."nomCompetenceReference",
+        cr."categorieCompetenceReference"
+      FROM "CompetenceEtudiant" ce
+      INNER JOIN "CompetenceReference" cr
+        ON cr."idCompetenceReference" = ce."idCompetenceReference"
+      WHERE ce."idEtudiant" = $1
+      ORDER BY cr."categorieCompetenceReference" ASC NULLS LAST, cr."nomCompetenceReference" ASC
+    `, [idEtudiant]);
+
     // === Préférences de stage ===
     const preferenceResult = await client.query(
       `SELECT * FROM "preference-stage" WHERE "idEtudiant" = $1`,
@@ -109,6 +127,46 @@ export async function GET(req, { params }) {
       `SELECT * FROM "centre-interet" WHERE "idEtudiant" = $1`,
       [idEtudiant]
     );
+
+    /* === CV : uniquement quand le lien existe déjà ===
+       L'étudiant voit toujours son propre CV. Une entreprise ne le voit que
+       si elle a réellement reçu ce CV via une candidature (pas la simple
+       consultation d'un profil parcouru dans le répertoire) — même règle
+       que /api/fichier/cv/[id]. Une université le voit pour ses étudiants
+       rattachés (Valide/Diplome), même règle également. */
+    let cv = null;
+    if (payload.typeUtilisateur === 'Etudiant') {
+      const r = await client.query(`
+        SELECT "idCV", "libelle", "nomFichierOriginal"
+        FROM "CV" WHERE "idEtudiant" = $1
+        ORDER BY "estPrincipal" DESC LIMIT 1
+      `, [idEtudiant]);
+      cv = r.rows[0] || null;
+    } else if (payload.typeUtilisateur === 'Entreprise') {
+      const r = await client.query(`
+        SELECT cv."idCV", cv."libelle", cv."nomFichierOriginal"
+        FROM "CV" cv
+        WHERE cv."idEtudiant" = $1
+          AND EXISTS (
+            SELECT 1 FROM "Candidature" c
+            INNER JOIN offre o ON o."idOffre" = c."idOffre"
+            WHERE c."idCV" = cv."idCV" AND o."idEntreprise" = $2
+          )
+        ORDER BY cv."estPrincipal" DESC LIMIT 1
+      `, [idEtudiant, payload.idEntreprise]);
+      cv = r.rows[0] || null;
+    } else if (payload.typeUtilisateur === 'Universite') {
+      const r = await client.query(`
+        SELECT cv."idCV", cv."libelle", cv."nomFichierOriginal"
+        FROM "CV" cv
+        INNER JOIN etudiant e2 ON e2."idEtudiant" = cv."idEtudiant"
+        WHERE cv."idEtudiant" = $1
+          AND e2."idUniversite" = $2
+          AND e2."statutRattachement" IN ('Valide', 'Diplome')
+        ORDER BY cv."estPrincipal" DESC LIMIT 1
+      `, [idEtudiant, payload.idUniversite]);
+      cv = r.rows[0] || null;
+    }
 
     // === Stage en cours (candidature recrutée) ===
     const stageResult = await client.query(`
@@ -135,10 +193,12 @@ export async function GET(req, { params }) {
 
     return NextResponse.json({
       etudiant: etudiantResult.rows[0],
+      competences: competencesResult.rows,
       preferenceStage: preferenceResult.rows[0] || null,
       parcours: parcoursResult.rows,
       centresInteret: centresResult.rows,
-      stageRecrute: stageResult.rows[0] || null
+      stageRecrute: stageResult.rows[0] || null,
+      cv
     }, { status: 200 });
 
   } catch (error) {

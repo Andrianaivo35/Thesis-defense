@@ -33,7 +33,8 @@ export const TYPE_ATTENDU = 'application/pdf';
    racine de stockage. */
 const DOSSIERS = {
   cv: 'cv',
-  lettres: 'lettres'
+  lettres: 'lettres',
+  documents: 'documents'
 };
 
 function resoudreDossier(categorie) {

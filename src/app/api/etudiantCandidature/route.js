@@ -42,7 +42,19 @@ export async function GET(req) {
         ent."nomEntreprise",
         ent."logo"       AS "logoEntreprise",
         ent."estVerifie" AS "entrepriseVerifiee",
-        entU."idUtilisateur" AS "idUtilisateurEntreprise"
+        entU."idUtilisateur" AS "idUtilisateurEntreprise",
+        COALESCE(
+          (SELECT json_agg(
+              json_build_object(
+                'idDocument', d."idDocument",
+                'nomFichierOriginal', d."nomFichierOriginal",
+                'dateAjout', d."dateAjout"
+              ) ORDER BY d."dateAjout"
+            )
+           FROM "DocumentCandidature" d
+           WHERE d."idCandidature" = c."idCandidature"),
+          '[]'::json
+        ) AS documents
       FROM "Candidature" c
       INNER JOIN offre o        ON o."idOffre" = c."idOffre"
       INNER JOIN entreprise ent ON ent."idEntreprise" = o."idEntreprise"

@@ -5,7 +5,8 @@ import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   CheckCircle2, AlertCircle, ClipboardList, HelpCircle, Clock,
-  Paperclip, FileText, FileEdit, PartyPopper, Send, ArrowLeft, TriangleAlert
+  Paperclip, FileText, FileEdit, PartyPopper, Send, ArrowLeft, TriangleAlert,
+  Files, X
 } from 'lucide-react'
 import {
   PageContainer, HeaderCard, CompanyLogo, HeaderInfo, CompanyName, OfferTitle,
@@ -16,9 +17,18 @@ import {
   LoadingState, ErrorCard, ErrorCardIcon,
   FileUploadSection, FileUploadTitle, FileUploadGrid, FileUploadCard,
   FileUploadIcon, FileUploadText, FileUploadHelper, FileInputHidden,
-  FileSelectedName, SuccessCard, SuccessIcon, ErrorBanner, ErrorBannerIcon,
-  AvertissementCard, AvertissementTitre, AvertissementListe, CommencerButton
+  FileSelectedName, RemoveFileButton, SuccessCard, SuccessIcon, ErrorBanner, ErrorBannerIcon,
+  AvertissementCard, AvertissementTitre, AvertissementListe, CommencerButton,
+  TimerBadge
 } from '@/components/styleQCM'
+
+function formaterTempsRestant(secondes) {
+  const m = Math.floor(secondes / 60)
+  const s = secondes % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+const MAX_AUTRES_DOCUMENTS = 5
 
 export default function QcmPage() {
   const params = useParams()
@@ -33,6 +43,8 @@ export default function QcmPage() {
 
   const [cv, setCv] = useState(null)
   const [lettreMotivation, setLettreMotivation] = useState(null)
+  const [autresDocuments, setAutresDocuments] = useState([])
+  const [documentsEchoues, setDocumentsEchoues] = useState(0)
 
   /* Bibliotheque de CV : l'etudiant choisit un CV deja enregistre plutot
      que de le redeposer a chaque candidature. Le televersement reste
@@ -48,6 +60,7 @@ export default function QcmPage() {
      L'etudiant doit en etre averti avant de commencer. */
   const [aCommence, setACommence] = useState(false)
   const [success, setSuccess] = useState(null)
+  const [tempsRestant, setTempsRestant] = useState(null)
 
   useEffect(() => {
     const chargerCvs = async () => {
@@ -94,6 +107,22 @@ export default function QcmPage() {
     fetchQcm()
   }, [idOffre])
 
+  /* Chronomètre : purement informatif, la durée du QCM n'est pas imposée
+     côté serveur. Démarre quand l'étudiant clique "Commencer" et s'arrête
+     à 0 ou dès l'envoi de la candidature. */
+  useEffect(() => {
+    if (!aCommence || success || !data?.qcm?.duree) return
+    setTempsRestant(data.qcm.duree * 60)
+  }, [aCommence, success, data])
+
+  useEffect(() => {
+    if (tempsRestant === null || tempsRestant <= 0 || success) return
+    const intervalId = setInterval(() => {
+      setTempsRestant(prev => (prev !== null ? Math.max(0, prev - 1) : prev))
+    }, 1000)
+    return () => clearInterval(intervalId)
+  }, [tempsRestant, success])
+
   const handleSelectChoice = (idQuestion, idChoix) => {
     setResponses(prev => ({ ...prev, [idQuestion]: idChoix }))
   }
@@ -115,8 +144,46 @@ export default function QcmPage() {
     setter(file)
   }
 
+  /* Documents facultatifs, en plus du CV et de la lettre : portfolio,
+     certificat, recommandation... Envoyés séparément après la création de
+     la candidature (voir handleSubmit), donc validés ici avec les mêmes
+     règles que les autres pièces (PDF, 5 Mo max).
+
+     Sélection ADDITIVE : rouvrir le sélecteur ajoute aux fichiers déjà
+     choisis au lieu de les remplacer — sinon oublier un fichier lors d'une
+     sélection multiple obligeait à tout reprendre depuis le début. */
+  const handleAutresDocumentsChange = (fileList) => {
+    setError('')
+    const nouveaux = Array.from(fileList || [])
+    if (nouveaux.length === 0) return
+
+    for (const f of nouveaux) {
+      if (f.type !== 'application/pdf') {
+        setError('Chaque document doit être au format PDF')
+        return
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        setError('Chaque document ne doit pas dépasser 5 Mo')
+        return
+      }
+    }
+
+    // Évite un doublon évident si le même fichier est resélectionné.
+    const dejaPresents = new Set(autresDocuments.map(f => `${f.name}-${f.size}`))
+    const ajouts = nouveaux.filter(f => !dejaPresents.has(`${f.name}-${f.size}`))
+
+    if (autresDocuments.length + ajouts.length > MAX_AUTRES_DOCUMENTS) {
+      setError(`Vous ne pouvez joindre que ${MAX_AUTRES_DOCUMENTS} documents supplémentaires au maximum`)
+      return
+    }
+    setAutresDocuments(prev => [...prev, ...ajouts])
+  }
+
+  const handleRetirerAutreDocument = (index) => {
+    setAutresDocuments(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async () => {
-    const cvFourni = nouveauCv ? !!cv : !!idCVChoisi
     if (!toutesRepondues || !cvFourni || !lettreMotivation) return
 
     setSubmitting(true)
@@ -137,6 +204,24 @@ export default function QcmPage() {
 
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || `Erreur ${res.status}`)
+
+      // La candidature est envoyée : les documents facultatifs ne doivent
+      // plus jamais faire échouer l'ensemble, un simple avertissement suffit.
+      let echecs = 0
+      for (const document of autresDocuments) {
+        try {
+          const docFormData = new FormData()
+          docFormData.append('document', document)
+          const docRes = await fetchAuth(`/api/candidature/${result.idCandidature}/documents`, {
+            method: 'POST',
+            body: docFormData
+          })
+          if (!docRes.ok) echecs++
+        } catch {
+          echecs++
+        }
+      }
+      setDocumentsEchoues(echecs)
 
       setSuccess(result)
     } catch (err) {
@@ -215,6 +300,11 @@ export default function QcmPage() {
   const totalRepondues = Object.keys(responses).length
   const totalQuestions = questions.length
   const toutesRepondues = totalRepondues === totalQuestions
+  /* Un CV « fourni » vient soit de la bibliothèque (idCVChoisi), soit d'un
+     nouveau televersement (cv) : le bouton d'envoi ne doit dépendre que de
+     ce résultat, jamais de cv seul — sinon choisir un CV existant ne
+     débloque jamais l'envoi. */
+  const cvFourni = nouveauCv ? !!cv : !!idCVChoisi
 
   return (
     <>
@@ -312,6 +402,13 @@ export default function QcmPage() {
               <strong>Votre note : {success.noteQCM}%</strong>
               {' '}({success.earnedPoints}/{success.totalPoints} points)
             </p>
+            {documentsEchoues > 0 && (
+              <p>
+                <AlertCircle size={14} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 5 }} />
+                {documentsEchoues} document{documentsEchoues > 1 ? 's' : ''} n&apos;{documentsEchoues > 1 ? 'ont' : 'a'} pas
+                pu être envoyé{documentsEchoues > 1 ? 's' : ''}. Vous pourrez réessayer depuis « Mes candidatures ».
+              </p>
+            )}
             <SubmitButton onClick={() => router.push('/pages/listeOffre')}>
               <ArrowLeft size={15} strokeWidth={2} />
               Retour à la liste des offres
@@ -319,6 +416,22 @@ export default function QcmPage() {
           </SuccessCard>
         ) : !aCommence ? null : (
           <>
+            {/* === Chronomètre === */}
+            {tempsRestant !== null && (() => {
+              const dureeTotale = qcm.duree * 60
+              const niveau = tempsRestant === 0
+                ? 'ecoule'
+                : tempsRestant <= dureeTotale * 0.2 ? 'attention' : 'normal'
+              return (
+                <TimerBadge $niveau={niveau}>
+                  <Clock size={16} strokeWidth={2.2} />
+                  {tempsRestant === 0
+                    ? 'Temps écoulé'
+                    : `Temps restant : ${formaterTempsRestant(tempsRestant)}`}
+                </TimerBadge>
+              )
+            })()}
+
             {/* === Questions === */}
             {questions.map((q, idx) => (
               <QuestionCard key={q.idQuestion}>
@@ -434,6 +547,51 @@ export default function QcmPage() {
                     )}
                   </label>
                 </FileUploadCard>
+
+                <FileUploadCard $selected={autresDocuments.length > 0}>
+                  <FileInputHidden
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    multiple
+                    id="upload-autres-documents"
+                    onChange={(e) => {
+                      handleAutresDocumentsChange(e.target.files)
+                      e.target.value = ''
+                    }}
+                  />
+                  <label htmlFor="upload-autres-documents" style={{ cursor: 'pointer', display: 'block' }}>
+                    <FileUploadIcon>
+                      <Files size={32} strokeWidth={1.5} />
+                    </FileUploadIcon>
+                    <FileUploadText>
+                      {autresDocuments.length > 0
+                        ? `${autresDocuments.length} document${autresDocuments.length > 1 ? 's' : ''} sélectionné${autresDocuments.length > 1 ? 's' : ''}`
+                        : 'Autres documents (facultatif)'}
+                    </FileUploadText>
+                    <FileUploadHelper>
+                      {autresDocuments.length > 0
+                        ? `Cliquez pour en ajouter d'autres — ${MAX_AUTRES_DOCUMENTS} maximum`
+                        : `PDF, max 5 Mo chacun — ${MAX_AUTRES_DOCUMENTS} maximum`}
+                    </FileUploadHelper>
+                    {autresDocuments.map((f, i) => (
+                      <FileSelectedName key={i}>
+                        <CheckCircle2 size={12} strokeWidth={2.5} />
+                        {f.name}
+                        <RemoveFileButton
+                          type="button"
+                          title="Retirer ce document"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleRetirerAutreDocument(i)
+                          }}
+                        >
+                          <X size={10} strokeWidth={3} />
+                        </RemoveFileButton>
+                      </FileSelectedName>
+                    ))}
+                  </label>
+                </FileUploadCard>
               </FileUploadGrid>
             </FileUploadSection>
 
@@ -442,7 +600,7 @@ export default function QcmPage() {
               <ProgressInfo>
                 {totalRepondues}/{totalQuestions} questions répondues
                 {!toutesRepondues && ' — Répondez à toutes les questions'}
-                {toutesRepondues && (!cv || !lettreMotivation) && ' — Ajoutez vos documents'}
+                {toutesRepondues && (!cvFourni || !lettreMotivation) && ' — Ajoutez vos documents'}
               </ProgressInfo>
               <ButtonsRow>
                 <CancelButton onClick={handleCancel} disabled={submitting}>
@@ -450,7 +608,7 @@ export default function QcmPage() {
                 </CancelButton>
                 <SubmitButton
                   onClick={handleSubmit}
-                  disabled={!toutesRepondues || !cv || !lettreMotivation || submitting}
+                  disabled={!toutesRepondues || !cvFourni || !lettreMotivation || submitting}
                 >
                   {submitting ? (
                     'Envoi en cours...'

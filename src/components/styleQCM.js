@@ -105,6 +105,35 @@ export const QcmMetaItem = styled.span`
   svg { color: #A98B76; flex-shrink: 0; }
 `
 
+/* Chronomètre de temps restant, purement informatif (la durée du QCM n'est
+   pas imposée côté serveur — voir l'avertissement affiché avant de commencer). */
+export const TimerBadge = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+
+  ${p => {
+    if (p.$niveau === 'ecoule')
+      return `background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5;`
+    if (p.$niveau === 'attention')
+      return `background: #fffbeb; color: #92400e; border: 1.5px solid #fde68a;`
+    return `background: #f5f3eb; color: #6b5744; border: 1.5px solid #d4b89d;`
+  }}
+
+  svg { flex-shrink: 0; }
+`
+
 export const QuestionCard = styled.div`
   padding: 24px;
   background: white;
@@ -284,6 +313,28 @@ export const FileSelectedName = styled.div`
   gap: 5px;
 
   svg { flex-shrink: 0; color: #4d5e2c; }
+`
+
+/* Retrait d'un document déjà ajouté à la sélection multiple (Autres
+   documents) : le fichier reste dans le <label> qui ouvre le sélecteur
+   au clic, donc ce bouton doit stopper la propagation pour ne pas
+   rouvrir le sélecteur en même temps. */
+export const RemoveFileButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #991b1b;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  &:hover { background: #fca5a5; }
 `
 
 /* ===========================
