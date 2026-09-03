@@ -481,14 +481,26 @@ export default function EtudiantRegistreInfo() {
                           ) : universitesFiltrees.length === 0 ? (
                             <option value="" disabled>Aucune université ne correspond</option>
                           ) : (
-                            universitesFiltrees.map((univ) => (
-                              <option key={univ.idUniversite} value={univ.idUniversite}>
-                                {univ.sigleUniversitaire
-                                  ? `${univ.sigleUniversitaire} — ${univ.nomUniversite}`
-                                  : univ.nomUniversite}
-                                {univ.ville ? ` (${univ.ville})` : ''}
-                              </option>
-                            ))
+                            <>
+                              {/* Sans cette option vide, le <select> n'a aucune option dont
+                                  la valeur corresponde à value="" : le navigateur sélectionne
+                                  alors silencieusement la première université de la liste dès
+                                  l'affichage, sans que React ni l'étudiant ne le sache. Cliquer
+                                  ensuite sur cette première université (déjà sélectionnée pour
+                                  le navigateur) ne déclenche donc aucun évènement "change" — le
+                                  clic ne fait rigoureusement rien. C'est exactement le cas
+                                  vécu : la toute première université de la liste (par ordre
+                                  alphabétique) semblait impossible à choisir. */}
+                              <option value="" disabled hidden>Sélectionnez une université...</option>
+                              {universitesFiltrees.map((univ) => (
+                                <option key={univ.idUniversite} value={univ.idUniversite}>
+                                  {univ.sigleUniversitaire
+                                    ? `${univ.sigleUniversitaire} — ${univ.nomUniversite}`
+                                    : univ.nomUniversite}
+                                  {univ.ville ? ` (${univ.ville})` : ''}
+                                </option>
+                              ))}
+                            </>
                           )}
                         </Select>
                         <HelperText>
