@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import styled from 'styled-components'
-import { getUtilisateur } from '@/lib/auth'
+import { getUtilisateur, ROLES_AVEC_SIDEBAR } from '@/lib/auth'
 
 const MainContent = styled.main`
   min-height: 100vh;
@@ -21,7 +21,7 @@ export default function AppLayout({ children }) {
   useEffect(() => {
     // Re-vérifie à chaque changement de page (utile après login/logout)
     const user = getUtilisateur()
-    setHasSidebar(!!user)
+    setHasSidebar(!!user && ROLES_AVEC_SIDEBAR.includes(user.typeUtilisateur))
   }, [pathname])
 
   return <MainContent $hasSidebar={hasSidebar}>{children}</MainContent>

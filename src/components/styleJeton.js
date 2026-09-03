@@ -15,7 +15,7 @@ export const Page = styled.main`
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background: linear-gradient(160deg, #f8fafc 0%, #eef2ff 100%);
+  background: linear-gradient(160deg, #f8fafc 0%, #f5f3eb 100%);
 `
 
 export const Carte = styled.div`
@@ -35,7 +35,7 @@ export const Marque = styled.div`
   margin-bottom: 22px;
   font-weight: 700;
   font-size: 15px;
-  color: #4f46e5;
+  color: #A98B76;
 `
 
 export const Titre = styled.h1`
@@ -73,7 +73,7 @@ export const Saisie = styled.input`
   outline: none;
   transition: border-color .15s;
 
-  &:focus { border-color: #a5b4fc; }
+  &:focus { border-color: #A98B76; }
   &:disabled { background: #f8fafc; color: #94a3b8; }
 `
 
@@ -83,7 +83,7 @@ export const Bouton = styled.button`
   font-size: 14.5px;
   font-weight: 600;
   color: #ffffff;
-  background: #4f46e5;
+  background: #A98B76;
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -93,8 +93,8 @@ export const Bouton = styled.button`
   gap: 8px;
   transition: background .15s;
 
-  &:hover:not(:disabled) { background: #4338ca; }
-  &:disabled { background: #c7d2fe; cursor: not-allowed; }
+  &:hover:not(:disabled) { background: #8d7160; }
+  &:disabled { background: #e8ddd0; cursor: not-allowed; }
 `
 
 /* Les messages portent une icône ET une couleur : la couleur seule
@@ -145,7 +145,7 @@ export const PiedDePage = styled.div`
 `
 
 export const Lien = styled.a`
-  color: #4f46e5;
+  color: #A98B76;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;

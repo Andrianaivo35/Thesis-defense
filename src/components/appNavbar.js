@@ -19,6 +19,11 @@ export default function AppNavbar() {
 
   if (!user) return null
 
+  // Les rôles traités ici doivent rester synchronisés avec
+  // ROLES_AVEC_SIDEBAR (lib/auth.js), que AppLayout utilise pour réserver
+  // la largeur de la barre latérale — un rôle ajouté ici sans y être ajouté
+  // aussi le rendrait soit sans barre visible, soit avec une largeur non
+  // réservée pour lui.
   switch (user.typeUtilisateur) {
     case 'Etudiant':
       return <EtudiantNavbar />

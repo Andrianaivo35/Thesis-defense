@@ -438,58 +438,11 @@ export const UserType = styled.span`
   font-weight: 600;
 
   ${p => {
-    if (p.$type === 'Etudiant') return `background: #d1fae5; color: #065f46;`
-    if (p.$type === 'Entreprise') return `background: #e0e7ff; color: #4338ca;`
-    if (p.$type === 'Universite') return `background: #dbeafe; color: #1e40af;`
+    if (p.$type === 'Etudiant') return `background: #eef0d9; color: #4d5e2c;`
+    if (p.$type === 'Entreprise') return `background: #f5f3eb; color: #6b5744;`
+    if (p.$type === 'Universite') return `background: #fef3c7; color: #92400e;`
     return `background: #f1f5f9; color: #64748b;`
   }}
-`
-
-/* ===== CHATBOT ÉPINGLÉ (gardé en violet pour son identité d'IA) ===== */
-
-export const PinnedConversation = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: ${p => p.$active 
-    ? 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)' 
-    : 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)'};
-  border: 1.5px solid ${p => p.$active ? '#8b5cf6' : '#c4b5fd'};
-
-  &:hover { 
-    transform: translateX(2px); 
-    border-color: #8b5cf6;
-  }
-`
-
-export const BotAvatar = styled.div`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-`
-
-export const BotBadge = styled.span`
-  display: inline-block;
-  padding: 2px 7px;
-  background: #8b5cf6;
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 5px;
-  letter-spacing: 0.5px;
 `
 /* ---------------------------------------------------------------------
    Ajouts UI/UX (audit MD/7)

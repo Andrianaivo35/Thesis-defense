@@ -1,3 +1,11 @@
+/* Rôles dont AppNavbar (appNavbar.js) rend une barre latérale — Admin n'en
+   a pas (en-tête + onglets horizontaux à la place). Source unique pour
+   AppLayout (appLayout.js), qui doit réserver la même largeur : les
+   dupliquer aurait pu diverger, et c'est exactement ce qui s'est produit
+   (AppLayout réservait la place pour tout utilisateur connecté, y compris
+   Admin, qui perdait 240px sans aucune barre à montrer en face). */
+export const ROLES_AVEC_SIDEBAR = ['Etudiant', 'Entreprise', 'Universite'];
+
 // Récupérer le token
 export function getToken() {
   if (typeof window === 'undefined') return null;
