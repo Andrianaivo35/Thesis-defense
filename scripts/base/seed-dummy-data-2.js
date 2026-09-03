@@ -482,7 +482,7 @@ async function main() {
         [
           idUtilisateur, e.nom, e.prenom, `+261 33 ${String(20000000 + etIdx).slice(0, 7)}`,
           e.genre, `${e.ville}, Madagascar`, null,
-          `Étudiant(e) en ${e.spec}, ${e.niveau}.`, idUniversite,
+          `${e.genre === 'Féminin' ? 'Étudiante' : 'Étudiant'} en ${e.spec}, ${e.niveau}.`, idUniversite,
           `MAT-${String(2021 + (etIdx % 4)).slice(2)}-${String(etIdx).padStart(4, '0')}`,
           e.filiere, e.spec, e.niveau, NEW_UNIVERSITES[e.uni].nom,
         ]

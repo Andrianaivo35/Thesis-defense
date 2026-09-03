@@ -9,6 +9,7 @@
     "lint": "eslint",
     "base:init": "node scripts/base/initialiser-base.mjs",
     "base:charger": "node scripts/base/charger-donnees.mjs",
+    "base:exporter": "node scripts/base/exporter-donnees.mjs",
     "base:cv": "node scripts/base/installer-cv.mjs",
     "base:verifier": "node scripts/base/verifier-base.mjs",
     "base:migrer": "prisma migrate deploy",
