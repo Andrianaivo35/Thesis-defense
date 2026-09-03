@@ -3,9 +3,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
-import { GraduationCap, UserMinus, MessageSquare } from 'lucide-react'
 import {
-  PageContainer, HeaderSection, SearchBar, FiltersBar, FilterLabel, FilterSelect,
+  GraduationCap, UserMinus, MessageSquare, Search, BookOpen, Target,
+  ClipboardList, PartyPopper, ShieldCheck
+} from 'lucide-react'
+import {
+  PageContainer, HeaderSection, SearchBarWrapper, SearchIcon, SearchBar,
+  FiltersBar, FilterLabel, FilterSelect,
   PageTitle,
   StatsRow, StatCard, StatValue, StatLabel,
   EtudiantsGrid, EtudiantCard, EtudiantAvatar,
@@ -14,7 +18,8 @@ import {
   StageTag, NoStageTag,
   EtudiantFooter, ViewProfileButton,
   EmptyState, LoadingState,
-  BoutonPromotion, ActionButton, ContactButton
+  BoutonPromotion, ActionButton, ContactButton,
+  VerifiedIdentityBadge, VerifierButton
 } from '@/components/styleUniversiteEtudiants'
 
 export default function UniversiteEtudiants() {
@@ -193,6 +198,32 @@ export default function UniversiteEtudiants() {
     router.push(`/pages/etudiantProfil/${idEtudiant}`)
   }
 
+  /* Vérification d'identité : distincte du rattachement, jamais automatique
+     (voir universiteVerificationEtudiant/route.js). Mise à jour optimiste de
+     la liste locale, sans recharger tout l'écran. */
+  const [verificationEnCours, setVerificationEnCours] = useState(null)
+  const basculerVerification = async (idEtudiant, verifie) => {
+    setVerificationEnCours(idEtudiant)
+    try {
+      const res = await fetchAuth('/api/universiteVerificationEtudiant', {
+        method: 'PATCH',
+        body: JSON.stringify({ idEtudiant, verifie })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur')
+
+      setEtudiants(prev => prev.map(e =>
+        e.idEtudiant === idEtudiant
+          ? { ...e, estVerifieIdentite: data.etudiant.estVerifieIdentite }
+          : e
+      ))
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    } finally {
+      setVerificationEnCours(null)
+    }
+  }
+
   return (
     <>
       {/* La page n'avait AUCUNE barre de navigation : une université qui
@@ -202,12 +233,15 @@ export default function UniversiteEtudiants() {
       <AppNavbar />
       <PageContainer>
       <HeaderSection>
-        <SearchBar
-          type="text"
-          placeholder="🔍 Rechercher un étudiant par nom, filière, spécialisation..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <SearchBarWrapper>
+          <SearchIcon><Search size={17} strokeWidth={2} /></SearchIcon>
+          <SearchBar
+            type="text"
+            placeholder="Rechercher un étudiant par nom, filière, spécialisation..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </SearchBarWrapper>
         <FiltersBar>
           <FilterLabel>Niveau académique :</FilterLabel>
           <FilterSelect value={filterNiveau} onChange={(e) => setFilterNiveau(e.target.value)}>
@@ -363,7 +397,7 @@ export default function UniversiteEtudiants() {
       {/* ===== Confirmation, avec exclusion nominative ===== */}
       {cloture && (
         <EmptyState style={{ marginBottom: 18, borderStyle: 'solid',
-                             borderColor: '#c4b5fd', textAlign: 'left' }}>
+                             borderColor: '#d4b89d', textAlign: 'left' }}>
           <p style={{ fontWeight: 700, color: '#334155', margin: '0 0 6px' }}>
             {cloture.statut === 'Diplome'
               ? `Déclarer ${cloture.apercu.total - cloture.exclusions.length} étudiants diplômés`
@@ -437,20 +471,34 @@ export default function UniversiteEtudiants() {
               </EtudiantAvatar>
 
               <EtudiantHeader>
-                <EtudiantName>{e.prenomEtudiant} {e.nomEtudiant}</EtudiantName>
+                <EtudiantName>
+                  {e.prenomEtudiant} {e.nomEtudiant}
+                  {e.estVerifieIdentite && (
+                    <VerifiedIdentityBadge title="Identité vérifiée par l'université">
+                      <ShieldCheck size={11} strokeWidth={3} />
+                    </VerifiedIdentityBadge>
+                  )}
+                </EtudiantName>
                 {e.niveauAcademique && <EtudiantLevel>{e.niveauAcademique}</EtudiantLevel>}
               </EtudiantHeader>
 
               <EtudiantInfo>
-                {e.filiere && <EtudiantInfoItem>📚 {e.filiere}</EtudiantInfoItem>}
-                {e.specialisation && <EtudiantInfoItem>🎯 {e.specialisation}</EtudiantInfoItem>}
-                <EtudiantInfoItem>📋 {e.nombreCandidatures || 0} candidature(s)</EtudiantInfoItem>
+                {e.filiere && (
+                  <EtudiantInfoItem><BookOpen size={13} strokeWidth={2} /> {e.filiere}</EtudiantInfoItem>
+                )}
+                {e.specialisation && (
+                  <EtudiantInfoItem><Target size={13} strokeWidth={2} /> {e.specialisation}</EtudiantInfoItem>
+                )}
+                <EtudiantInfoItem>
+                  <ClipboardList size={13} strokeWidth={2} /> {e.nombreCandidatures || 0} candidature(s)
+                </EtudiantInfoItem>
               </EtudiantInfo>
 
               {/* Statut de stage */}
               {e.stageEntreprise ? (
                 <StageTag>
-                  🎉 En stage : {e.stagePoste} chez <strong>{e.stageEntreprise}</strong>
+                  <PartyPopper size={14} strokeWidth={2} />
+                  En stage : {e.stagePoste} chez <strong>{e.stageEntreprise}</strong>
                 </StageTag>
               ) : (
                 <NoStageTag>Pas encore en stage</NoStageTag>
@@ -466,16 +514,38 @@ export default function UniversiteEtudiants() {
                   deux. */}
               <EtudiantFooter>
                 <ViewProfileButton>Voir le profil →</ViewProfileButton>
-                {e.idUtilisateur && (
-                  <ContactButton
-                    onClick={(ev) => {
-                      ev.stopPropagation()
-                      router.push(`/pages/messages?destinataire=${e.idUtilisateur}`)
-                    }}
-                  >
-                    <MessageSquare size={13} strokeWidth={2} /> Contacter
-                  </ContactButton>
-                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {e.idUtilisateur && (
+                    <ContactButton
+                      onClick={(ev) => {
+                        ev.stopPropagation()
+                        router.push(`/pages/messages?destinataire=${e.idUtilisateur}`)
+                      }}
+                    >
+                      <MessageSquare size={13} strokeWidth={2} /> Contacter
+                    </ContactButton>
+                  )}
+                  {e.statutRattachement === 'Valide' && (
+                    <VerifierButton
+                      disabled={
+                        verificationEnCours === e.idEtudiant ||
+                        (!e.estVerifieIdentite && !e.matricule?.trim())
+                      }
+                      title={
+                        !e.estVerifieIdentite && !e.matricule?.trim()
+                          ? 'Renseignez le matricule avant de vérifier son identité'
+                          : undefined
+                      }
+                      onClick={(ev) => {
+                        ev.stopPropagation()
+                        basculerVerification(e.idEtudiant, !e.estVerifieIdentite)
+                      }}
+                    >
+                      <ShieldCheck size={13} strokeWidth={2} />
+                      {e.estVerifieIdentite ? 'Retirer la vérification' : 'Vérifier l’identité'}
+                    </VerifierButton>
+                  )}
+                </div>
               </EtudiantFooter>
             </EtudiantCard>
           ))}

@@ -20,9 +20,24 @@ export const HeaderSection = styled.div`
   gap: 16px;
 `
 
+export const SearchBarWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`
+
+export const SearchIcon = styled.div`
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  display: flex;
+  pointer-events: none;
+`
+
 export const SearchBar = styled.input`
   width: 100%;
-  padding: 14px 20px;
+  padding: 14px 20px 14px 46px;
   font-size: 15px;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
@@ -33,8 +48,8 @@ export const SearchBar = styled.input`
   box-sizing: border-box;
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    border-color: #A98B76;
+    box-shadow: 0 0 0 4px rgba(169, 139, 118, 0.1);
   }
 
   &::placeholder { color: #94a3b8; }
@@ -65,8 +80,8 @@ export const FilterSelect = styled.select`
   color: #1e293b;
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: #A98B76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.1);
   }
 `
 
@@ -95,7 +110,7 @@ export const StatCard = styled.div`
 export const StatValue = styled.div`
   font-size: 28px;
   font-weight: 700;
-  color: #2563eb;
+  color: #A98B76;
 `
 
 export const StatLabel = styled.div`
@@ -147,7 +162,7 @@ export const EtudiantCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    background: linear-gradient(90deg, #A98B76 0%, #BFA28C 100%);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;
@@ -155,8 +170,8 @@ export const EtudiantCard = styled.div`
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
-    border-color: #bfdbfe;
+    box-shadow: 0 12px 28px rgba(169, 139, 118, 0.18);
+    border-color: #d4b89d;
 
     &::before { transform: scaleX(1); }
   }
@@ -166,7 +181,7 @@ export const EtudiantAvatar = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -175,7 +190,7 @@ export const EtudiantAvatar = styled.div`
   font-weight: 700;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgba(169, 139, 118, 0.3);
   text-transform: uppercase;
 
   img { width: 100%; height: 100%; object-fit: cover; }
@@ -188,10 +203,49 @@ export const EtudiantHeader = styled.div`
 `
 
 export const EtudiantName = styled.h3`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 17px;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
+`
+
+/* Badge de vérification d'identité — pastille pleine, à la LinkedIn/Facebook,
+   volontairement distincte des étiquettes en pilule utilisées ailleurs
+   (EtudiantLevel, StatutBadge...) pour ne jamais se confondre avec un statut
+   de rattachement : ceci certifie une identité, pas une appartenance. */
+export const VerifiedIdentityBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
+  color: white;
+  flex-shrink: 0;
+
+  svg { display: block; }
+`
+
+export const VerifierButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b5744;
+  background: #ffffff;
+  border: 1.5px solid #f5f3eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+
+  &:hover:not(:disabled) { background: #f5f3eb; border-color: #d4b89d; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
 `
 
 export const EtudiantLevel = styled.span`
@@ -199,8 +253,8 @@ export const EtudiantLevel = styled.span`
   width: fit-content;
   font-size: 11px;
   font-weight: 700;
-  color: #1e40af;
-  background: #dbeafe;
+  color: #6b5744;
+  background: #f5f3eb;
   padding: 3px 10px;
   border-radius: 6px;
   text-transform: uppercase;
@@ -214,14 +268,22 @@ export const EtudiantInfo = styled.div`
 `
 
 export const EtudiantInfoItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   color: #475569;
   font-weight: 500;
+
+  svg { color: #A98B76; flex-shrink: 0; }
 `
 
 /* ===== TAG STAGE ===== */
 
 export const StageTag = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12.5px;
   color: #065f46;
   background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
@@ -230,6 +292,7 @@ export const StageTag = styled.div`
   padding: 8px 12px;
   line-height: 1.4;
 
+  svg { flex-shrink: 0; }
   strong { font-weight: 700; }
 `
 
@@ -250,17 +313,18 @@ export const EtudiantFooter = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
 `
 
 export const ViewProfileButton = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #2563eb;
+  color: #A98B76;
   transition: all 0.2s ease;
 
   ${EtudiantCard}:hover & {
-    color: #1d4ed8;
+    color: #8d7160;
     transform: translateX(4px);
   }
 `
@@ -297,16 +361,16 @@ export const BoutonPromotion = styled.button`
   text-align: left;
   cursor: pointer;
   border-radius: 11px;
-  border: 1.5px solid ${p => (p.$actif ? '#a5b4fc' : '#e2e8f0')};
-  background: ${p => (p.$actif ? '#eef2ff' : '#ffffff')};
+  border: 1.5px solid ${p => (p.$actif ? '#d4b89d' : '#e2e8f0')};
+  background: ${p => (p.$actif ? '#f5f3eb' : '#ffffff')};
   transition: border-color .15s, background .15s;
 
-  &:hover { border-color: #c7d2fe; }
+  &:hover { border-color: #d4b89d; }
 
   strong {
     font-size: 14px;
     font-weight: 700;
-    color: ${p => (p.$actif ? '#4338ca' : '#1e293b')};
+    color: ${p => (p.$actif ? '#6b5744' : '#1e293b')};
   }
   span {
     font-size: 12px;
@@ -331,7 +395,7 @@ export const ActionButton = styled.button`
   cursor: pointer;
   transition: border-color .15s, background .15s;
 
-  &:hover:not(:disabled) { border-color: #c7d2fe; background: #f8fafc; }
+  &:hover:not(:disabled) { border-color: #d4b89d; background: #f8fafc; }
   &:disabled { opacity: .5; cursor: not-allowed; }
 `
 
@@ -342,7 +406,7 @@ export const ActionButton = styled.button`
    donnerait un élément qui ressemble à un bouton sans en être un — ni
    focus au clavier, ni sémantique.
 
-   Même bleu que le reste de l'écran : rien de nouveau, seulement une
+   Même accent que le reste de l'écran : rien de nouveau, seulement une
    action là où il n'y en avait aucune. */
 export const ContactButton = styled.button`
   display: inline-flex;
@@ -351,12 +415,12 @@ export const ContactButton = styled.button`
   padding: 7px 12px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #2563eb;
+  color: #A98B76;
   background: #ffffff;
-  border: 1.5px solid #dbeafe;
+  border: 1.5px solid #f5f3eb;
   border-radius: 8px;
   cursor: pointer;
   transition: background .15s, border-color .15s;
 
-  &:hover { background: #eff6ff; border-color: #bfdbfe; }
+  &:hover { background: #f5f3eb; border-color: #d4b89d; }
 `

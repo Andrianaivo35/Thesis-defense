@@ -97,7 +97,7 @@ export default function UniversiteAjoutEtudiant() {
             lui-même : l'étudiant sera seul à recevoir son lien. */}
         {lienActivation && (
           <EmptyState style={{ marginBottom: 16, borderStyle: 'solid',
-                               borderColor: '#c4b5fd', textAlign: 'left' }}>
+                               borderColor: '#d4b89d', textAlign: 'left' }}>
             <p style={{ fontWeight: 600, color: '#475569', margin: '0 0 8px' }}>
               Lien d&apos;activation à transmettre à l&apos;étudiant
             </p>

@@ -296,9 +296,9 @@ export default function UniversiteModifierProfilPage() {
                     <label key={d} style={{
                       display: 'inline-flex', alignItems: 'center', gap: 8,
                       padding: '9px 13px', fontSize: 13, cursor: 'pointer',
-                      borderRadius: 9, border: `1.5px solid ${coche ? '#a5b4fc' : '#e2e8f0'}`,
-                      background: coche ? '#eef2ff' : '#fff',
-                      color: coche ? '#4338ca' : '#334155',
+                      borderRadius: 9, border: `1.5px solid ${coche ? '#d4b89d' : '#e2e8f0'}`,
+                      background: coche ? '#f5f3eb' : '#fff',
+                      color: coche ? '#6b5744' : '#334155',
                       fontWeight: coche ? 600 : 400
                     }}>
                       <input type="checkbox" checked={coche}

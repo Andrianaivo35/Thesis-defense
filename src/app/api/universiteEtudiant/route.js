@@ -33,6 +33,8 @@ export async function GET(req) {
         e."statutRattachement",
         e."dateFinRattachement",
         e."motifFinRattachement",
+        e."matricule",
+        e."estVerifieIdentite",
         e."idPromotion",
         p."libelle" AS "promotionLibelle",
         p."annee" AS "promotionAnnee",
