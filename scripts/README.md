@@ -12,7 +12,7 @@ d'ensemble.
 | [`base/`](base/README.md) | créer, peupler, nettoyer, exporter la base | **oui, en écriture** |
 | [`corpus/`](corpus/README.md) | engendrer le corpus de CV du mémoire | non |
 | [`mesures/`](mesures/README.md) | mesurer extraction et recommandations | lecture seule |
-| [`memoire/`](memoire/README.md) | captures d'écran et document du chapitre 3 | lecture seule |
+| [`memoire/`](memoire/README.md) | captures d'écran, document du chapitre 3, images des diagrammes | lecture seule |
 | [`migrations/`](migrations/README.md) | les 14 migrations SQL **historiques**, plus exécutées | — |
 
 ---

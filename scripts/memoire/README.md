@@ -1,4 +1,12 @@
-# Chapitre 3 — captures, annotations, document
+# Captures du chapitre 3, et diagrammes du dossier `MD/`
+
+Deux sujets indépendants dans ce dossier : la chaîne en trois étapes qui produit le
+chapitre 3 (ci-dessous), et [l'export des diagrammes](#diagrammes-du-dossier-md) qui
+transforme les blocs Mermaid de la documentation en images.
+
+---
+
+## Chapitre 3 — captures, annotations, document
 
 Trois étapes séparées à dessein. Régénérer les captures ne force pas à refaire les
 annotations ; recomposer le document ne force pas à tout recapturer.
@@ -173,3 +181,43 @@ l'application et les récapitule en fin d'exécution.
 
 Un écran sans repère n'est pas annoté : son image d'origine sert telle quelle dans le
 document.
+
+---
+
+## Diagrammes du dossier `MD`
+
+`exporter-diagrammes.mjs` transforme les blocs ` ```mermaid ` d'un document en images.
+Rien à démarrer : le script n'a besoin ni de l'application ni de la base.
+
+```bash
+node scripts/memoire/exporter-diagrammes.mjs                       # MD/11 - DIAGRAMME-DE-CLASSES.md
+node scripts/memoire/exporter-diagrammes.mjs "MD/12 - MODELE-DE-DONNEES.md"
+node scripts/memoire/exporter-diagrammes.mjs --largeur 2560        # plus petit que 4K
+```
+
+Chaque diagramme sort en **deux formats** dans `MD/images/<document>/` :
+
+| Format | Quand s'en servir |
+|---|---|
+| `.svg` | vectoriel — pour Word, LaTeX, l'impression, tout ce qui peut être agrandi |
+| `.png` | plus grand côté à 3840 px — pour une diapositive, une capture, un aperçu |
+
+Le nom du fichier reprend le titre de la section qui précède le bloc, précédé de son rang
+dans le document : `05-5-candidature-dossier-et-qcm.png`. Renommer une section renomme donc
+l'image — c'est voulu, la correspondance reste lisible sans table de conversion.
+
+**Mermaid est téléchargé une fois** dans `node_modules/.cache/mermaid/`, à la première
+exécution. Les suivantes sont hors ligne. Le moteur n'étant utile qu'à la documentation, il
+n'a pas sa place dans `package.json`.
+
+### Deux corrections que le script porte
+
+**Le cadrage vient du tracé, pas du `viewBox` de Mermaid.** Celui d'origine coupe la bordure
+des dernières classes, qui se retrouvent au ras de l'image. On mesure l'encombrement réel
+(`getBBox()`) et on ajoute une marge.
+
+**Les `\n` des notes deviennent de vrais retours à la ligne.** Mermaid ne traduit pas cette
+séquence dans un diagramme de classes : il l'écrit en toutes lettres au milieu de la note.
+Les documents emploient donc `<br/>`, que Mermaid rend bien — dans les images comme dans
+l'aperçu Markdown. Le script convertit tout de même les `\n` qu'il rencontre, pour qu'un
+document rédigé avant qu'on s'en aperçoive ne produise pas des images fautives.
