@@ -61,3 +61,6 @@ public/uploads/
 # Chapitre 3 : figures et document engendres par scripts/memoire/.
 # Ils se regenerent en trois commandes, et pesent plusieurs Mo.
 /chapitre3/
+
+# Outillage local (Claude Code) : ne concerne pas le projet.
+/.claude/
