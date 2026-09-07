@@ -1,0 +1,1454 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pourquoi React ressemble à Vue.js</title>
+<meta name="description" content="Le moteur de similarité entre compétences de Stage Share : matrices, cosinus, TF-IDF, et le point exact où il entre dans l'application.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+  :root {
+    --ground:      #eceef3;
+    --surface:     #ffffff;
+    --surface-2:   #f4f5f9;
+    --surface-3:   #e2e5ee;
+    --ink:         #151723;
+    --ink-soft:    #565b6e;
+    --ink-faint:   #858a9c;
+    --rule:        #d3d7e2;
+    --rule-strong: #b8bdcd;
+    --accent:      #31356e;
+    --accent-soft: #dcdef0;
+    --keep:        #1c6b52;
+    --keep-soft:   #d6e8e0;
+    --drop:        #8f3324;
+    --drop-soft:   #f0dcd7;
+    --warn:        #8a6516;
+    --warn-soft:   #f0e6cf;
+
+    --f-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --f-body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    --f-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+
+    --col: 40rem;
+    --wide: 61rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #101220;
+      --surface:     #191c2b;
+      --surface-2:   #1f2334;
+      --surface-3:   #2a2f44;
+      --ink:         #e7e9f3;
+      --ink-soft:    #a3a9bf;
+      --ink-faint:   #7b819a;
+      --rule:        #2f3449;
+      --rule-strong: #454b66;
+      --accent:      #a2a7ee;
+      --accent-soft: #262a48;
+      --keep:        #56b795;
+      --keep-soft:   #1a3630;
+      --drop:        #e08e75;
+      --drop-soft:   #3a241d;
+      --warn:        #d8ae56;
+      --warn-soft:   #362c15;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #101220;
+    --surface:     #191c2b;
+    --surface-2:   #1f2334;
+    --surface-3:   #2a2f44;
+    --ink:         #e7e9f3;
+    --ink-soft:    #a3a9bf;
+    --ink-faint:   #7b819a;
+    --rule:        #2f3449;
+    --rule-strong: #454b66;
+    --accent:      #a2a7ee;
+    --accent-soft: #262a48;
+    --keep:        #56b795;
+    --keep-soft:   #1a3630;
+    --drop:        #e08e75;
+    --drop-soft:   #3a241d;
+    --warn:        #d8ae56;
+    --warn-soft:   #362c15;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  .page { max-width: var(--wide); margin: 0 auto; padding: 0 1.5rem 6rem; }
+  .col { max-width: var(--col); }
+
+  .masthead { padding: 3.5rem 0 2.5rem; border-bottom: 1px solid var(--rule); }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0 0 1.25rem;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem); line-height: 1.03;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 0 0 1.25rem; max-width: 16ch;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  .standfirst {
+    font-family: var(--f-display); font-size: 1.3rem; line-height: 1.5;
+    color: var(--ink-soft); max-width: 46ch; margin: 0;
+  }
+  .companion {
+    margin: 1.75rem 0 0; padding: 0.85rem 1.1rem;
+    border: 1px solid var(--rule-strong); background: var(--surface);
+    font-size: 0.9rem; max-width: 46ch;
+  }
+  .companion b { font-weight: 600; }
+
+  .figures {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2.5rem 0 0;
+  }
+  .figure { background: var(--surface); padding: 1rem 1.1rem; }
+  .figure b {
+    display: block; font-family: var(--f-mono); font-size: 1.5rem; font-weight: 500;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  }
+  .figure span { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.35; display: block; margin-top: 0.2rem; }
+
+  section { padding-top: 3.5rem; }
+  .marker {
+    font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+    color: var(--accent); text-transform: uppercase; margin: 0 0 0.6rem;
+  }
+  h2 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(1.65rem, 3.4vw, 2.25rem); line-height: 1.15;
+    letter-spacing: -0.015em; text-wrap: balance; margin: 0 0 1rem; max-width: 22ch;
+  }
+  h3 { font-family: var(--f-body); font-weight: 600; font-size: 1.05rem; margin: 2rem 0 0.6rem; }
+  p { margin: 0 0 1.1rem; }
+  .col p { max-width: 68ch; }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--f-mono); font-size: 0.88em; background: var(--surface-2);
+    border: 1px solid var(--rule); padding: 0.08em 0.35em; border-radius: 2px;
+  }
+
+  .lede {
+    font-family: var(--f-display); font-size: 1.35rem; line-height: 1.45; font-style: italic;
+    color: var(--accent); border-left: 2px solid var(--accent); padding-left: 1.25rem;
+    margin: 0 0 1.75rem; max-width: 40ch;
+  }
+  .aside {
+    background: var(--surface-2); border-left: 2px solid var(--rule-strong);
+    padding: 1rem 1.25rem; margin: 0 0 1.25rem; font-size: 0.94rem;
+    color: var(--ink-soft); max-width: 62ch;
+  }
+  .aside p:last-child { margin-bottom: 0; }
+  .aside b { color: var(--ink); }
+
+  /* --- formules --- */
+  .formula {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    padding: 1.1rem 1.3rem; margin: 1.25rem 0;
+    font-family: var(--f-mono); font-size: 0.95rem; line-height: 2;
+    overflow-x: auto;
+  }
+  .formula .lbl {
+    display: block; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint); line-height: 1.6; margin-bottom: 0.4rem;
+  }
+  .frac {
+    display: inline-flex; flex-direction: column; vertical-align: middle;
+    text-align: center; margin: 0 0.3em;
+  }
+  .frac .num { padding: 0 0.4em; }
+  .frac .den { padding: 0 0.4em; border-top: 1px solid currentColor; }
+  .formula .cmt { color: var(--ink-faint); }
+  .formula .hi { color: var(--accent); font-weight: 500; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 1.25rem 0; }
+  .steps li {
+    counter-increment: s; position: relative; padding: 0.55rem 0 0.55rem 2.4rem;
+    border-bottom: 1px solid var(--rule); font-size: 0.94rem;
+  }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 0.55rem;
+    font-family: var(--f-mono); font-size: 0.8rem; color: var(--accent);
+    border: 1px solid var(--rule-strong); width: 1.6rem; height: 1.6rem;
+    display: grid; place-items: center;
+  }
+
+  /* --- panneaux --- */
+  .lab { background: var(--surface); border: 1px solid var(--rule); margin: 2rem 0 2.25rem; }
+  .lab-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.75rem;
+    padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface-2);
+  }
+  .lab-tag {
+    font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .lab-title { font-size: 0.9rem; font-weight: 500; }
+  .lab-body { padding: 1.25rem; }
+  .lab-note { font-size: 0.85rem; color: var(--ink-soft); margin: 1rem 0 0; max-width: 64ch; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.1rem; }
+  button {
+    font-family: var(--f-body); font-size: 0.85rem; font-weight: 500; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    padding: 0.4rem 0.85rem; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  button:hover { border-color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--ground); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .slider-row {
+    display: grid; grid-template-columns: minmax(9rem, auto) 1fr minmax(4.5rem, auto);
+    align-items: center; gap: 0.85rem; margin-bottom: 0.7rem;
+  }
+  .slider-row label { font-size: 0.85rem; color: var(--ink-soft); }
+  .slider-row output {
+    font-family: var(--f-mono); font-size: 0.92rem; font-variant-numeric: tabular-nums;
+    text-align: right; color: var(--ink);
+  }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+  .scroll-x { overflow-x: auto; }
+  svg { display: block; max-width: 100%; height: auto; }
+  .svg-label { font-family: var(--f-mono); font-size: 12px; fill: var(--ink-soft); }
+  .svg-name { font-family: var(--f-body); font-size: 13px; font-weight: 500; fill: var(--ink); }
+  .svg-big { font-family: var(--f-mono); font-size: 30px; font-weight: 500; fill: var(--ink); }
+
+  #ordres .node-box { fill: var(--surface-2); stroke: var(--rule-strong); }
+  #ordres .node-box.pivot { fill: var(--accent-soft); stroke: var(--accent); }
+  #ordres .node-box.ghost { fill: var(--surface); stroke: var(--rule); stroke-dasharray: 4 3; }
+  #ordres .link {
+    stroke: var(--rule-strong); stroke-width: 1.5; fill: none;
+    stroke-dasharray: 620; stroke-dashoffset: 620; opacity: 0;
+    transition: stroke-dashoffset 0.55s ease, opacity 0.3s;
+  }
+  #ordres .direct {
+    stroke: var(--drop); stroke-width: 2; stroke-dasharray: 6 5; fill: none;
+    opacity: 0; transition: opacity 0.35s;
+  }
+  #ordres.mode-direct .direct { opacity: 1; }
+  #ordres.mode-voisins .link { opacity: 1; stroke-dashoffset: 0; }
+  #ordres.mode-voisins .link.a { stroke: var(--accent); }
+  #ordres.mode-voisins .link.b { stroke: var(--keep); }
+  #ordres.mode-voisins .link.solo { stroke: var(--rule-strong); }
+
+  .bar-wrap { position: relative; margin: 1.25rem 0 0.4rem; }
+  .bar {
+    display: flex; height: 3.1rem; background: var(--surface-3);
+    border: 1px solid var(--rule-strong); overflow: hidden;
+  }
+  .seg {
+    transition: width 0.6s cubic-bezier(0.22, 0.7, 0.3, 1);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; color: var(--ground);
+  }
+  .seg-texte { background: var(--accent); }
+  .seg-obs { background: var(--keep); }
+  .seg-cat { background: var(--warn); }
+  .bar.rejected { opacity: 0.45; filter: saturate(0.35); }
+  .threshold {
+    position: absolute; top: -0.3rem; bottom: -0.3rem; left: 40%; width: 0;
+    border-left: 2px dashed var(--drop); pointer-events: none;
+  }
+  .threshold span {
+    position: absolute; top: -1.35rem; left: 0.35rem;
+    font-family: var(--f-mono); font-size: 0.7rem; color: var(--drop); white-space: nowrap;
+  }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 1.4rem 0 0; font-size: 0.8rem; color: var(--ink-soft); }
+  .legend i { display: inline-block; width: 0.7rem; height: 0.7rem; margin-right: 0.4rem; vertical-align: -1px; }
+
+  .readout {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 1.4rem;
+  }
+  .readout > div { background: var(--surface); padding: 0.7rem 0.9rem; }
+  .readout dt {
+    font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0 0 0.2rem;
+  }
+  .readout dd { margin: 0; font-family: var(--f-mono); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+  .readout dd small { display: block; font-family: var(--f-body); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.15rem; }
+
+  .desc-pair { display: grid; gap: 0.6rem; }
+  .desc {
+    font-family: var(--f-display); font-size: 1.05rem; line-height: 1.6;
+    background: var(--surface-2); border: 1px solid var(--rule); padding: 0.8rem 1rem;
+  }
+  .desc b {
+    display: block; font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.35rem; font-weight: 400;
+  }
+  .w { transition: background 0.3s, color 0.3s; padding: 0 0.05em; }
+  .w.shared { background: var(--keep-soft); color: var(--keep); font-weight: 600; }
+  .w.rare { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+
+  .table-wrap { overflow: auto; max-height: 24rem; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+  th, td { padding: 0.42rem 0.8rem; text-align: left; border-bottom: 1px solid var(--rule); }
+  th {
+    position: sticky; top: 0; background: var(--surface-2); font-family: var(--f-mono);
+    font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 400; z-index: 1;
+  }
+  td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+  tr.flagged td { background: var(--drop-soft); }
+  .tag {
+    font-family: var(--f-mono); font-size: 0.68rem; padding: 0.1rem 0.4rem;
+    border: 1px solid currentColor; white-space: nowrap;
+  }
+  .tag.c { color: var(--drop); }
+  .tag.s { color: var(--keep); }
+
+  /* --- matrice --- */
+  .matrix { border: 1px solid var(--rule); background: var(--surface); overflow-x: auto; margin: 1.25rem 0; }
+  .matrix table { font-family: var(--f-mono); font-size: 0.82rem; }
+  .matrix th, .matrix td { text-align: center; padding: 0.35rem 0.5rem; white-space: nowrap; }
+  .matrix th:first-child, .matrix td:first-child { text-align: left; font-family: var(--f-body); }
+  .matrix thead th { position: static; }
+  .matrix td.zero { color: var(--ink-faint); }
+  .matrix td.diag { background: var(--surface-3); color: var(--ink-faint); }
+  .matrix td.hot { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+  .matrix tfoot td { border-bottom: 0; color: var(--ink-soft); font-size: 0.76rem; }
+
+  .caution {
+    border: 1px solid var(--warn); border-left-width: 3px; background: var(--warn-soft);
+    padding: 1.1rem 1.3rem; margin: 1.5rem 0;
+  }
+  .caution h3 { margin-top: 0; color: var(--warn); }
+  .caution p:last-child { margin-bottom: 0; }
+
+  /* --- carte fonctionnalité --- */
+  .feature-grid { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.5rem 0; }
+  @media (min-width: 46rem) { .feature-grid { grid-template-columns: 1fr 1fr; } }
+  .feature { background: var(--surface); padding: 1.1rem 1.25rem; }
+  .feature h4 {
+    margin: 0 0 0.15rem; font-size: 1rem; font-weight: 600; font-family: var(--f-body);
+  }
+  .feature .who {
+    font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem;
+  }
+  .feature p { font-size: 0.9rem; margin: 0 0 0.55rem; color: var(--ink-soft); }
+  .feature .path {
+    font-family: var(--f-mono); font-size: 0.74rem; color: var(--ink-faint);
+    display: block; word-break: break-all;
+  }
+
+  .phrases {
+    list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+  }
+  .phrases li {
+    background: var(--surface); padding: 1.1rem 1.3rem; display: grid;
+    grid-template-columns: 2.1rem 1fr; gap: 0.9rem; align-items: start;
+  }
+  .phrases b { font-family: var(--f-mono); font-size: 1.1rem; color: var(--accent); font-weight: 500; }
+  .phrases span { font-family: var(--f-display); font-size: 1.12rem; line-height: 1.45; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule);
+    font-size: 0.85rem; color: var(--ink-soft);
+  }
+  footer p { max-width: 68ch; }
+
+  .strip-hint { font-family: var(--f-mono); font-size: 0.8rem; color: var(--ink-soft); min-height: 1.5rem; margin-top: 0.5rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Mémoire M2 · Stage Share · Moteur de similarité · Version technique</p>
+    <h1>Pourquoi React ressemble à <em>Vue.js</em></h1>
+    <p class="standfirst">Le moteur ne sait pas ce qu'est React. Il compte. Voici les matrices, les formules et l'arithmétique complète — puis le point exact où tout cela entre dans l'application.</p>
+
+    <p class="companion"><b>Vous n'êtes pas à l'aise avec les mathématiques ?</b> Commencez par le document compagnon <i>« Le moteur, sans une seule formule »</i>, qui raconte la même chose avec des paniers de courses et des amis en commun. Revenez ici ensuite.</p>
+
+    <div class="figures">
+      <div class="figure"><b>56</b><span>compétences au référentiel</span></div>
+      <div class="figure"><b>103</b><span>contextes exploitables</span></div>
+      <div class="figure"><b>1 540</b><span>paires possibles</span></div>
+      <div class="figure"><b>185</b><span>paires réellement observées</span></div>
+      <div class="figure"><b>0</b><span>fois React et Vue.js ensemble</span></div>
+    </div>
+  </header>
+
+  <!-- 1 -->
+  <section class="col">
+    <p class="marker">1 — Le principe</p>
+    <h2>On reconnaît une compétence à ses fréquentations</h2>
+
+    <p class="lede">On ne déclare jamais que React ressemble à Vue.js. On le déduit du fait que les deux sont mentionnées dans les mêmes compagnies.</p>
+
+    <p>Vous ne connaissez pas le mot « ouistiti ». Mais si vous le voyez toujours près de « branche », « singe » et « forêt », vous savez ce que c'est sans qu'on vous l'ait dit. C'est le principe de la sémantique distributionnelle, énoncé par Firth en 1957 : <em>« on reconnaît un mot à ses fréquentations »</em>. C'est le fondement conceptuel de word2vec — calculé ici par comptage plutôt que par descente de gradient, donc entièrement inspectable.</p>
+
+    <p>Aucun modèle de langue, aucun apprentissage, aucun appel réseau. Uniquement des dénombrements sur les données de la plateforme, ce qui rend chaque score démontrable à la main.</p>
+
+    <div class="aside">
+      <p><b>Ce qu'est un « contexte ».</b> Deux sources : les compétences exigées par une même offre, et les compétences déclarées par un même étudiant. Les identifiants sont préfixés — <code>o3</code> et <code>e3</code> sont deux contextes distincts. Un contexte à une seule compétence est écarté : il ne forme aucune paire. Sur le corpus versionné : 103 contextes retenus.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <div class="col">
+      <p class="marker">2 — Le point contre-intuitif</p>
+      <h2>Deux compétences substituables ne se rencontrent jamais</h2>
+
+      <p>Le réflexe naturel est de se dire : « React et Vue.js sont proches, donc elles doivent apparaître ensemble ». C'est <strong>faux, et exactement à l'envers</strong>. Ce sont des alternatives : une équipe prend l'une <em>ou</em> l'autre.</p>
+
+      <p>On ne compare donc pas les compétences entre elles, mais <strong>leurs listes de voisins</strong>. C'est une similarité du <strong>second ordre</strong>.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 1</span>
+        <span class="lab-title">Premier ordre contre second ordre</span>
+      </div>
+      <div class="lab-body">
+        <div class="controls" role="group" aria-label="Mode de comptage">
+          <button type="button" id="btn-direct" aria-pressed="true">Compter les rencontres directes</button>
+          <button type="button" id="btn-voisins" aria-pressed="false">Comparer les entourages</button>
+        </div>
+
+        <div class="scroll-x">
+          <svg id="ordres" class="mode-direct" viewBox="0 0 720 340" width="720" role="img" aria-label="React et Vue.js ne se rencontrent jamais directement, mais partagent trois voisines : JavaScript, HTML/CSS et Git.">
+            <g id="links"></g>
+            <path class="direct" d="M 150 148 C 300 54, 420 54, 570 148"></path>
+            <g id="nodes"></g>
+            <g id="verdict"></g>
+          </svg>
+        </div>
+
+        <p class="lab-note" id="ordres-note"></p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="aside">
+        <p><b>La phrase à dire au jury :</b> « Deux compétences substituables ne se rencontrent jamais. Ce sont leurs entourages qui se ressemblent. »</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 : matrices -->
+  <section>
+    <div class="col">
+      <p class="marker">3 — La structure de données</p>
+      <h2>La matrice de co-occurrence</h2>
+
+      <p>Tout part d'un tableau carré <strong>M</strong> de 56 lignes sur 56 colonnes. La case <code>M[a][b]</code> contient une seule chose : <strong>le nombre de contextes où les compétences a et b apparaissent ensemble</strong>.</p>
+
+      <p>La construction tient en une double boucle. Pour chaque contexte, on prend toutes les paires de compétences qu'il contient et on incrémente les deux cases correspondantes :</p>
+
+      <div class="formula">
+        <span class="lbl">Construction — src/lib/cooccurrence.js</span>
+        pour chaque contexte C :<br>
+        &nbsp;&nbsp;pour chaque paire (a, b) ⊂ C :<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;M[a][b] += 1 &nbsp;&nbsp;<span class="cmt">et</span>&nbsp;&nbsp; M[b][a] += 1
+      </div>
+
+      <p>La matrice est donc <strong>symétrique</strong> — <code>M[a][b] = M[b][a]</code> — et sa diagonale n'est jamais renseignée : une compétence n'est pas comptée avec elle-même. Elle est aussi très <strong>creuse</strong> : 185 paires seulement sur 1 540 possibles, soit une densité de 12 %. C'est pourquoi l'implémentation utilise des <code>Map</code> imbriquées plutôt qu'un tableau à deux dimensions — 96 % des cases seraient des zéros à stocker pour rien.</p>
+
+      <h3>Un extrait réel du corpus</h3>
+      <p>Voici huit compétences du référentiel, telles que la matrice les voit aujourd'hui. Les cases colorées sont les trois voisines que React et Vue.js ont en commun.</p>
+    </div>
+
+    <div class="matrix" id="matrice-hote"></div>
+
+    <div class="col">
+      <p><strong>La ligne de la matrice EST le vecteur de la compétence.</strong> C'est tout ce qu'il faut retenir de cette section. Lire la ligne « React » donne :</p>
+
+      <div class="formula">
+        <span class="lbl">Vecteur de contexte</span>
+        v(React)&nbsp; = &nbsp;{ Javascript:5, Git:4, Node.js:3, SQL:2, HTML/CSS:2, PostgreSQL:2, Malagasy:1, Docker:1 }<br>
+        v(Vue.js)&nbsp; = &nbsp;{ Javascript:2, HTML/CSS:2, Git:2 }
+      </div>
+
+      <p>Vue.js n'a que trois voisines parce qu'elle n'apparaît que dans deux contextes. React en a huit, réparties sur six contextes. Ces deux vecteurs n'ont ni la même taille ni la même longueur — et c'est exactement le problème que le cosinus résout.</p>
+
+      <div class="aside">
+        <p><b>Remarquez « Malagasy » dans le vecteur de React.</b> Un étudiant a déclaré les deux compétences, donc la paire existe. Le comptage n'a aucune notion de pertinence — il enregistre ce qu'il voit. C'est le rôle de la norme, puis de l'amortissement, de remettre ce genre de bruit à sa place.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 : cosinus -->
+  <section>
+    <div class="col">
+      <p class="marker">4 — L'instrument de mesure</p>
+      <h2>Le cosinus, d'abord en français puis en formule</h2>
+
+      <p>Le cosinus répond à une seule question : <strong>ces deux vecteurs pointent-ils dans la même direction ?</strong> <strong>1</strong> = exactement le même entourage, dans les mêmes proportions. <strong>0</strong> = aucun voisin en commun.</p>
+
+      <p>Il se calcule en deux temps. D'abord le <strong>produit scalaire</strong> : pour chaque voisine que les deux compétences partagent, on multiplie les deux compteurs, et on additionne le tout. Ensuite la <strong>division par les normes</strong>, qui neutralise la popularité.</p>
+
+      <div class="formula">
+        <span class="lbl">Cosinus de deux vecteurs</span>
+        cos(a, b) &nbsp;=&nbsp;
+        <span class="frac">
+          <span class="num">Σ<sub>i</sub> &nbsp; a<sub>i</sub> × b<sub>i</sub></span>
+          <span class="den">‖a‖ × ‖b‖</span>
+        </span>
+        &nbsp;&nbsp;<span class="cmt">avec</span>&nbsp;&nbsp; ‖a‖ = √( Σ<sub>i</sub> a<sub>i</sub>² )
+      </div>
+
+      <p>La norme <code>‖a‖</code> est la « longueur » du vecteur : la racine carrée de la somme des carrés de ses compteurs. Sans cette division, Git — présente dans 18 contextes — serait mécaniquement proche de tout, simplement parce qu'elle est partout.</p>
+
+      <h3>L'arithmétique complète, React contre Vue.js</h3>
+
+      <div class="formula">
+        <span class="lbl">1 · produit scalaire — seules les voisines communes comptent</span>
+        Javascript &nbsp; 5 × 2 = 10<br>
+        HTML/CSS &nbsp;&nbsp; 2 × 2 = &nbsp;4<br>
+        Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 × 2 = &nbsp;8<br>
+        <span class="cmt">Node.js, SQL, PostgreSQL, Malagasy, Docker → absentes chez Vue.js, donc × 0</span><br>
+        <span class="hi">Σ = 22</span>
+      </div>
+
+      <div class="formula">
+        <span class="lbl">2 · normes</span>
+        ‖React‖ &nbsp;= √(5² + 4² + 3² + 2² + 2² + 2² + 1² + 1²) = √64 = <span class="hi">8,0000</span><br>
+        ‖Vue.js‖ = √(2² + 2² + 2²) = √12 = <span class="hi">3,4641</span>
+      </div>
+
+      <div class="formula">
+        <span class="lbl">3 · division</span>
+        cos &nbsp;=&nbsp;
+        <span class="frac"><span class="num">22</span><span class="den">8,0000 × 3,4641</span></span>
+        &nbsp;=&nbsp;
+        <span class="frac"><span class="num">22</span><span class="den">27,7128</span></span>
+        &nbsp;=&nbsp; <span class="hi">0,7939</span>
+      </div>
+
+      <p>Le cosinus n'atteint pas 1 parce que React fréquente cinq voisines que Vue.js ne connaît pas. Ce n'est pas un défaut : Vue.js est moins documentée, et le résultat le dit.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 2</span>
+        <span class="lab-title">L'angle compte, la longueur non</span>
+      </div>
+      <div class="lab-body">
+        <div class="slider-row">
+          <label for="s-angle">Écart entre les entourages</label>
+          <input type="range" id="s-angle" min="0" max="80" value="37" step="1">
+          <output id="o-angle">37°</output>
+        </div>
+        <div class="slider-row">
+          <label for="s-len">Popularité de React</label>
+          <input type="range" id="s-len" min="80" max="215" value="150" step="1">
+          <output id="o-len">150</output>
+        </div>
+
+        <div class="scroll-x">
+          <svg id="cosinus" viewBox="0 0 640 300" width="640" role="img" aria-label="Deux vecteurs partant d'une même origine ; le cosinus de leur angle ne dépend pas de leur longueur.">
+            <line x1="60" y1="262" x2="450" y2="262" stroke="var(--rule)" stroke-width="1"></line>
+            <line x1="60" y1="262" x2="60" y2="30" stroke="var(--rule)" stroke-width="1"></line>
+            <path id="cos-arc" fill="none" stroke="var(--warn)" stroke-width="1.5"></path>
+            <line id="vec-a" x1="60" y1="262" x2="60" y2="262" stroke="var(--accent)" stroke-width="3"></line>
+            <line id="vec-b" x1="60" y1="262" x2="60" y2="262" stroke="var(--keep)" stroke-width="3"></line>
+            <text id="lbl-a" class="svg-name" fill="var(--accent)">React</text>
+            <text id="lbl-b" class="svg-name" fill="var(--keep)">Vue.js</text>
+            <text id="cos-out" class="svg-big" x="620" y="112" text-anchor="end">cos = 0,799</text>
+            <text class="svg-label" x="620" y="138" text-anchor="end">similarité des entourages</text>
+          </svg>
+        </div>
+
+        <p class="lab-note">Poussez « popularité » : le vecteur s'allonge, le cosinus ne bouge pas d'un centième. <strong>Deux personnes qui ont 8 amis communs sur 10 sont plus proches que deux personnes qui en ont 15 sur 300.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 : correctifs -->
+  <section>
+    <div class="col">
+      <p class="marker">5 — Les correctifs</p>
+      <h2>Trois échecs, trois garde-fous</h2>
+      <p>Le cosinus brut échouait de trois manières, constatées sur données réelles. Chaque correctif répond à un échec précis — c'est la partie du travail qui constitue le raisonnement scientifique du mémoire.</p>
+
+      <h3>a. L'amortissement de confiance</h3>
+      <p>Le cosinus ne fait aucune différence entre une similarité établie sur vingt observations et une établie sur une seule. Génie civil et Génie textile sortaient à <strong>0,979</strong> — deux compétences vues deux fois, partageant leur unique voisine. Une coïncidence de rareté, pas une proximité.</p>
+
+      <div class="formula">
+        <span class="lbl">Amortissement — K = 5</span>
+        confiance(a, b) &nbsp;=&nbsp;
+        <span class="frac"><span class="num">n</span><span class="den">n + 5</span></span>
+        &nbsp;&nbsp;<span class="cmt">avec</span>&nbsp;&nbsp; n = min( contextes(a), contextes(b) )
+      </div>
+
+      <p>Le <code>min</code> est délibéré : une similarité ne peut pas être plus fiable que la compétence la moins documentée des deux. Une chaîne ne vaut pas plus que son maillon faible.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 3</span>
+        <span class="lab-title">n ÷ (n + 5) — la part du score que l'on garde</span>
+      </div>
+      <div class="lab-body">
+        <div class="slider-row">
+          <label for="s-n">Observations disponibles</label>
+          <input type="range" id="s-n" min="1" max="30" value="2" step="1">
+          <output id="o-n">n = 2</output>
+        </div>
+
+        <div class="scroll-x">
+          <svg id="amorti" viewBox="0 0 640 250" width="640" role="img" aria-label="Courbe de l'amortissement : la part du score conservée croît de 17 % à une observation vers 80 % à vingt observations.">
+            <g id="amorti-grid"></g>
+            <path id="amorti-curve" fill="none" stroke="var(--accent)" stroke-width="2.5"></path>
+            <line id="amorti-drop" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="4 4"></line>
+            <circle id="amorti-dot" r="6" fill="var(--warn)"></circle>
+            <text id="amorti-out" class="svg-big" x="380" y="70">29 %</text>
+            <text class="svg-label" x="380" y="96">du score conservé</text>
+            <text id="amorti-cmt" class="svg-label" x="380" y="122"></text>
+          </svg>
+        </div>
+
+        <p class="lab-note">Le <code>5</code> est le nombre d'observations à partir duquel on croit la moitié de ce qu'on voit. La propriété recherchée : l'amortissement <strong>s'efface à mesure que le corpus s'étoffe</strong>. Après correction, Génie civil ↔ Génie textile retombe de 0,979 à 0,458.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <h3>b. La pénalité de complémentarité</h3>
+      <p>Le moteur créditait un étudiant maîtrisant <strong>Git</strong> pour une offre exigeant <strong>SQL</strong>. La proximité statistique était réelle ; la conclusion était fausse. Git ne <em>remplace</em> pas SQL.</p>
+      <p>Le signal qui sépare les deux cas est simple : deux compétences substituables apparaissent dans des contextes semblables mais <strong>rarement ensemble</strong>, alors que deux compétences complémentaires apparaissent précisément ensemble. Or cette information est déjà dans la matrice — c'est la case <code>M[a][b]</code> elle-même.</p>
+
+      <div class="formula">
+        <span class="lbl">Pénalité de complémentarité</span>
+        tauxDirect &nbsp;=&nbsp;
+        <span class="frac"><span class="num">M[a][b]</span><span class="den">n</span></span>
+        &nbsp;&nbsp;<span class="cmt">plafonné à 1</span><br>
+        facteur &nbsp;=&nbsp; 1 − 0,8 × tauxDirect &nbsp;&nbsp;<span class="cmt">→ entre 0,2 et 1</span>
+      </div>
+
+      <p>Le coefficient 0,8 laisse un plancher de 0,2 : même deux compétences toujours exigées ensemble conservent un cinquième de leur similarité observée. On atténue, on n'annule pas.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 4</span>
+        <span class="lab-title">1 − 0,8 × taux de rencontre directe</span>
+      </div>
+      <div class="lab-body">
+        <div class="slider-row">
+          <label for="s-taux">Taux de rencontre directe</label>
+          <input type="range" id="s-taux" min="0" max="100" value="0" step="1">
+          <output id="o-taux">0 %</output>
+        </div>
+
+        <div class="scroll-x">
+          <svg id="subst" viewBox="0 0 640 190" width="640" role="img" aria-label="Plus deux compétences sont exigées ensemble, plus leur similarité observée est écrasée.">
+            <rect x="70" y="60" width="500" height="26" fill="var(--surface-3)" stroke="var(--rule-strong)"></rect>
+            <rect id="subst-fill" x="70" y="60" width="500" height="26" fill="var(--keep)"></rect>
+            <g id="subst-ticks"></g>
+            <text id="subst-out" class="svg-label" x="70" y="46" font-size="14">facteur de substituabilité — 1,000</text>
+          </svg>
+        </div>
+
+        <p class="lab-note">React et Vue.js ne se rencontrent jamais : le facteur reste à 1, rien n'est retiré. React et Node.js se rencontrent 3 fois sur 4 : le facteur tombe à 0,400, et leur terme observé passe de 0,627 à 0,111.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <h3>c. Le signal textuel — TF-IDF</h3>
+      <p>Huit compétences n'apparaissaient dans <strong>aucun</strong> contexte, dont Vue.js, l'exemple fondateur de la méthode. Sans contexte, aucune voisine, aucun calcul possible. Les 56 descriptions rédigées deviennent alors un signal de similarité à part entière.</p>
+
+      <p>Le principe : une description devient elle aussi un vecteur, mais <strong>sur les mots au lieu des voisines</strong>. Une fois ce vecteur construit, on lui applique exactement le même cosinus.</p>
+
+      <div class="formula">
+        <span class="lbl">Poids d'un terme dans une description</span>
+        poids(t, d) &nbsp;=&nbsp; tf(t, d) &nbsp;×&nbsp; ( ln
+        <span class="frac"><span class="num">N</span><span class="den">df(t)</span></span>
+        &nbsp;+ 1 )<br>
+        <span class="cmt">tf = occurrences du terme dans cette description &nbsp;·&nbsp; df = descriptions contenant le terme &nbsp;·&nbsp; N = 56</span>
+      </div>
+
+      <p><strong>Pourquoi l'IDF est indispensable.</strong> Sans lui, « pour » et « applications » pèseraient autant que « relationnelles ». Or ce sont précisément les termes rares qui distinguent une compétence d'une autre. Le <code>+ 1</code> évite qu'un terme présent dans les 56 descriptions ait un poids nul : il en garde un, minimal.</p>
+
+      <div class="matrix" id="idf-hote"></div>
+
+      <p>Avant le comptage, deux nettoyages. Les <strong>mots vides</strong> — « de », « pour », « les » — sont écartés, ainsi que tout terme de moins de trois lettres. Puis une <strong>racinisation minimale du français</strong> : sans elle, « industrielle » et « industrielles » restent deux termes distincts, et deux descriptions industrielles ne partagent plus rien. Elle est volontairement conservatrice — marques de pluriel et de féminin les plus régulières seulement, jamais de lemmatisation. Une racinisation agressive rapprocherait des termes sans rapport, ce qui serait pire que le problème initial.</p>
+
+      <h3>L'arithmétique TF-IDF, React contre Vue.js</h3>
+      <p>Après nettoyage, les deux descriptions se réduisent à huit termes chacune, dont <strong>sept identiques</strong>. Seul le premier mot diffère : <em>bibliothèque</em> contre <em>framework</em>.</p>
+    </div>
+
+    <div class="matrix" id="tfidf-hote"></div>
+
+    <div class="col">
+      <div class="formula">
+        <span class="lbl">Cosinus textuel</span>
+        cos &nbsp;=&nbsp;
+        <span class="frac"><span class="num">77,1795</span><span class="den">10,1210 × 9,5091</span></span>
+        &nbsp;=&nbsp;
+        <span class="frac"><span class="num">77,1795</span><span class="den">96,2408</span></span>
+        &nbsp;=&nbsp; <span class="hi">0,8019</span>
+      </div>
+
+      <p>Le même calcul sur Git et SQL donne <strong>exactement zéro</strong> : leurs descriptions — « versions du code source » contre « bases de données relationnelles » — ne partagent aucun terme après nettoyage. Le produit scalaire est vide.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 5</span>
+        <span class="lab-title">Ce que les descriptions partagent</span>
+      </div>
+      <div class="lab-body">
+        <div class="controls" role="group" aria-label="Paire de descriptions">
+          <button type="button" class="btn-desc" data-pair="reactvue" aria-pressed="true">React / Vue.js</button>
+          <button type="button" class="btn-desc" data-pair="gitsql" aria-pressed="false">Git / SQL</button>
+        </div>
+
+        <div class="desc-pair" id="desc-pair"></div>
+        <dl class="readout" id="desc-readout"></dl>
+
+        <p class="lab-note">Les descriptions sont des <strong>données de référence rédigées</strong>, au même titre qu'une taxonomie de filières — la similarité, elle, reste calculée par comptage. Le vocabulaire est normalisé à dessein : deux compétences interchangeables partagent leurs termes structurants, deux compétences seulement complémentaires n'en partagent aucun.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 : formule finale -->
+  <section>
+    <div class="col">
+      <p class="marker">6 — La formule finale</p>
+      <h2>Trois signaux, un seuil</h2>
+
+      <p>Chacun des trois termes couvre la faiblesse des deux autres : le texte est disponible même sans aucune offre publiée, la co-occurrence est précise mais rare, la catégorie n'oriente qu'en dernier recours.</p>
+
+      <div class="formula">
+        <span class="lbl">similarite(a, b) — src/lib/cooccurrence.js</span>
+        <span class="hi">0,60</span> × cos<sub>texte</sub>(a, b)<br>
+        + <span class="hi">0,15</span> × cos<sub>contexte</sub>(a, b) × confiance × facteur<sub>subst</sub><br>
+        + <span class="hi">0,25</span> × [ catégorie(a) = catégorie(b) ]<br>
+        <br>
+        <span class="cmt">puis :</span> &nbsp;si résultat &lt; 0,40 → <span class="hi">0</span> &nbsp;&nbsp;<span class="cmt">sinon min(1, résultat)</span>
+      </div>
+
+      <ol class="steps">
+        <li><strong>Le texte pèse 0,60.</strong> Dense, disponible même sans aucune offre, et seul signal capable de séparer substituabilité et complémentarité — Git et SQL figurent dans les mêmes offres, aucun décompte de contextes ne peut les séparer.</li>
+        <li><strong>La co-occurrence pèse 0,15</strong>, et c'est le seul terme amorti deux fois : par la confiance, puis par la substituabilité. Précis quand il parle, muet la plupart du temps.</li>
+        <li><strong>La catégorie pèse 0,25</strong> et n'est <em>pas</em> amortie — elle ne repose sur aucune observation, c'est précisément son rôle de combler leur absence. C'est aussi, on le verra en §8, le terme le plus discutable.</li>
+      </ol>
+
+      <div class="aside">
+        <p><b>Poids majoritaire du texte : assumé.</b> À l'échelle actuelle du corpus, la description est plus fiable que 185 paires observées. Le rapport s'inversera naturellement quand la plateforme aura assez d'offres — et ce basculement est lui-même un résultat à discuter dans le mémoire.</p>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 6</span>
+        <span class="lab-title">Décomposition d'un score réel</span>
+      </div>
+      <div class="lab-body">
+        <div class="controls" role="group" aria-label="Paire à décomposer">
+          <button type="button" class="btn-pair" data-i="0" aria-pressed="true">React / Vue.js</button>
+          <button type="button" class="btn-pair" data-i="1" aria-pressed="false">Laravel / Symfony</button>
+          <button type="button" class="btn-pair" data-i="2" aria-pressed="false">MySQL / PostgreSQL</button>
+          <button type="button" class="btn-pair" data-i="3" aria-pressed="false">JavaScript / TypeScript</button>
+          <button type="button" class="btn-pair" data-i="4" aria-pressed="false">React / Node.js</button>
+          <button type="button" class="btn-pair" data-i="5" aria-pressed="false">Git / SQL</button>
+        </div>
+
+        <div class="bar-wrap">
+          <div class="bar" id="bar">
+            <div class="seg seg-texte" id="seg-texte" style="width:48.1%"></div>
+            <div class="seg seg-obs" id="seg-obs" style="width:3.4%"></div>
+            <div class="seg seg-cat" id="seg-cat" style="width:25%"></div>
+          </div>
+          <div class="threshold"><span>seuil 0,40</span></div>
+        </div>
+
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>0,60 × description (TF-IDF)</span>
+          <span><i style="background:var(--keep)"></i>0,15 × co-occurrence amortie</span>
+          <span><i style="background:var(--warn)"></i>0,25 × même catégorie</span>
+        </div>
+
+        <dl class="readout" id="pair-readout"></dl>
+        <p class="lab-note" id="pair-note"></p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="aside">
+        <p><b>Le seuil de 0,40 gouverne l'affichage et le calcul.</b> Le principe retenu : si une proximité n'inspire pas assez confiance pour être montrée à l'utilisateur, elle n'en inspire pas assez pour entrer dans le score. Sous le seuil, le résultat n'est pas atténué — il est mis à zéro. Il a été calibré sur le corpus : à 0,15, le moteur créditait Git pour une offre exigeant SQL.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 : dans l'application -->
+  <section>
+    <div class="col">
+      <p class="marker">7 — L'intégration</p>
+      <h2>Où tout cela sert, exactement</h2>
+
+      <p>Le moteur ne produit jamais un classement à lui seul. Il ne fournit qu'un nombre entre 0 et 1, consommé en un <strong>unique point</strong> du code : la fonction <code>scoreCompetence</code> de <code>src/lib/appariement.js</code>.</p>
+
+      <h3>Un seul point d'entrée</h3>
+      <p>Pour chaque compétence exigée par une offre, la fonction cherche d'abord une <strong>correspondance exacte</strong> dans le profil de l'étudiant. Si elle la trouve, la similarité n'est même pas consultée. Ce n'est qu'en son absence que le moteur intervient : il cherche, parmi toutes les compétences de l'étudiant, <strong>la plus proche</strong> de celle exigée.</p>
+
+      <div class="formula">
+        <span class="lbl">Crédit d'une correspondance approchée</span>
+        crédit &nbsp;=&nbsp; poids<sub>compétence</sub> × similarite(exigée, possédée)<br>
+        <span class="cmt">poids = 2 si la compétence est obligatoire, 1 sinon</span>
+      </div>
+
+      <p>Le crédit est donc <strong>proportionnel</strong> : une proximité de 0,5 vaut exactement la moitié de la compétence exigée. Une compétence approchante ne vaut jamais autant qu'une compétence exacte.</p>
+
+      <h3>Ce que la similarité pèse dans le score final</h3>
+      <p>Le score d'un couple (étudiant, offre) agrège cinq critères. La similarité n'agit que sur le premier :</p>
+    </div>
+
+    <div class="matrix" id="poids-hote"></div>
+
+    <div class="col">
+      <p>Autrement dit : la contribution du moteur est plafonnée à <strong>40 points sur 100</strong>, et seulement sur la fraction des compétences exigées qui n'ont pas de correspondance exacte. Un couple doit atteindre <strong>35</strong> pour être proposé.</p>
+
+      <h3>Les quatre fonctionnalités qui en dépendent</h3>
+      <p>Quatre routes appellent <code>obtenirMatrice</code>, et toutes passent par le même <code>evaluerCouple</code> — une seule mesure, lue depuis les deux extrémités. Deux implémentations parallèles divergeraient, et l'étudiant comme l'entreprise verraient des scores différents pour un même couple.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature">
+        <p class="who">Étudiant</p>
+        <h4>Offres recommandées</h4>
+        <p>Le classement des offres sur la page de liste. C'est là qu'apparaît la phrase <em>« Symfony est proche de Laravel »</em> — sans quoi l'étudiant ne comprendrait pas pourquoi une offre dont il ne possède aucune compétence exigée lui est proposée.</p>
+        <span class="path">/api/recommandations → components/recommandations</span>
+      </div>
+      <div class="feature">
+        <p class="who">Étudiant</p>
+        <h4>Conseiller de compétences</h4>
+        <p>Raisonnement contrefactuel par force brute : pour chaque compétence non possédée, on recalcule toutes les offres <em>comme si</em> l'étudiant la maîtrisait, et on mesure l'écart. Aucun nouvel algorithme — le même scoreur, exécuté sur un profil hypothétique.</p>
+        <span class="path">/api/conseiller → pages/etudiantConseiller</span>
+      </div>
+      <div class="feature">
+        <p class="who">Entreprise</p>
+        <h4>Candidats suggérés pour une offre</h4>
+        <p>Le sens inverse de la recommandation. Avant, une entreprise n'avait aucun moyen de savoir quels profils correspondaient aux siens : la recherche listait les étudiants par ordre alphabétique.</p>
+        <span class="path">/api/offreCandidats/[idOffre] → pages/offreCandidats</span>
+      </div>
+      <div class="feature">
+        <p class="who">Entreprise</p>
+        <h4>Candidatures reçues, classées par pertinence</h4>
+        <p>Les candidatures déjà déposées sont ordonnées par le même score plutôt que par date. Le CV y pèse le plus, via le sous-score de compétence.</p>
+        <span class="path">/api/entrepriseCandidature → pages/entrepriseCandidature</span>
+      </div>
+    </div>
+
+    <div class="col">
+      <h3>Deux garde-fous d'exploitation</h3>
+      <p><strong>La matrice est mise en cache cinq minutes.</strong> La reconstruire à chaque requête relirait tout le corpus pour un résultat identique.</p>
+      <p><strong>Un échec de construction ne bloque jamais une recommandation.</strong> Si la matrice est indisponible, <code>scoreCompetence</code> reçoit <code>null</code> et retombe silencieusement sur la correspondance exacte — le comportement d'avant le moteur. La plateforme perd en finesse, pas en disponibilité.</p>
+
+      <div class="aside">
+        <p><b>Un détail qui compte pour l'évaluation.</b> <code>construireMatrice</code> accepte un ensemble de contextes à exclure. Sans usage en production, ce paramètre existe pour le protocole de mesure : il retire de l'apprentissage le profil ou l'offre que l'on s'apprête à évaluer. Sans cela, la matrice aurait déjà vu la réponse qu'on lui demande de retrouver.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 : la faille -->
+  <section>
+    <div class="col">
+      <p class="marker">8 — La question qui va tomber</p>
+      <h2>Où le raisonnement se fissure</h2>
+
+      <p>Le tableau de validation du mémoire est exact, mais il porte sur dix paires choisies. En balayant les <strong>1 540 paires</strong> du référentiel, la lecture change : 71 paires passent le seuil, et <strong>9 seulement</strong> tiendraient sur le signal textuel seul.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head">
+        <span class="lab-tag">Démo 7</span>
+        <span class="lab-title">Les 62 paires que le texte seul ne retiendrait pas</span>
+      </div>
+      <div class="lab-body">
+        <div class="scroll-x">
+          <svg id="strip" viewBox="0 0 720 200" width="720" role="img" aria-label="Répartition des 62 paires retenues que le signal textuel seul ne suffirait pas à retenir, entre 0,40 et 0,67.">
+            <g id="strip-axis"></g>
+            <g id="strip-dots"></g>
+          </svg>
+        </div>
+        <p class="strip-hint" id="strip-hint">Survolez un point pour lire la paire.</p>
+
+        <div class="legend">
+          <span><i style="background:var(--drop)"></i>relation complémentaire ou hiérarchique</span>
+          <span><i style="background:var(--rule-strong)"></i>proximité défendable</span>
+        </div>
+
+        <div class="table-wrap" style="margin-top:1.25rem">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Paire</th>
+                <th scope="col">Score</th>
+                <th scope="col">cos texte</th>
+                <th scope="col">Catégorie</th>
+                <th scope="col">Lecture</th>
+              </tr>
+            </thead>
+            <tbody id="scan-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caution">
+        <h3>Le bonus de catégorie est plat, et le seuil est bas</h3>
+        <p>La catégorie apporte <strong>0,25 à toute paire de même catégorie</strong>, quelle que soit la relation réelle. Comme le seuil est à 0,40, il ne reste que 0,15 à trouver — soit un cosinus textuel d'environ 0,25. Des paires nettement complémentaires passent donc.</p>
+        <p><strong>React / Node.js en est l'exemple :</strong> le document technique annonce 0,347 après correction, le moteur calcule aujourd'hui <strong>0,432</strong>. La pénalité de complémentarité fonctionne — elle rabat le terme observé de 0,627 à 0,111 — mais le bonus de catégorie la rattrape à lui seul.</p>
+        <p><strong>Ce n'est pas un bug, c'est un arbitrage de pondération</strong>, et il se défend : créditer un développeur Node.js à 43 % pour une offre React reste plus juste que zéro. Mais ne dites pas « séparation parfaite » sans ajouter « sur l'échantillon de contrôle » — sinon la question suivante est exactement celle-là.</p>
+      </div>
+
+      <h3>L'autre question : que pèse vraiment la co-occurrence ?</h3>
+      <p>Sur React / Vue.js, le terme de co-occurrence apporte <strong>0,034 sur 0,765</strong> — soit 4 % du score. Le reste vient du texte et de la catégorie. Dites-le avant qu'on vous le fasse dire : le corpus est trop petit, le rapport s'inversera avec le volume, et ce basculement est lui-même un résultat.</p>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="col">
+    <p class="marker">9 — À emporter</p>
+    <h2>Les quatre phrases à retenir</h2>
+
+    <ol class="phrases">
+      <li><b>01</b><span>On ne déclare aucune proximité — elle est déduite des dénombrements.</span></li>
+      <li><b>02</b><span>Deux compétences substituables ne se rencontrent jamais : d'où le second ordre.</span></li>
+      <li><b>03</b><span>Trois signaux, parce qu'un seul échouait — le texte comble l'absence de données, la co-occurrence apporte la précision, la catégorie oriente en dernier recours.</span></li>
+      <li><b>04</b><span>Chaque score se démontre à la main. C'est ce qu'aucun modèle de langue ne permettrait.</span></li>
+    </ol>
+  </section>
+
+  <footer>
+    <p><strong>Provenance des chiffres.</strong> Tous les nombres de cette page ont été recalculés en rejouant <code>src/lib/cooccurrence.js</code> sur <code>prisma/seed.sql</code> versionné, sans base de données. Ce jeu donne 103 contextes et 185 paires observées, là où le document <code>MD/4 - MOTEUR-COOCCURRENCE.md</code> en annonce 104 et 176 — l'écart vient du moment de la mesure. De même, JavaScript / TypeScript donne ici 0,801 contre 0,799 au tableau de validation.</p>
+    <p>La colonne « lecture » du tableau des 62 paires est une interprétation manuelle des relations, pas une étiquette calculée par le moteur.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function el(name, attrs, text) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  function fr(x, d) { return x.toFixed(d === undefined ? 3 : d).replace(".", ","); }
+
+  /* ============ Démo 1 — ordres ============ */
+  var PARTAGEES = ["Javascript", "HTML/CSS", "Git"];
+  var svgOrdres = document.getElementById("ordres");
+  var gLinks = document.getElementById("links");
+  var gNodes = document.getElementById("nodes");
+  var gVerdict = document.getElementById("verdict");
+
+  function boite(x, y, w, h, label, cls) {
+    var g = el("g", {});
+    g.appendChild(el("rect", { x: x, y: y, width: w, height: h, rx: 2, "class": "node-box" + (cls ? " " + cls : "") }));
+    g.appendChild(el("text", { x: x + w / 2, y: y + h / 2 + 4, "text-anchor": "middle", "class": "svg-name" }, label));
+    return g;
+  }
+
+  var AX = 40, AY = 148, BX = 520, BY = 148, NW = 160, NH = 36;
+  var MX = 280, MW = 160;
+  var ys = [46, 102, 158, 224];
+
+  gNodes.appendChild(boite(AX, AY, NW, NH, "React", "pivot"));
+  gNodes.appendChild(boite(BX, BY, NW, NH, "Vue.js", "pivot"));
+  PARTAGEES.forEach(function (v, i) { gNodes.appendChild(boite(MX, ys[i], MW, NH, v, "")); });
+  gNodes.appendChild(boite(MX, ys[3], MW, NH, "+ 5 autres", "ghost"));
+  gNodes.appendChild(el("text", { x: MX + MW / 2, y: ys[3] + NH + 15, "text-anchor": "middle", "class": "svg-label" }, "voisines de React seule"));
+
+  PARTAGEES.forEach(function (v, i) {
+    var y = ys[i] + NH / 2;
+    gLinks.appendChild(el("path", {
+      "class": "link a",
+      d: "M " + (AX + NW) + " " + (AY + NH / 2) + " C " + (AX + NW + 60) + " " + (AY + NH / 2) + ", " + (MX - 60) + " " + y + ", " + MX + " " + y,
+      style: "transition-delay:" + (reduce ? 0 : i * 90) + "ms"
+    }));
+    gLinks.appendChild(el("path", {
+      "class": "link b",
+      d: "M " + (MX + MW) + " " + y + " C " + (MX + MW + 60) + " " + y + ", " + (BX - 60) + " " + (BY + NH / 2) + ", " + BX + " " + (BY + NH / 2),
+      style: "transition-delay:" + (reduce ? 0 : 300 + i * 90) + "ms"
+    }));
+  });
+  gLinks.appendChild(el("path", {
+    "class": "link solo",
+    d: "M " + (AX + NW) + " " + (AY + NH / 2) + " C " + (AX + NW + 60) + " " + (AY + NH / 2) + ", " + (MX - 60) + " " + (ys[3] + NH / 2) + ", " + MX + " " + (ys[3] + NH / 2),
+    style: "transition-delay:" + (reduce ? 0 : 600) + "ms"
+  }));
+
+  var vBig = el("text", { x: 360, y: 312, "text-anchor": "middle", "class": "svg-big" }, "");
+  var vSub = el("text", { x: 360, y: 334, "text-anchor": "middle", "class": "svg-label" }, "");
+  gVerdict.appendChild(vBig);
+  gVerdict.appendChild(vSub);
+
+  var bDirect = document.getElementById("btn-direct");
+  var bVoisins = document.getElementById("btn-voisins");
+  var noteOrdres = document.getElementById("ordres-note");
+
+  function setMode(mode) {
+    svgOrdres.setAttribute("class", "mode-" + mode);
+    bDirect.setAttribute("aria-pressed", String(mode === "direct"));
+    bVoisins.setAttribute("aria-pressed", String(mode === "voisins"));
+    if (mode === "direct") {
+      vBig.textContent = "0 rencontre";
+      vBig.setAttribute("fill", "var(--drop)");
+      vSub.textContent = "premier ordre — conclusion : aucun rapport";
+      noteOrdres.innerHTML = "Vérifié sur le corpus : React et Vue.js n'apparaissent <strong>jamais</strong> dans la même offre ni chez le même étudiant. La case M[React][Vue.js] vaut zéro, et un comptage direct conclurait qu'elles n'ont aucun rapport.";
+    } else {
+      vBig.textContent = "cos = 0,794";
+      vBig.setAttribute("fill", "var(--keep)");
+      vSub.textContent = "second ordre — trois voisines communes sur les trois de Vue.js";
+      noteOrdres.innerHTML = "Vue.js n'a que trois voisines, et React les possède toutes les trois. Mais React en a cinq autres que Vue.js ne connaît pas : <strong>c'est pourquoi le cosinus vaut 0,794 et non 1</strong>.";
+    }
+  }
+  bDirect.addEventListener("click", function () { setMode("direct"); });
+  bVoisins.addEventListener("click", function () { setMode("voisins"); });
+  setMode("direct");
+
+  /* ============ Matrice de co-occurrence ============ */
+  var MNOMS = ["React", "Vue.js", "Javascript", "TypeScript", "HTML/CSS", "Git", "Node.js", "SQL"];
+  var MVALS = [
+    [null, 0, 5, 0, 2, 4, 3, 2],
+    [0, null, 2, 0, 2, 2, 0, 0],
+    [5, 2, null, 0, 4, 5, 2, 2],
+    [0, 0, 0, null, 2, 4, 0, 1],
+    [2, 2, 4, 2, null, 6, 1, 0],
+    [4, 2, 5, 4, 6, null, 2, 5],
+    [3, 0, 2, 0, 1, 2, null, 0],
+    [2, 0, 2, 1, 0, 5, 0, null]
+  ];
+  var MN = [6, 2, 7, 4, 6, 18, 4, 11];
+  var MNORME = ["8,00", "3,46", "8,94", "5,39", "8,31", "13,42", "5,39", "9,00"];
+  var CHAUD = { "0-2": 1, "0-4": 1, "0-5": 1, "1-2": 1, "1-4": 1, "1-5": 1 };
+
+  (function () {
+    var h = '<table><thead><tr><th scope="col">M[a][b]</th>';
+    MNOMS.forEach(function (n) { h += '<th scope="col">' + n + "</th>"; });
+    h += '<th scope="col">n</th><th scope="col">‖v‖</th></tr></thead><tbody>';
+    MNOMS.forEach(function (na, i) {
+      h += '<tr><th scope="row" style="text-align:left">' + na + "</th>";
+      MVALS[i].forEach(function (v, k) {
+        if (v === null) h += '<td class="diag">—</td>';
+        else {
+          var cls = CHAUD[i + "-" + k] ? "hot" : (v === 0 ? "zero" : "");
+          h += '<td class="' + cls + '">' + v + "</td>";
+        }
+      });
+      h += '<td class="zero">' + MN[i] + '</td><td class="zero">' + MNORME[i] + "</td></tr>";
+    });
+    h += '</tbody><tfoot><tr><td colspan="11">Extrait réel du corpus versionné. <span style="color:var(--accent)">Les cases colorées</span> sont les trois voisines communes à React et Vue.js. « n » = nombre de contextes où la compétence apparaît ; « ‖v‖ » = norme de sa ligne.</td></tr></tfoot></table>';
+    document.getElementById("matrice-hote").innerHTML = h;
+  })();
+
+  /* ============ Tables IDF et TF-IDF ============ */
+  (function () {
+    var IDF = [
+      ["bibliothequ", 1, "5,03", "n'apparaît que dans la description de React"],
+      ["composant", 3, "3,93", "trois compétences la mentionnent"],
+      ["javascript", 4, "3,64", ""],
+      ["interfac", 5, "3,42", ""],
+      ["web", 6, "3,23", ""],
+      ["construir", 7, "3,08", ""],
+      ["cote", 12, "2,54", "banal — pèse deux fois moins que « bibliothèque »"]
+    ];
+    var h = '<table><thead><tr><th scope="col">Terme racinisé</th><th scope="col">df</th><th scope="col">ln(56 ÷ df) + 1</th><th scope="col" style="text-align:left">Lecture</th></tr></thead><tbody>';
+    IDF.forEach(function (r) {
+      h += "<tr><td style=\"text-align:left\">" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] +
+        '</td><td style="text-align:left;font-family:var(--f-body);color:var(--ink-soft)">' + r[3] + "</td></tr>";
+    });
+    h += '</tbody><tfoot><tr><td colspan="4">Plus un terme est rare dans les 56 descriptions, plus il pèse. Le rapport va du simple au double.</td></tr></tfoot></table>';
+    document.getElementById("idf-hote").innerHTML = h;
+  })();
+
+  (function () {
+    var T = [
+      ["javascript", "3,639", "3,639", "13,243"],
+      ["composant", "3,927", "3,927", "15,419"],
+      ["construir", "3,079", "3,079", "9,483"],
+      ["interfac", "3,416", "3,416", "11,668"],
+      ["web", "3,234", "3,234", "10,456"],
+      ["cote", "2,540", "2,540", "6,454"],
+      ["navigateur", "3,234", "3,234", "10,456"],
+      ["bibliothequ", "5,025", "—", "0"],
+      ["framework", "—", "3,639", "0"]
+    ];
+    var h = '<table><thead><tr><th scope="col" style="text-align:left">Terme</th><th scope="col">poids React</th><th scope="col">poids Vue.js</th><th scope="col">produit</th></tr></thead><tbody>';
+    T.forEach(function (r) {
+      var mort = r[3] === "0";
+      h += '<tr><td style="text-align:left' + (mort ? ";color:var(--ink-faint)" : "") + '">' + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] +
+        '</td><td class="' + (mort ? "zero" : "hot") + '">' + r[3] + "</td></tr>";
+    });
+    h += '</tbody><tfoot><tr><td colspan="4">Σ = <b style="color:var(--accent)">77,1795</b> &nbsp;·&nbsp; ‖React‖ = 10,1210 &nbsp;·&nbsp; ‖Vue.js‖ = 9,5091. Les deux termes non partagés ne contribuent rien au produit, mais alourdissent les normes — c’est ce qui empêche le cosinus d’atteindre 1.</td></tr></tfoot></table>';
+    document.getElementById("tfidf-hote").innerHTML = h;
+  })();
+
+  /* ============ Table des poids ============ */
+  (function () {
+    var P = [
+      ["Compétence", 40, "oui — c'est le seul point d'entrée du moteur"],
+      ["Filière", 20, "non"],
+      ["Niveau d'études", 15, "non"],
+      ["Localisation", 15, "non"],
+      ["Préférences", 10, "non"]
+    ];
+    var h = '<table><thead><tr><th scope="col" style="text-align:left">Critère</th><th scope="col">Poids</th><th scope="col" style="text-align:left">La similarité y intervient ?</th></tr></thead><tbody>';
+    P.forEach(function (r) {
+      var actif = r[2].indexOf("oui") === 0;
+      h += '<tr><td style="text-align:left">' + r[0] + '</td><td class="' + (actif ? "hot" : "") + '">' + r[1] +
+        '</td><td style="text-align:left;font-family:var(--f-body);color:' + (actif ? "var(--accent)" : "var(--ink-soft)") + '">' + r[2] + "</td></tr>";
+    });
+    h += '</tbody><tfoot><tr><td colspan="3">Score global = somme pondérée ÷ 100. Un couple doit atteindre 35 pour être proposé.</td></tr></tfoot></table>';
+    document.getElementById("poids-hote").innerHTML = h;
+  })();
+
+  /* ============ Démo 2 — cosinus ============ */
+  var sAngle = document.getElementById("s-angle"), sLen = document.getElementById("s-len");
+  var oAngle = document.getElementById("o-angle"), oLen = document.getElementById("o-len");
+  var vecA = document.getElementById("vec-a"), vecB = document.getElementById("vec-b");
+  var lblA = document.getElementById("lbl-a"), lblB = document.getElementById("lbl-b");
+  var cosOut = document.getElementById("cos-out"), cosArc = document.getElementById("cos-arc");
+  var OX = 60, OY = 262;
+
+  function majCos() {
+    var deg = Number(sAngle.value), lenA = Number(sLen.value), lenB = 210, baseDeg = 8;
+    var a1 = (baseDeg + deg) * Math.PI / 180, a2 = baseDeg * Math.PI / 180;
+    var ax = OX + Math.cos(a1) * lenA, ay = OY - Math.sin(a1) * lenA;
+    var bx = OX + Math.cos(a2) * lenB, by = OY - Math.sin(a2) * lenB;
+    vecA.setAttribute("x2", ax); vecA.setAttribute("y2", ay);
+    vecB.setAttribute("x2", bx); vecB.setAttribute("y2", by);
+    lblA.setAttribute("x", ax + 8); lblA.setAttribute("y", ay - 4);
+    lblB.setAttribute("x", bx + 8); lblB.setAttribute("y", by + 14);
+    var r = 72;
+    cosArc.setAttribute("d", "M " + (OX + Math.cos(a2) * r) + " " + (OY - Math.sin(a2) * r) +
+      " A " + r + " " + r + " 0 0 0 " + (OX + Math.cos(a1) * r) + " " + (OY - Math.sin(a1) * r));
+    oAngle.textContent = deg + "°";
+    oLen.textContent = lenA;
+    cosOut.textContent = "cos = " + fr(Math.cos(deg * Math.PI / 180));
+  }
+  sAngle.addEventListener("input", majCos);
+  sLen.addEventListener("input", majCos);
+  majCos();
+
+  /* ============ Démo 3 — amortissement ============ */
+  var sN = document.getElementById("s-n"), oN = document.getElementById("o-n");
+  var curve = document.getElementById("amorti-curve"), dot = document.getElementById("amorti-dot");
+  var dropL = document.getElementById("amorti-drop"), amOut = document.getElementById("amorti-out");
+  var amCmt = document.getElementById("amorti-cmt"), grid = document.getElementById("amorti-grid");
+  var GX0 = 70, GX1 = 340, GY0 = 200, GY1 = 40;
+
+  function px(n) { return GX0 + (n / 30) * (GX1 - GX0); }
+  function py(f) { return GY0 - f * (GY0 - GY1); }
+
+  [0, 0.5, 1].forEach(function (f) {
+    grid.appendChild(el("line", { x1: GX0, y1: py(f), x2: GX1, y2: py(f), stroke: "var(--rule)", "stroke-width": 1 }));
+    grid.appendChild(el("text", { x: GX0 - 8, y: py(f) + 4, "text-anchor": "end", "class": "svg-label" }, Math.round(f * 100) + "%"));
+  });
+  [1, 10, 20, 30].forEach(function (n) {
+    grid.appendChild(el("text", { x: px(n), y: GY0 + 18, "text-anchor": "middle", "class": "svg-label" }, "n=" + n));
+  });
+
+  var dPath = "";
+  for (var n = 0; n <= 30; n += 0.5) dPath += (dPath ? " L " : "M ") + px(n) + " " + py(n / (n + 5));
+  curve.setAttribute("d", dPath);
+
+  function majN() {
+    var v = Number(sN.value), f = v / (v + 5);
+    dot.setAttribute("cx", px(v)); dot.setAttribute("cy", py(f));
+    dropL.setAttribute("x1", px(v)); dropL.setAttribute("y1", py(f));
+    dropL.setAttribute("x2", px(v)); dropL.setAttribute("y2", GY0);
+    oN.textContent = "n = " + v;
+    amOut.textContent = Math.round(f * 100) + " %";
+    amCmt.textContent = v === 2 ? "React / Vue.js travaille ici"
+      : v === 11 ? "Git / SQL travaille ici"
+      : v <= 3 ? "coïncidence de rareté probable"
+      : v >= 20 ? "l'amortissement s'efface" : "";
+  }
+  sN.addEventListener("input", majN);
+  majN();
+
+  /* ============ Démo 4 — substituabilité ============ */
+  var sTaux = document.getElementById("s-taux"), oTaux = document.getElementById("o-taux");
+  var fill = document.getElementById("subst-fill"), substOut = document.getElementById("subst-out");
+  var ticks = document.getElementById("subst-ticks");
+
+  [{ t: 0, l: "React / Vue.js" }, { t: 0.4545, l: "Git / SQL" }, { t: 0.75, l: "React / Node.js" }]
+    .forEach(function (m) {
+      var x = 70 + m.t * 500;
+      ticks.appendChild(el("line", { x1: x, y1: 86, x2: x, y2: 104, stroke: "var(--ink-faint)", "stroke-width": 1 }));
+      ticks.appendChild(el("text", { x: x, y: 122, "text-anchor": m.t > 0.7 ? "end" : (m.t < 0.1 ? "start" : "middle"), "class": "svg-label" }, m.l));
+    });
+
+  function majTaux() {
+    var t = Number(sTaux.value) / 100, f = 1 - 0.8 * t;
+    fill.setAttribute("width", 500 * f);
+    oTaux.textContent = Math.round(t * 100) + " %";
+    substOut.textContent = "facteur de substituabilité — " + fr(f);
+  }
+  sTaux.addEventListener("input", majTaux);
+  majTaux();
+
+  /* ============ Démo 5 — descriptions ============ */
+  var DESCRIPTIONS = {
+    reactvue: {
+      a: { nom: "React", texte: "Bibliothèque JavaScript de composants pour construire des interfaces web côté navigateur" },
+      b: { nom: "Vue.js", texte: "Framework JavaScript de composants pour construire des interfaces web côté navigateur" },
+      cos: "0,802", communs: "7 sur 8", verdict: "Seul le premier mot diffère."
+    },
+    gitsql: {
+      a: { nom: "Git", texte: "Système de gestion des versions du code source et de collaboration entre développeurs" },
+      b: { nom: "SQL", texte: "Langage d'interrogation et de manipulation de bases de données relationnelles" },
+      cos: "0,000", communs: "0", verdict: "Produit scalaire vide."
+    }
+  };
+  var VIDES = ["de", "du", "des", "le", "la", "les", "et", "ou", "pour", "un", "une", "en", "au", "aux", "d", "l", "a", "entre", "sur"];
+
+  function normalise(m) {
+    return m.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[^a-z0-9]/g, "");
+  }
+  function racine(mot) {
+    if (mot.length <= 4) return mot;
+    return mot.replace(/(aux|eaux)$/, "al").replace(/(elles|elle)$/, "el")
+      .replace(/(ives|ive)$/, "if").replace(/s$/, "").replace(/e$/, "");
+  }
+  function cle(m) {
+    var k = normalise(m);
+    return (k.length > 2 && VIDES.indexOf(k) === -1) ? racine(k) : null;
+  }
+
+  var descPair = document.getElementById("desc-pair");
+  var descReadout = document.getElementById("desc-readout");
+
+  function rendreDesc(k) {
+    var p = DESCRIPTIONS[k];
+    function setDe(item) {
+      var s = {};
+      item.texte.split(" ").forEach(function (m) { var c = cle(m); if (c) s[c] = 1; });
+      return s;
+    }
+    var setA = setDe(p.a), setB = setDe(p.b);
+
+    function bloc(item, autre) {
+      var html = '<div class="desc"><b>' + item.nom + "</b>";
+      item.texte.split(" ").forEach(function (m) {
+        var c = cle(m);
+        var cls = c === null ? "w" : (autre[c] ? "w shared" : "w rare");
+        html += '<span class="' + cls + '">' + m + "</span> ";
+      });
+      return html + "</div>";
+    }
+
+    descPair.innerHTML = bloc(p.a, setB) + bloc(p.b, setA);
+    descReadout.innerHTML =
+      "<div><dt>Termes communs</dt><dd>" + p.communs + "</dd></div>" +
+      "<div><dt>Cosinus TF-IDF</dt><dd>" + p.cos + "</dd></div>" +
+      '<div><dt>Lecture</dt><dd style="font-family:var(--f-body);font-size:0.9rem">' + p.verdict + "</dd></div>";
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".btn-desc"), function (b) {
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".btn-desc"), function (o) {
+        o.setAttribute("aria-pressed", String(o === b));
+      });
+      rendreDesc(b.dataset.pair);
+    });
+  });
+  rendreDesc("reactvue");
+
+  /* ============ Démo 6 — décomposition ============ */
+  var PAIRES = [
+    { nom: "React / Vue.js", cosT: 0.802, cosC: 0.794, n: 2, conf: 0.286, ens: 0, subst: 1.0, cat: 1,
+      note: "Les descriptions ne diffèrent que d'un mot, et les deux compétences ne se rencontrent jamais : rien n'est retiré au terme observé. Mais celui-ci n'apporte que 0,034 — l'essentiel vient du texte." },
+    { nom: "Laravel / Symfony", cosT: 1.0, cosC: 0.816, n: 2, conf: 0.286, ens: 0, subst: 1.0, cat: 1,
+      note: "Descriptions identiques après racinisation : le cosinus textuel atteint 1,000. Le score le plus élevé du corpus." },
+    { nom: "MySQL / PostgreSQL", cosT: 1.0, cosC: 0.092, n: 3, conf: 0.375, ens: 0, subst: 1.0, cat: 1,
+      note: "Ici la co-occurrence ne dit presque rien (cos 0,092) : les deux bases sont vues dans des contextes différents. Le texte porte tout le score." },
+    { nom: "JavaScript / TypeScript", cosT: 0.849, cosC: 0.623, n: 4, conf: 0.444, ens: 0, subst: 1.0, cat: 1,
+      note: "Le cas le mieux étayé : entourages proches, descriptions proches, jamais exigées ensemble." },
+    { nom: "React / Node.js", cosT: 0.276, cosC: 0.627, n: 4, conf: 0.444, ens: 3, subst: 0.4, cat: 1,
+      note: "Front et back — complémentaires, pas substituables. La pénalité rabat le terme observé à 0,111, mais le bonus de catégorie de 0,250 fait franchir le seuil à lui seul." },
+    { nom: "Git / SQL", cosT: 0.0, cosC: 0.34, n: 11, conf: 0.688, ens: 5, subst: 0.636, cat: 0,
+      note: "L'échec fondateur, désormais réglé : descriptions sans aucun mot commun, catégories différentes, rencontres fréquentes. Le total tombe sous le seuil et devient zéro." }
+  ];
+
+  var segT = document.getElementById("seg-texte"), segO = document.getElementById("seg-obs"), segC = document.getElementById("seg-cat");
+  var bar = document.getElementById("bar"), pairReadout = document.getElementById("pair-readout"), pairNote = document.getElementById("pair-note");
+
+  function rendrePaire(i) {
+    var p = PAIRES[i];
+    var partT = 0.6 * p.cosT, partO = 0.15 * p.cosC * p.conf * p.subst, partC = 0.25 * p.cat;
+    var total = partT + partO + partC, retenu = total < 0.4 ? 0 : total;
+
+    segT.style.width = (partT * 100) + "%";
+    segO.style.width = (partO * 100) + "%";
+    segC.style.width = (partC * 100) + "%";
+    segT.textContent = partT > 0.12 ? fr(partT) : "";
+    segC.textContent = partC > 0.12 ? fr(partC) : "";
+    bar.className = "bar" + (retenu === 0 ? " rejected" : "");
+
+    pairReadout.innerHTML =
+      "<div><dt>Texte</dt><dd>" + fr(partT) + "<small>0,60 × " + fr(p.cosT) + "</small></dd></div>" +
+      "<div><dt>Co-occurrence</dt><dd>" + fr(partO) + "<small>0,15 × " + fr(p.cosC) + " × " + fr(p.conf) + " × " + fr(p.subst) + "</small></dd></div>" +
+      "<div><dt>Catégorie</dt><dd>" + fr(partC) + "<small>" + (p.cat ? "même catégorie" : "catégories différentes") + "</small></dd></div>" +
+      "<div><dt>Confiance</dt><dd>" + fr(p.conf) + "<small>n = " + p.n + " contextes</small></dd></div>" +
+      "<div><dt>Rencontres directes</dt><dd>" + p.ens + "<small>facteur " + fr(p.subst) + "</small></dd></div>" +
+      '<div><dt>Score retenu</dt><dd style="color:' + (retenu ? "var(--keep)" : "var(--drop)") + '">' + fr(retenu) +
+      "<small>" + (retenu ? "au-dessus du seuil" : "somme " + fr(total) + " — sous le seuil") + "</small></dd></div>";
+
+    pairNote.textContent = p.note;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".btn-pair"), function (b) {
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".btn-pair"), function (o) {
+        o.setAttribute("aria-pressed", String(o === b));
+      });
+      rendrePaire(Number(b.dataset.i));
+    });
+  });
+  rendrePaire(0);
+
+  /* ============ Démo 7 — balayage ============ */
+  var SCAN = [
+    ["PHP", "Java", 0.660, 0.661, "Technique", 0],
+    ["Javascript", "PHP", 0.598, 0.556, "Technique", 0],
+    ["PHP", "Symfony", 0.597, 0.569, "Technique", 1],
+    ["PHP", "Laravel", 0.596, 0.569, "Technique", 1],
+    ["Relation client", "Hôtellerie et Tourisme", 0.589, 0.495, "Gestion", 0],
+    ["Anglais professionnel", "Français rédactionnel", 0.587, 0.512, "Langue", 0],
+    ["Javascript", "Angular", 0.580, 0.509, "Technique", 1],
+    ["Analyse de données", "Statistiques", 0.574, 0.500, "Données", 0],
+    ["Français rédactionnel", "Malagasy", 0.569, 0.512, "Langue", 0],
+    ["Java", ".NET", 0.567, 0.492, "Technique", 0],
+    ["Python", "Java", 0.567, 0.493, "Technique", 0],
+    ["Javascript", "Vue.js", 0.560, 0.509, "Technique", 1],
+    ["Power BI", "Excel avancé", 0.560, 0.498, "Données", 0],
+    ["Javascript", "React", 0.552, 0.478, "Technique", 1],
+    ["Javascript", "Java", 0.552, 0.449, "Technique", 0],
+    ["TypeScript", "PHP", 0.552, 0.472, "Technique", 0],
+    ["Comptabilité", "Audit financier", 0.542, 0.475, "Gestion", 0],
+    ["Génie des procédés", "Génie textile", 0.537, 0.385, "Industrie", 0],
+    ["TypeScript", "Vue.js", 0.537, 0.432, "Technique", 1],
+    ["TypeScript", "React", 0.528, 0.406, "Technique", 1],
+    ["Analyse de données", "Power BI", 0.523, 0.447, "Données", 1],
+    ["Statistiques", "Machine Learning", 0.516, 0.419, "Données", 0],
+    ["TypeScript", "Angular", 0.515, 0.432, "Technique", 1],
+    ["Javascript", "HTML/CSS", 0.508, 0.391, "Technique", 1],
+    ["Administration réseau", "Télécommunications", 0.505, 0.417, "Réseaux", 0],
+    ["TypeScript", "Java", 0.499, 0.381, "Technique", 0],
+    ["SQL", "PostgreSQL", 0.494, 0.379, "Données", 1],
+    ["Vue.js", "Symfony", 0.492, 0.380, "Technique", 1],
+    ["Angular", "Symfony", 0.492, 0.380, "Technique", 1],
+    ["SQL", "MySQL", 0.491, 0.379, "Données", 1],
+    ["Vue.js", "Laravel", 0.478, 0.380, "Technique", 1],
+    ["Angular", "Laravel", 0.478, 0.380, "Technique", 1],
+    ["TypeScript", "HTML/CSS", 0.474, 0.332, "Technique", 1],
+    ["Node.js", "PHP", 0.469, 0.349, "Technique", 1],
+    ["PHP", "Python", 0.463, 0.355, "Technique", 0],
+    ["PHP", ".NET", 0.461, 0.341, "Technique", 0],
+    ["Java", "Symfony", 0.460, 0.328, "Technique", 1],
+    ["SQL", "NoSQL (MongoDB)", 0.456, 0.343, "Données", 1],
+    ["Analyse de données", "Machine Learning", 0.456, 0.307, "Données", 0],
+    ["PHP", "C++", 0.455, 0.341, "Technique", 0],
+    ["Vue.js", "Node.js", 0.449, 0.294, "Technique", 1],
+    ["Javascript", "Python", 0.448, 0.318, "Technique", 0],
+    ["Java", "Laravel", 0.447, 0.328, "Technique", 1],
+    ["Node.js", "Symfony", 0.447, 0.313, "Technique", 1],
+    [".NET", "Symfony", 0.443, 0.305, "Technique", 1],
+    ["Angular", "Node.js", 0.440, 0.294, "Technique", 1],
+    ["Node.js", "Laravel", 0.438, 0.313, "Technique", 1],
+    ["Gestion de stocks", "Logistique", 0.436, 0.295, "Gestion", 0],
+    ["React", "HTML/CSS", 0.434, 0.237, "Technique", 1],
+    ["Analyse de données", "Excel avancé", 0.434, 0.283, "Données", 1],
+    ["Javascript", "C++", 0.434, 0.306, "Technique", 0],
+    [".NET", "Laravel", 0.433, 0.305, "Technique", 1],
+    ["React", "Node.js", 0.432, 0.276, "Technique", 1],
+    ["Génie électrique", "Génie mécanique", 0.428, 0.270, "Industrie", 0],
+    ["TypeScript", "Python", 0.418, 0.270, "Technique", 0],
+    ["Java", "C++", 0.415, 0.275, "Technique", 0],
+    ["Génie électrique", "Énergies renouvelables", 0.410, 0.247, "Industrie", 0],
+    ["Vue.js", "HTML/CSS", 0.407, 0.252, "Technique", 1],
+    ["Angular", "HTML/CSS", 0.406, 0.252, "Technique", 1],
+    ["TypeScript", "C++", 0.406, 0.260, "Technique", 0],
+    ["Administration réseau", "Cloud (AWS/Azure)", 0.406, 0.230, "Réseaux", 1],
+    ["Python", "C++", 0.401, 0.244, "Technique", 0]
+  ];
+
+  var SX0 = 60, SX1 = 680, SY = 96;
+  var axis = document.getElementById("strip-axis"), dots = document.getElementById("strip-dots");
+  var hint = document.getElementById("strip-hint");
+
+  function sx(v) { return SX0 + ((v - 0.40) / (0.68 - 0.40)) * (SX1 - SX0); }
+
+  axis.appendChild(el("line", { x1: SX0, y1: SY + 46, x2: SX1, y2: SY + 46, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+  [0.40, 0.45, 0.50, 0.55, 0.60, 0.65].forEach(function (v) {
+    axis.appendChild(el("line", { x1: sx(v), y1: SY + 46, x2: sx(v), y2: SY + 52, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+    axis.appendChild(el("text", { x: sx(v), y: SY + 68, "text-anchor": "middle", "class": "svg-label" }, fr(v, 2)));
+  });
+  axis.appendChild(el("line", { x1: sx(0.40), y1: 30, x2: sx(0.40), y2: SY + 46, stroke: "var(--drop)", "stroke-width": 1.5, "stroke-dasharray": "4 4" }));
+  axis.appendChild(el("text", { x: sx(0.40) + 6, y: 26, "class": "svg-label", fill: "var(--drop)" }, "seuil 0,40"));
+
+  var lanes = [0, 1, 2, 3, 2, 1];
+  SCAN.forEach(function (r, i) {
+    var c = el("circle", {
+      cx: sx(r[2]), cy: SY + 4 - lanes[i % lanes.length] * 15, r: 5.5,
+      fill: r[5] ? "var(--drop)" : "var(--rule-strong)",
+      stroke: "var(--surface)", "stroke-width": 1, tabindex: "0"
+    });
+    var titre = r[0] + " / " + r[1] + " — " + fr(r[2]);
+    c.appendChild(el("title", {}, titre));
+    var montre = function () {
+      hint.textContent = titre + (r[5] ? "  ·  relation complémentaire ou hiérarchique" : "  ·  proximité défendable");
+    };
+    c.addEventListener("mouseenter", montre);
+    c.addEventListener("focus", montre);
+    dots.appendChild(c);
+  });
+
+  var body = document.getElementById("scan-body"), html = "";
+  SCAN.forEach(function (r) {
+    html += '<tr class="' + (r[5] ? "flagged" : "") + '">' +
+      "<td>" + r[0] + " / " + r[1] + "</td>" +
+      '<td class="num">' + fr(r[2]) + "</td>" +
+      '<td class="num">' + fr(r[3]) + "</td>" +
+      "<td>" + r[4] + "</td>" +
+      '<td><span class="tag ' + (r[5] ? "c" : "s") + '">' + (r[5] ? "complémentaire" : "défendable") + "</span></td></tr>";
+  });
+  body.innerHTML = html;
+})();
+</script>
+</body>
+</html>

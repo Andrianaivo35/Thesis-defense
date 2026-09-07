@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le moteur, sans une seule formule</title>
+<meta name="description" content="Comprendre le moteur de similarité de Stage Share sans aucune connaissance en mathématiques : ce qu'il fait, pourquoi, et où on le voit dans l'application.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+  :root {
+    --ground:      #ecf0ee;
+    --surface:     #ffffff;
+    --surface-2:   #f3f6f4;
+    --surface-3:   #dfe7e3;
+    --ink:         #14201b;
+    --ink-soft:    #526059;
+    --ink-faint:   #83918a;
+    --rule:        #d1ddd7;
+    --rule-strong: #b3c4bb;
+    --accent:      #1c6b52;
+    --accent-soft: #d6e8e0;
+    --second:      #31356e;
+    --second-soft: #dcdef0;
+    --drop:        #8f3324;
+    --drop-soft:   #f0dcd7;
+    --warn:        #8a6516;
+    --warn-soft:   #f0e6cf;
+
+    --f-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --f-body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    --f-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+
+    --col: 38rem;
+    --wide: 58rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0f1714;
+      --surface:     #18231e;
+      --surface-2:   #1e2b25;
+      --surface-3:   #2a3a32;
+      --ink:         #e6efea;
+      --ink-soft:    #a2b3aa;
+      --ink-faint:   #7b8c84;
+      --rule:        #2c3b34;
+      --rule-strong: #43584d;
+      --accent:      #5fbd97;
+      --accent-soft: #1b332a;
+      --second:      #a2a7ee;
+      --second-soft: #232748;
+      --drop:        #e08e75;
+      --drop-soft:   #3a241d;
+      --warn:        #d8ae56;
+      --warn-soft:   #362c15;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0f1714;
+    --surface:     #18231e;
+    --surface-2:   #1e2b25;
+    --surface-3:   #2a3a32;
+    --ink:         #e6efea;
+    --ink-soft:    #a2b3aa;
+    --ink-faint:   #7b8c84;
+    --rule:        #2c3b34;
+    --rule-strong: #43584d;
+    --accent:      #5fbd97;
+    --accent-soft: #1b332a;
+    --second:      #a2a7ee;
+    --second-soft: #232748;
+    --drop:        #e08e75;
+    --drop-soft:   #3a241d;
+    --warn:        #d8ae56;
+    --warn-soft:   #362c15;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--f-body); font-size: 1.02rem; line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  .page { max-width: var(--wide); margin: 0 auto; padding: 0 1.5rem 6rem; }
+  .col { max-width: var(--col); }
+
+  .masthead { padding: 3.5rem 0 2.5rem; border-bottom: 1px solid var(--rule); }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0 0 1.25rem;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(2.3rem, 6vw, 3.7rem); line-height: 1.05;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 0 0 1.25rem; max-width: 15ch;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  .standfirst {
+    font-family: var(--f-display); font-size: 1.3rem; line-height: 1.5;
+    color: var(--ink-soft); max-width: 44ch; margin: 0;
+  }
+  .companion {
+    margin: 1.75rem 0 0; padding: 0.85rem 1.1rem;
+    border: 1px solid var(--rule-strong); background: var(--surface);
+    font-size: 0.9rem; max-width: 46ch;
+  }
+
+  section { padding-top: 3.5rem; }
+  .marker {
+    font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+    color: var(--accent); text-transform: uppercase; margin: 0 0 0.6rem;
+  }
+  h2 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(1.7rem, 3.4vw, 2.3rem); line-height: 1.15;
+    letter-spacing: -0.015em; text-wrap: balance; margin: 0 0 1rem; max-width: 20ch;
+  }
+  h3 { font-family: var(--f-body); font-weight: 600; font-size: 1.06rem; margin: 2rem 0 0.6rem; }
+  p { margin: 0 0 1.15rem; }
+  .col p { max-width: 66ch; }
+  strong { font-weight: 600; }
+
+  .lede {
+    font-family: var(--f-display); font-size: 1.4rem; line-height: 1.45; font-style: italic;
+    color: var(--accent); border-left: 2px solid var(--accent); padding-left: 1.25rem;
+    margin: 0 0 1.75rem; max-width: 38ch;
+  }
+  .aside {
+    background: var(--surface-2); border-left: 2px solid var(--rule-strong);
+    padding: 1rem 1.25rem; margin: 0 0 1.25rem; font-size: 0.95rem;
+    color: var(--ink-soft); max-width: 60ch;
+  }
+  .aside p:last-child { margin-bottom: 0; }
+  .aside b { color: var(--ink); }
+
+  /* --- panneaux --- */
+  .lab { background: var(--surface); border: 1px solid var(--rule); margin: 2rem 0 2.25rem; }
+  .lab-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.75rem;
+    padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface-2);
+  }
+  .lab-tag {
+    font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .lab-title { font-size: 0.9rem; font-weight: 500; }
+  .lab-body { padding: 1.25rem; }
+  .lab-note { font-size: 0.88rem; color: var(--ink-soft); margin: 1rem 0 0; max-width: 62ch; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.1rem; }
+  button {
+    font-family: var(--f-body); font-size: 0.88rem; font-weight: 500; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    padding: 0.45rem 0.9rem; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--ground); }
+  button:disabled { opacity: 0.45; cursor: default; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--ground); }
+
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .slider-row {
+    display: grid; grid-template-columns: minmax(8rem, auto) 1fr minmax(3rem, auto);
+    align-items: center; gap: 0.85rem; margin-bottom: 0.7rem;
+  }
+  .slider-row label { font-size: 0.88rem; color: var(--ink-soft); }
+  .slider-row output { font-family: var(--f-mono); text-align: right; }
+
+  /* --- avant / apres --- */
+  .compare { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  @media (min-width: 42rem) { .compare { grid-template-columns: 1fr 1fr; } }
+  .side { background: var(--surface); padding: 1.1rem 1.25rem; }
+  .side h4 {
+    margin: 0 0 0.15rem; font-size: 0.95rem; font-weight: 600;
+    font-family: var(--f-mono); letter-spacing: 0.04em;
+  }
+  .side.no h4 { color: var(--drop); }
+  .side.yes h4 { color: var(--accent); }
+  .side .count {
+    font-family: var(--f-mono); font-size: 2.6rem; font-weight: 500;
+    line-height: 1.2; margin: 0.4rem 0 0.1rem; font-variant-numeric: tabular-nums;
+  }
+  .side.no .count { color: var(--drop); }
+  .side.yes .count { color: var(--accent); }
+  .side p { font-size: 0.9rem; color: var(--ink-soft); margin: 0.5rem 0 0; }
+  .offres { list-style: none; padding: 0; margin: 0.9rem 0 0; display: grid; gap: 0.4rem; }
+  .offres li {
+    border: 1px solid var(--rule); padding: 0.45rem 0.7rem; font-size: 0.88rem;
+    display: flex; justify-content: space-between; gap: 0.7rem; align-items: center;
+  }
+  .offres li span { font-family: var(--f-mono); font-size: 0.8rem; color: var(--accent); }
+  .vide {
+    border: 1px dashed var(--rule-strong); padding: 1.4rem 0.7rem; text-align: center;
+    color: var(--ink-faint); font-size: 0.88rem; margin-top: 0.9rem;
+  }
+
+  /* --- comptage --- */
+  .contextes { display: grid; gap: 0.6rem; margin-bottom: 1.2rem; }
+  @media (min-width: 40rem) { .contextes { grid-template-columns: repeat(4, 1fr); } }
+  .ctx {
+    border: 1px solid var(--rule); background: var(--surface-2); padding: 0.7rem 0.8rem;
+    transition: background 0.35s, border-color 0.35s, opacity 0.35s;
+    opacity: 0.5;
+  }
+  .ctx.on { opacity: 1; background: var(--accent-soft); border-color: var(--accent); }
+  .ctx b {
+    display: block; font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 400; margin-bottom: 0.35rem;
+  }
+  .ctx ul { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; line-height: 1.7; }
+
+  .tally { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .tally th, .tally td { padding: 0.42rem 0.7rem; border-bottom: 1px solid var(--rule); text-align: left; }
+  .tally th {
+    font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft); font-weight: 400;
+  }
+  .tally td.n {
+    font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums;
+    transition: color 0.3s, background 0.3s;
+  }
+  .tally td.n.bump { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+  .tally tr.critique td { background: var(--drop-soft); }
+  .tally tr.critique td.n { color: var(--drop); font-weight: 600; }
+
+  /* --- jauge --- */
+  .gauge { margin: 1.2rem 0 0; }
+  .gauge-track {
+    height: 2.4rem; background: var(--surface-3); border: 1px solid var(--rule-strong);
+    position: relative; overflow: hidden;
+  }
+  .gauge-fill {
+    height: 100%; background: var(--accent); width: 0;
+    transition: width 0.5s cubic-bezier(0.22, 0.7, 0.3, 1);
+  }
+  .gauge-out {
+    font-family: var(--f-mono); font-size: 1.5rem; margin-top: 0.6rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .gauge-out small { display: block; font-family: var(--f-body); font-size: 0.85rem; color: var(--ink-soft); }
+
+  .friends { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  @media (min-width: 40rem) { .friends { grid-template-columns: 1fr 1fr; } }
+  .friend { background: var(--surface); padding: 1rem 1.15rem; }
+  .friend b { display: block; margin-bottom: 0.5rem; font-size: 0.95rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .chip {
+    font-size: 0.82rem; padding: 0.15rem 0.5rem; border: 1px solid var(--rule-strong);
+    color: var(--ink-soft); transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+
+  /* --- glossaire --- */
+  .glossaire { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.5rem 0; }
+  @media (min-width: 42rem) { .glossaire { grid-template-columns: 1fr 1fr; } }
+  .terme { background: var(--surface); padding: 1.1rem 1.25rem; }
+  .terme h4 {
+    margin: 0 0 0.1rem; font-size: 1.05rem; font-family: var(--f-display);
+    font-weight: 600; color: var(--accent);
+  }
+  .terme .quoi { font-size: 0.78rem; color: var(--ink-faint); font-family: var(--f-mono); margin: 0 0 0.55rem; }
+  .terme p { font-size: 0.92rem; margin: 0 0 0.5rem; }
+  .terme p:last-child { margin-bottom: 0; }
+  .terme .image { color: var(--ink-soft); font-style: italic; }
+
+  /* --- fonctionnalites --- */
+  .feature-grid { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.5rem 0; }
+  @media (min-width: 44rem) { .feature-grid { grid-template-columns: 1fr 1fr; } }
+  .feature { background: var(--surface); padding: 1.1rem 1.25rem; }
+  .feature h4 { margin: 0 0 0.15rem; font-size: 1rem; font-weight: 600; }
+  .feature .who {
+    font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem;
+  }
+  .feature p { font-size: 0.92rem; margin: 0 0 0.6rem; color: var(--ink-soft); }
+  .feature .voit {
+    font-size: 0.85rem; border-left: 2px solid var(--accent); padding-left: 0.7rem;
+    color: var(--ink); margin: 0;
+  }
+
+  .mock {
+    border: 1px solid var(--rule-strong); background: var(--surface-2);
+    padding: 0.9rem 1.05rem; margin: 1.25rem 0; max-width: 30rem;
+  }
+  .mock .titre { font-weight: 600; font-size: 0.98rem; }
+  .mock .ent { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 0.6rem; }
+  .mock .raisons { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .mock .raison {
+    font-size: 0.78rem; padding: 0.15rem 0.5rem; border: 1px solid var(--rule-strong); color: var(--ink-soft);
+  }
+  .mock .raison.fort { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .mock .score {
+    float: right; font-family: var(--f-mono); font-size: 1.4rem; color: var(--accent); font-weight: 500;
+  }
+
+  .caution {
+    border: 1px solid var(--warn); border-left-width: 3px; background: var(--warn-soft);
+    padding: 1.1rem 1.3rem; margin: 1.5rem 0;
+  }
+  .caution h3 { margin-top: 0; color: var(--warn); }
+  .caution p:last-child { margin-bottom: 0; }
+
+  .phrases {
+    list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+  }
+  .phrases li {
+    background: var(--surface); padding: 1.1rem 1.3rem; display: grid;
+    grid-template-columns: 2.1rem 1fr; gap: 0.9rem; align-items: start;
+  }
+  .phrases b { font-family: var(--f-mono); font-size: 1.1rem; color: var(--accent); font-weight: 500; }
+  .phrases span { font-family: var(--f-display); font-size: 1.14rem; line-height: 1.45; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule);
+    font-size: 0.88rem; color: var(--ink-soft);
+  }
+  footer p { max-width: 66ch; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Mémoire M2 · Stage Share · Pour bien commencer</p>
+    <h1>Le moteur, sans une seule <em>formule</em></h1>
+    <p class="standfirst">Il n'y a rien à savoir en mathématiques pour comprendre ce que fait ce moteur. Il compte des choses, puis il compare des listes. Le reste n'est que du vocabulaire.</p>
+
+    <p class="companion">Quand cette page sera claire, passez au document compagnon <i>« Pourquoi React ressemble à Vue.js »</i>, qui reprend exactement la même histoire avec les matrices, les formules et l'arithmétique complète.</p>
+  </header>
+
+  <!-- 1 -->
+  <section class="col">
+    <p class="marker">1 — Le problème</p>
+    <h2>Une étudiante qui ne voit aucune offre</h2>
+
+    <p>Imaginez une étudiante qui maîtrise <strong>Vue.js</strong>. Sur la plateforme, une entreprise publie une offre qui demande <strong>React</strong>.</p>
+
+    <p>Ce sont deux outils qui font <em>la même chose</em> : construire des pages web. Un recruteur qui lirait les deux profils dirait immédiatement « c'est presque pareil, elle apprendra en une semaine ». Mais l'application, elle, comparait les compétences <strong>par leur numéro dans la base de données</strong>. Vue.js porte le numéro 12, React le numéro 3. Douze n'est pas trois. Score : zéro.</p>
+
+    <p>L'étudiante ne voyait pas l'offre. L'entreprise ne voyait pas l'étudiante. <strong>Le problème n'était pas les données — elles étaient toutes là. Le problème était que rien, nulle part, ne disait que React et Vue.js se ressemblent.</strong></p>
+  </section>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-tag">À voir</span>
+      <span class="lab-title">La même étudiante, avant et après</span>
+    </div>
+    <div class="lab-body">
+      <div class="compare">
+        <div class="side no">
+          <h4>SANS LE MOTEUR</h4>
+          <p class="count">0</p>
+          <p>offre proposée. Aucune offre ne demande exactement Vue.js.</p>
+          <div class="vide">Aucune offre à vous proposer<br>pour le moment.</div>
+        </div>
+        <div class="side yes">
+          <h4>AVEC LE MOTEUR</h4>
+          <p class="count">3</p>
+          <p>offres proposées, chacune avec la raison affichée.</p>
+          <ul class="offres">
+            <li>Stagiaire Développeur Angular <span>96</span></li>
+            <li>Stagiaire Développeur React <span>91</span></li>
+            <li>Stagiaire Développeur Front <span>88</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="lab-note">Ce sont des scores réellement produits par la plateforme sur le corpus de démonstration. Aucun lien entre Vue.js et Angular n'a été déclaré par qui que ce soit : le moteur l'a déduit tout seul. La suite de cette page explique comment.</p>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <section class="col">
+    <p class="marker">2 — L'idée</p>
+    <h2>On reconnaît quelqu'un à ses fréquentations</h2>
+
+    <p class="lede">Vous ne savez pas ce qu'est un « ouistiti ». Mais si vous voyez toujours ce mot près de « branche », « singe » et « forêt », vous savez déjà beaucoup.</p>
+
+    <p>C'est toute l'idée, et elle date de 1957. Un linguiste anglais, Firth, l'a résumée ainsi : <em>« on reconnaît un mot à ses fréquentations »</em>. Le moteur applique cela aux compétences.</p>
+
+    <p>Il ne sait pas ce qu'est React. Il ne sait pas ce qu'est un site web. Il sait seulement, en regardant toutes les offres et tous les profils de la plateforme, <strong>quelles compétences se retrouvent souvent aux côtés de quelles autres</strong>.</p>
+
+    <div class="aside">
+      <p><b>Rien d'automatique là-dedans, et c'est voulu.</b> Pas de ChatGPT, pas d'intelligence artificielle entraînée, pas de connexion internet. Uniquement des additions sur les données de la plateforme. C'est ce qui permet, devant un jury, de sortir une feuille de papier et de refaire le calcul à la main.</p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="col">
+    <p class="marker">3 — Le piège</p>
+    <h2>Deux outils qui se ressemblent ne se rencontrent jamais</h2>
+
+    <p>Voici le point qui surprend tout le monde, et qu'il faut absolument avoir compris.</p>
+
+    <p>Le premier réflexe est de se dire : « si React et Vue.js se ressemblent, elles doivent souvent apparaître ensemble dans les offres ». <strong>C'est exactement l'inverse.</strong></p>
+
+    <p>Une équipe choisit React <em>ou</em> Vue.js. Jamais les deux — ce serait comme embaucher quelqu'un qui conduit une voiture <em>et</em> une autre voiture. Du coup, ces deux compétences ne figurent pratiquement jamais dans la même offre.</p>
+
+    <p><strong>Si on comptait simplement combien de fois elles apparaissent ensemble, on trouverait zéro, et on conclurait qu'elles n'ont aucun rapport.</strong></p>
+
+    <p>La solution est de changer ce qu'on compare. On ne regarde plus si les deux compétences se rencontrent. On regarde <strong>qui elles fréquentent chacune de leur côté</strong> — et là, on trouve les mêmes noms.</p>
+  </section>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-tag">Démo</span>
+      <span class="lab-title">Comptez avec moi</span>
+    </div>
+    <div class="lab-body">
+      <div class="controls">
+        <button type="button" id="btn-suivant" class="btn-primary">Ajouter un contexte</button>
+        <button type="button" id="btn-reset">Recommencer</button>
+      </div>
+
+      <div class="contextes" id="contextes"></div>
+
+      <div style="overflow-x:auto">
+        <table class="tally">
+          <thead>
+            <tr>
+              <th scope="col">On compte…</th>
+              <th scope="col" style="text-align:right">Fois vues ensemble</th>
+            </tr>
+          </thead>
+          <tbody id="tally-body"></tbody>
+        </table>
+      </div>
+
+      <p class="lab-note" id="tally-note">Cliquez sur « Ajouter un contexte ». Chaque contexte est soit une offre, soit un profil d'étudiant. À chaque ajout, on compte les compétences qui s'y trouvent ensemble. <strong>Surveillez la ligne rouge.</strong></p>
+    </div>
+  </div>
+
+  <section class="col">
+    <div class="aside">
+      <p><b>Quatre contextes ici, 103 dans la vraie plateforme.</b> Cet exemple est réduit pour tenir sur un écran. Le principe est identique, à l'échelle près : sur les 103 contextes réels, React et JavaScript se retrouvent 5 fois ensemble, React et Git 4 fois — et React et Vue.js, toujours <strong>zéro fois</strong>.</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="col">
+    <p class="marker">4 — La comparaison</p>
+    <h2>Deux listes d'amis, et un pourcentage</h2>
+
+    <p>À la fin du comptage, chaque compétence possède une <strong>liste</strong> : les compétences qu'elle côtoie, et combien de fois.</p>
+
+    <p>Comparer deux compétences revient alors à comparer deux listes d'amis. Et là, une précaution s'impose, que tout le monde comprend intuitivement :</p>
+
+    <p class="lede">Deux personnes qui ont 8 amis en commun sur 10 sont bien plus proches que deux personnes qui en ont 15 en commun sur 300.</p>
+
+    <p>Autrement dit, ce n'est pas le <em>nombre</em> d'amis communs qui compte, c'est la <strong>proportion</strong>. Sans cette précaution, la compétence la plus populaire de la plateforme — Git, présente dans 18 contextes — serait déclarée proche de tout le monde, simplement parce qu'elle est partout.</p>
+
+    <p>Le résultat de cette comparaison est un nombre entre <strong>0</strong> (aucun ami commun, rien à voir) et <strong>1</strong> (exactement les mêmes amis, dans les mêmes proportions). C'est ce nombre que les mathématiciens appellent un <em>cosinus</em> — mais vous pouvez très bien l'appeler « le pourcentage de ressemblance », c'est la même chose.</p>
+  </section>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-tag">Démo</span>
+      <span class="lab-title">Faites varier les amis communs</span>
+    </div>
+    <div class="lab-body">
+      <div class="slider-row">
+        <label for="s-communs">Amis communs</label>
+        <input type="range" id="s-communs" min="0" max="3" value="3" step="1">
+        <output id="o-communs">3</output>
+      </div>
+
+      <div class="friends">
+        <div class="friend">
+          <b>Les fréquentations de React</b>
+          <div class="chips" id="chips-a"></div>
+        </div>
+        <div class="friend">
+          <b>Les fréquentations de Vue.js</b>
+          <div class="chips" id="chips-b"></div>
+        </div>
+      </div>
+
+      <div class="gauge">
+        <div class="gauge-track"><div class="gauge-fill" id="gauge-fill"></div></div>
+        <p class="gauge-out" id="gauge-out">79 %<small>de ressemblance entre les deux entourages</small></p>
+      </div>
+
+      <p class="lab-note">Avec les trois amis communs, la ressemblance atteint 79 %. Retirez-en un : elle s'effondre. C'est exactement ce que calcule le moteur — sans que personne n'ait jamais écrit que React et Vue.js sont liées.</p>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <section class="col">
+    <p class="marker">5 — Les trois précautions</p>
+    <h2>Ce qui a mal tourné, et comment c'est réglé</h2>
+
+    <p>La première version du moteur donnait des résultats absurdes. Trois problèmes, constatés sur les vraies données, ont chacun demandé une correction. C'est cette partie-là qui fait la valeur scientifique du mémoire : une idée, un échec, une correction motivée.</p>
+
+    <h3>Problème 1 — Trop peu d'observations</h3>
+    <p><strong>Ce qui se passait :</strong> « Génie civil » et « Génie textile » étaient déclarées identiques à 98 %. Absurde.</p>
+    <p><strong>Pourquoi :</strong> ces deux compétences n'apparaissaient que deux fois chacune, et à chaque fois à côté de la même compétence. Deux listes minuscules qui se ressemblent, ça donne mécaniquement 98 % — mais ça ne prouve rien du tout. C'est une coïncidence, pas une preuve.</p>
+    <p><strong>La correction :</strong> le moteur exige désormais du volume. Une ressemblance vue une seule fois ne conserve que 17 % de sa valeur. Vue cinq fois, la moitié. Vue vingt fois, 80 %. <strong>Et la précaution s'efface d'elle-même à mesure que la plateforme grandit</strong> — c'est ce qui la rend honnête.</p>
+
+    <h3>Problème 2 — Confondre « pareil » et « va avec »</h3>
+    <p><strong>Ce qui se passait :</strong> le moteur créditait un étudiant qui maîtrisait <strong>Git</strong> pour une offre qui demandait <strong>SQL</strong>, en expliquant « Git est proche de SQL ».</p>
+    <p><strong>Pourquoi :</strong> Git et SQL apparaissent effectivement tout le temps ensemble. Mais « apparaître ensemble » recouvre deux choses très différentes :</p>
+
+    <div class="aside">
+      <p><b>Le sel et le poivre</b> sont toujours sur la même table — mais si une recette demande du sel, vous ne pouvez pas mettre du poivre. Ils vont <em>ensemble</em>, ils ne se <em>remplacent</em> pas.</p>
+      <p><b>Le beurre et la margarine</b> sont rarement dans la même recette — parce que l'un remplace l'autre. C'est ça, une substitution.</p>
+    </div>
+
+    <p><strong>La correction :</strong> le moteur regarde justement à quel point deux compétences se rencontrent. Plus elles se rencontrent souvent, plus il se méfie — parce que ça sent le sel et le poivre, pas le beurre et la margarine.</p>
+
+    <h3>Problème 3 — Des compétences dont on ne sait rien</h3>
+    <p><strong>Ce qui se passait :</strong> huit compétences n'apparaissaient dans <em>aucune</em> offre ni <em>aucun</em> profil. Aucun ami, donc aucune liste, donc aucune comparaison possible. Et parmi elles, ironie complète : <strong>Vue.js</strong>, l'exemple qui avait motivé tout le travail.</p>
+    <p><strong>La correction :</strong> un deuxième signal, complètement indépendant du comptage. Chaque compétence a reçu une <strong>description écrite</strong> d'une ligne, et le moteur compare aussi ces phrases.</p>
+
+    <div class="aside">
+      <p><b>React :</b> « Bibliothèque JavaScript de composants pour construire des interfaces web côté navigateur »<br>
+      <b>Vue.js :</b> « Framework JavaScript de composants pour construire des interfaces web côté navigateur »</p>
+      <p>Un seul mot diffère. Alors que <b>Git</b> — « versions du code source » — et <b>SQL</b> — « bases de données relationnelles » — ne partagent <b>aucun</b> mot. Le problème 2 se règle du même coup.</p>
+    </div>
+
+    <p>Une précaution s'applique à ces mots : ceux qui reviennent dans toutes les descriptions — « pour », « de », « applications » — ne comptent presque pas. Ce sont les mots <strong>rares</strong> qui distinguent une compétence d'une autre. C'est ce que les manuels appellent le TF-IDF, et ça se résume à cette seule phrase.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="col">
+    <p class="marker">6 — Le résultat</p>
+    <h2>Trois avis, une décision</h2>
+
+    <p>Le moteur consulte donc trois sources, et leur accorde une importance différente :</p>
+  </section>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-tag">Démo</span>
+      <span class="lab-title">Qui décide, et à quelle hauteur</span>
+    </div>
+    <div class="lab-body">
+      <div class="controls" role="group" aria-label="Paire à examiner">
+        <button type="button" class="btn-simple" data-i="0" aria-pressed="true">React / Vue.js</button>
+        <button type="button" class="btn-simple" data-i="1" aria-pressed="false">Laravel / Symfony</button>
+        <button type="button" class="btn-simple" data-i="2" aria-pressed="false">Git / SQL</button>
+      </div>
+
+      <div id="avis-hote"></div>
+
+      <p class="lab-note" id="avis-note"></p>
+    </div>
+  </div>
+
+  <section class="col">
+    <p>Une fois les trois avis additionnés, une dernière règle s'applique : <strong>en dessous de 40 %, le résultat est ramené à zéro.</strong> Le principe est simple à défendre — si une ressemblance n'inspire pas assez confiance pour être montrée à l'utilisateur, elle n'en inspire pas assez pour compter dans le score.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="col">
+    <p class="marker">7 — Le vocabulaire</p>
+    <h2>Quatre mots savants, quatre phrases</h2>
+    <p>Ce sont les seuls termes techniques du dossier. Chacun désigne quelque chose que vous venez déjà de comprendre.</p>
+  </section>
+
+  <div class="glossaire">
+    <div class="terme">
+      <h4>Vecteur</h4>
+      <p class="quoi">= une liste de compteurs</p>
+      <p>La liste des fréquentations d'une compétence, avec le nombre de fois pour chacune.</p>
+      <p class="image">« React : JavaScript 5 fois, Git 4 fois, Node.js 3 fois… » — voilà un vecteur.</p>
+    </div>
+    <div class="terme">
+      <h4>Matrice</h4>
+      <p class="quoi">= un grand tableau à double entrée</p>
+      <p>Toutes les listes mises côte à côte : 56 lignes, 56 colonnes, et dans chaque case le nombre de fois où deux compétences se sont croisées.</p>
+      <p class="image">Comme un tableau de scores d'un tournoi, où chaque joueur affronte chaque autre joueur.</p>
+    </div>
+    <div class="terme">
+      <h4>Cosinus</h4>
+      <p class="quoi">= le pourcentage de ressemblance</p>
+      <p>Le nombre entre 0 et 1 qui dit à quel point deux listes se ressemblent, en tenant compte de leur taille.</p>
+      <p class="image">Le mot vient de la géométrie, mais ici il ne sert qu'à comparer deux listes d'amis.</p>
+    </div>
+    <div class="terme">
+      <h4>TF-IDF</h4>
+      <p class="quoi">= les mots rares comptent plus</p>
+      <p>La façon de comparer deux phrases en ignorant les mots que tout le monde emploie.</p>
+      <p class="image">« Relationnelles » vous apprend quelque chose. « Pour » ne vous apprend rien.</p>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <section class="col">
+    <p class="marker">8 — Dans l'application</p>
+    <h2>Où vous voyez ce moteur travailler</h2>
+
+    <p>Le moteur ne décide jamais seul. Il produit un seul chiffre — la ressemblance entre deux compétences — et ce chiffre entre dans le calcul <strong>en un seul endroit</strong> : quand une offre demande une compétence que l'étudiant <em>n'a pas</em>.</p>
+
+    <p>Dans ce cas, le système cherche la compétence la plus proche parmi celles que l'étudiant possède, et accorde un crédit <strong>proportionnel</strong>. Une ressemblance de 50 % vaut la moitié des points. <strong>Une compétence approchante ne vaut donc jamais autant que la compétence exacte</strong> — c'est important à dire, on vous le demandera.</p>
+
+    <p>Ce sous-score des compétences pèse <strong>40 points sur 100</strong> dans le score final. Les 60 autres viennent de la filière, du niveau d'études, de la localisation et des préférences — sur lesquels le moteur n'a aucune prise.</p>
+
+    <h3>Ce que l'utilisateur voit à l'écran</h3>
+    <p>La phrase explicative n'est pas décorative. Sans elle, l'étudiante se demanderait pourquoi on lui propose une offre dont elle ne possède aucune compétence exigée :</p>
+
+    <div class="mock">
+      <span class="score">96</span>
+      <p class="titre">Stagiaire Développeur Angular</p>
+      <p class="ent">Agence Web Antananarivo</p>
+      <div class="raisons">
+        <span class="raison fort">Vue.js est proche de Angular</span>
+        <span class="raison">Correspond à votre filière</span>
+        <span class="raison">Dans votre ville</span>
+      </div>
+    </div>
+
+    <p>Le premier badge est produit par le moteur, et il apparaît en évidence quand la ressemblance dépasse 50 %.</p>
+  </section>
+
+  <div class="feature-grid">
+    <div class="feature">
+      <p class="who">Côté étudiant</p>
+      <h4>Les offres recommandées</h4>
+      <p>Le classement des offres, avec la raison affichée sous chacune.</p>
+      <p class="voit">C'est ici que l'étudiante Vue.js passe de zéro à trois offres.</p>
+    </div>
+    <div class="feature">
+      <p class="who">Côté étudiant</p>
+      <h4>Le conseiller de compétences</h4>
+      <p>« Quelle compétence devrais-je apprendre en premier ? » Le système recalcule toutes les offres <em>comme si</em> l'étudiant possédait chaque compétence qui lui manque, puis classe par gain réel.</p>
+      <p class="voit">Rien de nouveau n'a été inventé : c'est le même calcul, joué sur un profil imaginaire.</p>
+    </div>
+    <div class="feature">
+      <p class="who">Côté entreprise</p>
+      <h4>Les candidats suggérés</h4>
+      <p>Le même calcul, lu dans l'autre sens : quels profils correspondent à mon offre ?</p>
+      <p class="voit">Avant, la recherche listait les étudiants par ordre alphabétique.</p>
+    </div>
+    <div class="feature">
+      <p class="who">Côté entreprise</p>
+      <h4>Les candidatures reçues</h4>
+      <p>Les dossiers déjà déposés, classés par pertinence plutôt que par date d'arrivée.</p>
+      <p class="voit">Utile quand une offre reçoit trente candidatures.</p>
+    </div>
+  </div>
+
+  <section class="col">
+    <div class="aside">
+      <p><b>Un même calcul pour les deux côtés, et c'est délibéré.</b> Les quatre fonctionnalités appellent la même fonction. Deux versions parallèles finiraient par diverger, et l'étudiant comme l'entreprise verraient alors des scores différents pour un même rapprochement.</p>
+      <p>Autre garde-fou : si le moteur tombe en panne, la plateforme continue de fonctionner avec les correspondances exactes uniquement. Elle perd en finesse, jamais en disponibilité.</p>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="col">
+    <p class="marker">9 — L'honnêteté</p>
+    <h2>Ce que ce moteur ne fait pas bien</h2>
+
+    <p>Un jury pose toujours la question qui fâche. Autant la connaître.</p>
+
+    <div class="caution">
+      <h3>Le moteur confond encore « va avec » et « remplace », dans certains cas</h3>
+      <p>La correction du problème 2 fonctionne, mais elle est parfois annulée par une autre règle : deux compétences de la <strong>même famille</strong> — deux compétences techniques, par exemple — reçoivent un bonus automatique, quelle que soit leur relation réelle.</p>
+      <p>Résultat : <strong>React et Node.js</strong>, qui ne se remplacent absolument pas (l'une fait l'écran, l'autre le serveur), obtiennent tout de même 43 % et passent la barre.</p>
+      <p><strong>Ce n'est pas une erreur de programmation, c'est un réglage discutable</strong> — et il se défend : créditer un développeur Node.js à 43 % pour une offre React reste plus juste que zéro. Mais ne dites jamais « la séparation est parfaite ». Dites « elle est parfaite sur les dix paires de contrôle », et vous serez inattaquable.</p>
+    </div>
+
+    <p>La seconde question qui vient : <strong>« votre comptage, il pèse combien au juste ? »</strong> Réponse honnête : sur React et Vue.js, le comptage n'apporte que 4 % du résultat. Le reste vient des descriptions écrites et du bonus de famille.</p>
+
+    <p>Ce n'est pas gênant, à condition de le dire avant qu'on vous le fasse dire. La raison est simple : <strong>la plateforme est encore petite</strong>. Avec 103 contextes seulement, une phrase bien rédigée est plus fiable qu'un comptage. Quand la plateforme aura des milliers d'offres, le rapport s'inversera tout seul — et ce basculement est lui-même un résultat intéressant à présenter.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="col">
+    <p class="marker">10 — À emporter</p>
+    <h2>Si vous ne retenez que ceci</h2>
+
+    <ol class="phrases">
+      <li><b>01</b><span>Personne n'a écrit que React ressemble à Vue.js. Le moteur l'a déduit en comptant.</span></li>
+      <li><b>02</b><span>Deux outils qui se remplacent ne se rencontrent jamais — c'est pourquoi on compare leurs fréquentations, pas leurs rencontres.</span></li>
+      <li><b>03</b><span>Trois sources, parce qu'une seule échouait : les fréquentations, les descriptions écrites, et la famille de la compétence.</span></li>
+      <li><b>04</b><span>Tout le calcul se refait à la main sur une feuille de papier. Aucune intelligence artificielle ne permettrait cela.</span></li>
+    </ol>
+  </section>
+
+  <footer>
+    <p>Cette page est la porte d'entrée. Le document compagnon <strong>« Pourquoi React ressemble à Vue.js »</strong> reprend la même progression avec les matrices, les formules et l'arithmétique détaillée, ainsi que le tableau complet des 62 paires que le moteur retient aujourd'hui.</p>
+    <p>Les chiffres cités ont été recalculés en rejouant le moteur sur le corpus versionné du projet.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ Démo : comptez avec moi ============ */
+  var CONTEXTES = [
+    { titre: "Offre nº 1", type: "offre", comp: ["React", "JavaScript", "Git"] },
+    { titre: "Offre nº 2", type: "offre", comp: ["Vue.js", "JavaScript", "HTML/CSS"] },
+    { titre: "Étudiant A", type: "profil", comp: ["React", "HTML/CSS", "Git"] },
+    { titre: "Étudiant B", type: "profil", comp: ["Vue.js", "JavaScript", "Git"] }
+  ];
+
+  var SUIVIES = [
+    { a: "React", b: "Vue.js", critique: true },
+    { a: "React", b: "JavaScript" },
+    { a: "React", b: "Git" },
+    { a: "React", b: "HTML/CSS" },
+    { a: "Vue.js", b: "JavaScript" },
+    { a: "Vue.js", b: "Git" },
+    { a: "Vue.js", b: "HTML/CSS" }
+  ];
+
+  var etape = 0;
+  var compteurs = SUIVIES.map(function () { return 0; });
+
+  var hoteCtx = document.getElementById("contextes");
+  var hoteTally = document.getElementById("tally-body");
+  var note = document.getElementById("tally-note");
+  var btnSuivant = document.getElementById("btn-suivant");
+  var btnReset = document.getElementById("btn-reset");
+
+  CONTEXTES.forEach(function (c, i) {
+    var d = document.createElement("div");
+    d.className = "ctx";
+    d.id = "ctx-" + i;
+    d.innerHTML = "<b>" + c.titre + "</b><ul>" +
+      c.comp.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
+    hoteCtx.appendChild(d);
+  });
+
+  function dessinerTally(bumps) {
+    hoteTally.innerHTML = SUIVIES.map(function (p, i) {
+      return '<tr class="' + (p.critique ? "critique" : "") + '">' +
+        "<td>" + p.a + " &nbsp;+&nbsp; " + p.b + "</td>" +
+        '<td class="n' + (bumps && bumps.indexOf(i) > -1 ? " bump" : "") + '">' + compteurs[i] + "</td></tr>";
+    }).join("");
+  }
+
+  function avancer() {
+    if (etape >= CONTEXTES.length) return;
+    var c = CONTEXTES[etape];
+    document.getElementById("ctx-" + etape).classList.add("on");
+
+    var bumps = [];
+    SUIVIES.forEach(function (p, i) {
+      if (c.comp.indexOf(p.a) > -1 && c.comp.indexOf(p.b) > -1) {
+        compteurs[i]++;
+        bumps.push(i);
+      }
+    });
+    dessinerTally(bumps);
+    etape++;
+
+    if (etape === CONTEXTES.length) {
+      btnSuivant.disabled = true;
+      note.innerHTML = "<strong>Voilà le résultat.</strong> React et Vue.js ne se sont jamais rencontrées — la ligne rouge est restée à zéro du début à la fin. " +
+        "Pourtant, elles ont <strong>exactement les mêmes fréquentations</strong> : JavaScript, Git et HTML/CSS. " +
+        "C'est cette ressemblance d'entourage, et elle seule, qui permet de les rapprocher.";
+    } else {
+      note.innerHTML = "Contexte " + etape + " sur " + CONTEXTES.length +
+        " ajouté. Les compteurs qui viennent de bouger sont surlignés. <strong>La ligne rouge, elle, ne bouge pas.</strong>";
+    }
+  }
+
+  function reinitialiser() {
+    etape = 0;
+    compteurs = SUIVIES.map(function () { return 0; });
+    CONTEXTES.forEach(function (c, i) { document.getElementById("ctx-" + i).classList.remove("on"); });
+    btnSuivant.disabled = false;
+    dessinerTally([]);
+    note.innerHTML = "Cliquez sur « Ajouter un contexte ». Chaque contexte est soit une offre, soit un profil d'étudiant. À chaque ajout, on compte les compétences qui s'y trouvent ensemble. <strong>Surveillez la ligne rouge.</strong>";
+  }
+
+  btnSuivant.addEventListener("click", avancer);
+  btnReset.addEventListener("click", reinitialiser);
+  dessinerTally([]);
+
+  /* ============ Démo : amis communs ============ */
+  var AMIS = ["JavaScript", "Git", "HTML/CSS"];
+  var VALEURS = [0, 31, 58, 79];
+  var sCommuns = document.getElementById("s-communs");
+  var oCommuns = document.getElementById("o-communs");
+  var chipsA = document.getElementById("chips-a");
+  var chipsB = document.getElementById("chips-b");
+  var gaugeFill = document.getElementById("gauge-fill");
+  var gaugeOut = document.getElementById("gauge-out");
+
+  function majAmis() {
+    var k = Number(sCommuns.value);
+    oCommuns.textContent = k;
+
+    chipsA.innerHTML = AMIS.map(function (a, i) {
+      return '<span class="chip' + (i < k ? " on" : "") + '">' + a + "</span>";
+    }).join("") + '<span class="chip">Node.js</span><span class="chip">SQL</span>';
+
+    chipsB.innerHTML = AMIS.map(function (a, i) {
+      return '<span class="chip' + (i < k ? " on" : "") + '">' + (i < k ? a : "—") + "</span>";
+    }).join("");
+
+    var v = VALEURS[k];
+    gaugeFill.style.width = v + "%";
+    gaugeOut.innerHTML = v + " %<small>" +
+      (k === 0 ? "aucun ami commun : le moteur ne voit aucun lien"
+        : k === 3 ? "les trois amis de Vue.js sont aussi ceux de React"
+        : "seulement " + k + " ami" + (k > 1 ? "s" : "") + " en commun") +
+      "</small>";
+  }
+  sCommuns.addEventListener("input", majAmis);
+  majAmis();
+
+  /* ============ Démo : les trois avis ============ */
+  var AVIS = [
+    {
+      nom: "React / Vue.js", total: 77, retenu: true,
+      parts: [
+        { q: "Les descriptions écrites", v: 48, max: 60, dit: "presque identiques — un seul mot diffère" },
+        { q: "Le comptage des fréquentations", v: 3, max: 15, dit: "d'accord, mais Vue.js n'est vue que 2 fois" },
+        { q: "La famille de compétence", v: 25, max: 25, dit: "toutes deux techniques" }
+      ],
+      note: "Remarquez : le comptage — le cœur du sujet — n'apporte que 3 points sur 77. C'est la description écrite qui porte le résultat, parce que la plateforme est encore petite."
+    },
+    {
+      nom: "Laravel / Symfony", total: 89, retenu: true,
+      parts: [
+        { q: "Les descriptions écrites", v: 60, max: 60, dit: "identiques mot pour mot" },
+        { q: "Le comptage des fréquentations", v: 4, max: 15, dit: "d'accord, mais peu d'observations" },
+        { q: "La famille de compétence", v: 25, max: 25, dit: "toutes deux techniques" }
+      ],
+      note: "Le score le plus élevé du corpus. Les deux descriptions se réduisent aux mêmes mots après nettoyage."
+    },
+    {
+      nom: "Git / SQL", total: 2, retenu: false,
+      parts: [
+        { q: "Les descriptions écrites", v: 0, max: 60, dit: "aucun mot en commun" },
+        { q: "Le comptage des fréquentations", v: 2, max: 15, dit: "elles se croisent souvent — donc méfiance" },
+        { q: "La famille de compétence", v: 0, max: 25, dit: "familles différentes" }
+      ],
+      note: "L'échec fondateur, désormais réglé. Les trois avis sont négatifs ou méfiants : le total tombe sous la barre des 40 % et devient zéro."
+    }
+  ];
+
+  var hoteAvis = document.getElementById("avis-hote");
+  var noteAvis = document.getElementById("avis-note");
+
+  function rendreAvis(i) {
+    var a = AVIS[i];
+    var h = '<table class="tally"><thead><tr><th scope="col">Ce que dit chaque source</th>' +
+      '<th scope="col" style="text-align:right">Points</th><th scope="col" style="text-align:right">Sur</th></tr></thead><tbody>';
+    a.parts.forEach(function (p) {
+      h += "<tr><td>" + p.q + '<br><span style="font-size:0.84rem;color:var(--ink-soft)">« ' + p.dit + " »</span></td>" +
+        '<td class="n' + (p.v > 0 ? " bump" : "") + '">' + p.v + '</td><td class="n">' + p.max + "</td></tr>";
+    });
+    h += "</tbody></table>";
+    h += '<div class="gauge"><div class="gauge-track"><div class="gauge-fill" style="width:' + a.total +
+      "%;background:" + (a.retenu ? "var(--accent)" : "var(--drop)") + '"></div></div>' +
+      '<p class="gauge-out">' + (a.retenu ? a.total + " %" : "0 %") + "<small>" +
+      (a.retenu ? "au-dessus de la barre des 40 % — le rapprochement est retenu"
+        : "total de " + a.total + " %, sous la barre des 40 % — ramené à zéro") +
+      "</small></p></div>";
+    hoteAvis.innerHTML = h;
+    noteAvis.textContent = a.note;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".btn-simple"), function (b) {
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".btn-simple"), function (o) {
+        o.setAttribute("aria-pressed", String(o === b));
+      });
+      rendreAvis(Number(b.dataset.i));
+    });
+  });
+  rendreAvis(0);
+})();
+</script>
+</body>
+</html>
