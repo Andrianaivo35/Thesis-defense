@@ -64,3 +64,13 @@ public/uploads/
 
 # Outillage local (Claude Code) : ne concerne pas le projet.
 /.claude/
+
+# Documents de travail du memoire : non versionnes, a l'exception des
+# chapitres valides ci-dessous. Les sauvegardes de base, qui contiennent
+# des CV, restent exclues.
+/memoire/*
+!/memoire/Chapitre3-Realisation-et-scenario.docx
+!/memoire/Chapitre4-Resultats-et-perspectives.docx
+
+# Caches Python des scripts du memoire.
+__pycache__/

@@ -19,6 +19,8 @@ plusieurs scripts résolvent leurs chemins à partir du dossier courant.
 | `exporter-donnees.mjs` | produit `export/donnees.sql` et `export/uploads.tar.gz` | **oui**, lecture seule |
 | `seed-candidatures.mjs` | (re)crée CV, candidatures, réponses au QCM, promotions | **non** — *efface* d'abord |
 | `nettoyer-base.mjs` | retire comptes d'essai et incohérences | **non** — supprime des comptes |
+| `remettre-a-zero.mjs` | vide tout sauf le référentiel des compétences, recrée l'administrateur | **non** — efface toutes les données (exige `--confirmer` et une sauvegarde) |
+| `restaurer-sauvegarde.mjs` | restaure une sauvegarde de `memoire/sauvegardes-base/` | **non** — remplace toutes les données (exige `--confirmer`) |
 | `seed-dummy-data*.js` | peuplement d'origine : entreprises, universités, offres | **non** — pour base vide |
 
 ---
@@ -222,3 +224,24 @@ node scripts/base/seed-candidatures.mjs    # CV, candidatures, promotions
 > ([`../mesures/`](../mesures/README.md)) et mettez à jour
 > [MD/5](../../MD/5%20-%20INGESTION-CV.md) et [MD/6](../../MD/6%20-%20EVALUATION.md) si les
 > valeurs bougent.
+
+---
+
+## `remettre-a-zero.mjs` et `restaurer-sauvegarde.mjs` — le scénario du chapitre 3
+
+```bash
+node scripts/base/remettre-a-zero.mjs --confirmer          # plateforme au premier jour
+node scripts/base/restaurer-sauvegarde.mjs --confirmer     # retour au jeu de démonstration
+```
+
+La remise à zéro ne garde que le référentiel des 56 compétences, le registre des migrations et
+un compte administrateur (`admin@stageshare.mg`, `Demo1234!`) : c'est l'état d'une installation
+neuve. Les compteurs d'identifiants repartent à 1, si bien que deux exécutions du scénario
+produisent les mêmes adresses de page.
+
+**Trois garde-fous** : l'option `--confirmer`, une base locale, et la présence d'au moins une
+sauvegarde `.dump` dans `memoire/sauvegardes-base/` — dossier exclu de git, puisqu'il contient
+des CV.
+
+La restauration passe par `pg_restore` **dans le conteneur** `stage-share-db` (l'outil n'est
+pas installé sur le poste) et restaure aussi le dossier `uploads/`.
