@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, ArrowRight } from 'lucide-react'
+import { AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import {
   ButtonLoginContainer,
   BouttonContainer,
@@ -19,13 +19,15 @@ import {
   FormFooter,
   FooterHint,
   FooterLink,
-  ForgotLink
+  ForgotLink,
+  PasswordField, PasswordToggle
 } from '@/components/styleEntrepriseLogin'
 
 export default function LoginEntreprise() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -51,10 +53,10 @@ export default function LoginEntreprise() {
       localStorage.setItem('token', data.token)
       localStorage.setItem('utilisateur', JSON.stringify(data.utilisateur))
 
-      router.push('/pages/listeOffre')
+      router.push('/pages/entrepriseDashboard') 
 
     } catch (error) {
-      console.error(error)
+      console.error(error) 
       setError(error.message || 'Une erreur est survenue')
     } finally {
       setLoading(false)
@@ -101,14 +103,30 @@ export default function LoginEntreprise() {
 
               <InputLabelContainer>
                 <LabelForm>Mot de passe</LabelForm>
-                <InputForm
-                  type="password"
-                  value={motDePasse}
-                  onChange={(e) => setMotDePasse(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  disabled={loading}
-                />
+                <PasswordField>
+                  <InputForm
+                    type={afficherMotDePasse ? 'text' : 'password'}
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    disabled={loading}
+                  />
+                  {/* type="button" obligatoire : dans un <form>, un bouton
+                      sans type vaut submit et tenterait la connexion à
+                      chaque clic sur l'œil. */}
+                  <PasswordToggle
+                    type="button"
+                    onClick={() => setAfficherMotDePasse(v => !v)}
+                    disabled={loading}
+                    aria-label={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    title={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {afficherMotDePasse
+                      ? <EyeOff size={17} strokeWidth={2} />
+                      : <Eye size={17} strokeWidth={2} />}
+                  </PasswordToggle>
+                </PasswordField>
               </InputLabelContainer>
 
               <BouttonContainer>

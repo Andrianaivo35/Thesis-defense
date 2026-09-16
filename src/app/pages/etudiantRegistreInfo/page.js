@@ -8,7 +8,8 @@ import {
 import {
   User, GraduationCap, MapPin, Target, Briefcase, Heart, Wrench,
   Plus, Trash2, Info, Check, Sparkles,
-  AlertCircle, CheckCircle2, ArrowLeft, ArrowRight, Save
+  AlertCircle, CheckCircle2, ArrowLeft, ArrowRight, Save,
+  Eye, EyeOff
 } from 'lucide-react'
 import {
   PageContainer,
@@ -27,11 +28,17 @@ import {
   ItemCard, ItemHeader, ItemBadge, DeleteItemButton, AddItemButton,
   ContainerButtons,
   Button,
-  AlertMessage
+  AlertMessage,
+  PasswordField, PasswordToggle
 } from '@/components/styleEtudiantRegistreInfo'
 
 const ETAPES = ['Profil', 'Préférences', 'Parcours']
 const NIVEAUX_COMPETENCE = ['Débutant', 'Intermédiaire', 'Avancé', 'Expert']
+
+/* Longueur minimale du mot de passe.
+   À aligner sur la règle du serveur si elle diffère : ce contrôle est
+   un confort de saisie, pas une sécurité — l'API reste seule juge. */
+const MDP_LONGUEUR_MIN = 6
 
 export default function EtudiantRegistreInfo() {
   const router = useRouter()
@@ -84,6 +91,7 @@ export default function EtudiantRegistreInfo() {
   const [telephone, setTelephone] = useState('')
   const [sexe, setSexe] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
   const [matricule, setMatricule] = useState('')
 
   // === Informations académiques ===
@@ -111,7 +119,7 @@ export default function EtudiantRegistreInfo() {
       .toString()
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, ' ')
       .trim()
 
@@ -233,11 +241,61 @@ export default function EtudiantRegistreInfo() {
     setCentresInteret(nouvelles)
   }
 
+  /* ---------- Validation ----------
+     Les attributs required/minLength des champs ne suffisent pas ici :
+     le bouton « Suivant » n'est pas un submit, et au moment où le vrai
+     submit apparaît (étape 3) les champs de l'étape 1 sont démontés,
+     donc invisibles pour le navigateur. C'est ce code qui tient lieu
+     de garde-fou côté interface. */
+
+  const erreurMotDePasse = (valeur) => {
+    if (!valeur) return 'Veuillez renseigner un mot de passe.'
+    if (valeur.length < MDP_LONGUEUR_MIN) {
+      return `Le mot de passe doit contenir au moins ${MDP_LONGUEUR_MIN} caractères.`
+    }
+    return null
+  }
+
+  const validerEtape1 = () => {
+    if (!nom.trim()) return 'Veuillez renseigner votre nom.'
+    if (!prenom.trim()) return 'Veuillez renseigner votre prénom.'
+    if (!email.trim()) return 'Veuillez renseigner votre email.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return "L'adresse email n'est pas valide."
+    }
+    if (!adresse.trim()) return 'Veuillez renseigner votre adresse.'
+    if (!telephone.trim()) return 'Veuillez renseigner votre téléphone.'
+    if (!sexe) return 'Veuillez sélectionner votre sexe.'
+
+    const erreurMdp = erreurMotDePasse(motDePasse)
+    if (erreurMdp) return erreurMdp
+
+    if (!niveauAcademique) return 'Veuillez sélectionner votre niveau académique.'
+    if (!idUniversite && !universite.trim()) {
+      return "Veuillez sélectionner votre université, ou cocher « Mon université n'est pas dans la liste » pour saisir son nom."
+    }
+    if (!filiere) return 'Veuillez sélectionner votre filière.'
+    if (!specialisation) return 'Veuillez sélectionner votre spécialisation.'
+    if (!matricule.trim()) return 'Veuillez renseigner votre matricule.'
+
+    return null
+  }
+
+  // L'étape 2 ne comporte aucun champ obligatoire
+  const validerEtape = (numero) => (numero === 1 ? validerEtape1() : null)
+
   const handleNext = () => {
+    const probleme = validerEtape(currentStep)
+    if (probleme) {
+      setError(probleme)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     setError('')
     setCurrentStep(prev => prev + 1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
   const handlePrevious = () => {
     setError('')
     setCurrentStep(prev => prev - 1)
@@ -251,11 +309,13 @@ export default function EtudiantRegistreInfo() {
     setSuccess('')
 
     try {
-      // L'université doit être soit choisie dans la liste, soit saisie
-      // explicitement via la case « pas dans la liste ».
-      if (!idUniversite && !universite.trim()) {
-        setError("Veuillez sélectionner votre université, ou cocher « Mon université n'est pas dans la liste » pour saisir son nom.")
+      /* On revalide tout : l'étudiant a pu revenir en arrière et vider
+         un champ après l'avoir validé une première fois. */
+      const probleme = validerEtape1()
+      if (probleme) {
+        setError(probleme)
         setLoading(false)
+        setCurrentStep(1)   // on le ramène là où est le problème
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
@@ -390,11 +450,49 @@ export default function EtudiantRegistreInfo() {
 
                   <ContainerLabelInput>
                     <Label>Mot de passe <span>*</span></Label>
-                    <Input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} placeholder="••••••••" required minLength={6} />
-                    <HelperText>
-                      <Info size={12} strokeWidth={2} />
-                      Au moins 6 caractères.
-                    </HelperText>
+
+                    <PasswordField>
+                      <Input
+                        type={afficherMotDePasse ? 'text' : 'password'}
+                        value={motDePasse}
+                        onChange={(e) => setMotDePasse(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        minLength={MDP_LONGUEUR_MIN}
+                      />
+                      {/* type="button" obligatoire : dans un <form>, un bouton
+                          sans type vaut submit et enverrait le formulaire à
+                          chaque clic sur l'œil. */}
+                      <PasswordToggle
+                        type="button"
+                        onClick={() => setAfficherMotDePasse(v => !v)}
+                        aria-label={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                        title={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      >
+                        {afficherMotDePasse
+                          ? <EyeOff size={17} strokeWidth={2} />
+                          : <Eye size={17} strokeWidth={2} />}
+                      </PasswordToggle>
+                    </PasswordField>
+
+                    {/* L'avis apparaît dès la saisie, pas au submit deux
+                        écrans plus loin. */}
+                    {motDePasse.length === 0 ? (
+                      <HelperText>
+                        <Info size={12} strokeWidth={2} />
+                        Au moins {MDP_LONGUEUR_MIN} caractères.
+                      </HelperText>
+                    ) : erreurMotDePasse(motDePasse) ? (
+                      <HelperText style={{ color: '#b1453a' }}>
+                        <AlertCircle size={12} strokeWidth={2} />
+                        {erreurMotDePasse(motDePasse)}
+                      </HelperText>
+                    ) : (
+                      <HelperText style={{ color: '#4d5e2c' }}>
+                        <CheckCircle2 size={12} strokeWidth={2} />
+                        Mot de passe valide.
+                      </HelperText>
+                    )}
                   </ContainerLabelInput>
                 </ColumnForm>
 

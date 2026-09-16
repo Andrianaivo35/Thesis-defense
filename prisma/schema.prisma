@@ -39,7 +39,7 @@ model CV {
   nomFichierOriginal String?              @db.VarChar(255)
   tailleOctets       Int?
   estPrincipal       Boolean              @default(false)
-  dateAjout          DateTime             @default(now()) @db.Timestamp(6)
+  dateAjout          DateTime             @default(now()) @db.Timestamp(6) 
   statutAnalyse      String               @default("en_attente") @db.VarChar(20)
   texteExtrait       String?
   nombrePages        Int?

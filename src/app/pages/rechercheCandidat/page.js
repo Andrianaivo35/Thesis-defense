@@ -351,7 +351,7 @@ export default function RechercheCandidat() {
                     </CohorteEtudiantsBadge>
                     <CohorteVoirButton onClick={() => ouvrirDetailCohorte(c)}>
                       <Eye size={13} strokeWidth={2} />
-                      Voir les CV
+                      Voir
                     </CohorteVoirButton>
                   </CohorteFooter>
                 </CohorteCard>

@@ -11,7 +11,9 @@ import {
   HeaderSection,
   HeaderTop,
   WelcomeText,
-  EtudiantWelcomeTitle,
+  HeroSection,
+  HeroTitle,
+  HeroDescription,
   PublishButton,
   SearchBarWrapper,
   SearchIcon,
@@ -121,19 +123,23 @@ export default function ListeOffre() {
       <AppNavbar />
       <PageContainer>
         <HeaderSection>
-          {estEtudiant && (
-            <EtudiantWelcomeTitle>Trouvez le stage qui vous correspond</EtudiantWelcomeTitle>
+          {/* Le hero s'affiche pour l'étudiant et le visiteur non connecté.
+              L'entreprise garde son en-tête utilitaire : elle vient publier
+              et gérer ses offres, pas découvrir la plateforme. */}
+          {!estEntreprise && (
+            <HeroSection>
+              <HeroTitle>Trouvez le stage qui vous correspond</HeroTitle>
+              <HeroDescription>
+                Parcourez les offres de stage publiées par les entreprises
+                partenaires et postulez en quelques clics. Filtrez par ville,
+                par domaine ou par type de stage pour repérer la mission qui
+                correspond à votre parcours et faites le premier pas vers
+                votre première expérience professionnelle.
+              </HeroDescription>
+            </HeroSection>
           )}
 
-          {estEntreprise && (
-            <HeaderTop>
-              <WelcomeText>{`Bonjour ${user?.nomEntreprise || ''}`}</WelcomeText>
-              <PublishButton onClick={handlePublier}>
-                <Plus size={18} strokeWidth={2.5} />
-                Publier une nouvelle offre
-              </PublishButton>
-            </HeaderTop>
-          )}
+          
 
           <SearchBarWrapper>
             <SearchIcon>
@@ -176,7 +182,7 @@ export default function ListeOffre() {
           </EmptyState>
         ) : (
           <OffersList>
-            {offresFiltrees.map((offre) => (
+            {offresFiltrees.map((offre) => ( 
               <OfferCard key={offre.idOffre}>
                 <CompanySection
                   onClick={() => handleVoirProfil(offre.idEntreprise)}

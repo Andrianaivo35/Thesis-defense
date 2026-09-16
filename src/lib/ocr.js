@@ -11,7 +11,7 @@ import path from 'path';
        glisse dans le conteneur existant. Sa précision suffit sur du CV
        dactylographié. La démonstration ne dépend d'aucun réseau ni
        d'aucun quota.
-
+ 
      - Les OCR infonuagiques (Google Vision, Azure Document Intelligence,
        AWS Textract) sont nettement meilleurs sur les scans
        photographiés, et surtout sensibles à la MISE EN PAGE : ils

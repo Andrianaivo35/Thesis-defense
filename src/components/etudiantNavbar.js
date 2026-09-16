@@ -102,14 +102,6 @@ export default function EtudiantNavbar() {
           </StudentMenuLink>
 
           <StudentMenuLink
-            $active={isActive('/pages/etudiantConseiller')}
-            onClick={() => navigate('/pages/etudiantConseiller')}
-          >
-            <Lightbulb size={18} strokeWidth={2} />
-            Que puis-je apprendre ?
-          </StudentMenuLink>
-
-          <StudentMenuLink
             $active={isActive('/pages/etudiantCV')}
             onClick={() => navigate('/pages/etudiantCV')}
           >

@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import OffreModal from '@/components/offreModal'
 import AppNavbar from '@/components/appNavbar'
-import { getUtilisateur } from '@/lib/auth'
+import { getUtilisateur, getToken } from '@/lib/auth'
 import {
   BadgeCheck, Pencil, Info, Calendar, Phone, MapPin, Smartphone,
   Globe, Share2, MessageCircle, Briefcase,
-  ArrowRight, ArrowLeft, AlertCircle
+  ArrowRight, ArrowLeft, AlertCircle,
+  Trash2, AlertTriangle, X
 } from 'lucide-react'
 import {
   PageContainer, BackButton,
@@ -20,7 +21,11 @@ import {
   MemberSince, MessageButton,
   OffresSection, OffresList, OffreItem, OffreItemTitle,
   OffreDetails, OffreRow, OffreRowLabel, OffreRowValue, OffreItemButton,
-  EmptyOffres, LoadingState, ErrorCard, ErrorIcon
+  EmptyOffres, LoadingState, ErrorCard, ErrorIcon,
+  DangerZone, DangerZoneText, DangerButton,
+  ModalOverlay, ModalBox, ModalClose, ModalHeader, ModalIcon, ModalTitle,
+  ModalWarning, ModalField, ModalError, ModalActions,
+  ModalCancelButton, ModalDeleteButton
 } from '@/components/styleEntrepriseProfil'
 
 export default function EntrepriseProfilPage() {
@@ -32,6 +37,15 @@ export default function EntrepriseProfilPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedOffre, setSelectedOffre] = useState(null)
+
+  // === Suppression de compte ===
+  const [modalOuverte, setModalOuverte] = useState(false)
+  const [motDePasse, setMotDePasse] = useState('')
+  const [confirmationTexte, setConfirmationTexte] = useState('')
+  const [erreurSuppression, setErreurSuppression] = useState('')
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false)
+  // passe à true apres un refus 409 : le clic suivant vaut accord explicite
+  const [forcerSuppression, setForcerSuppression] = useState(false)
 
   // lu apres le montage : localStorage n'existe pas cote serveur
   const [utilisateurConnecte, setUtilisateurConnecte] = useState(null)
@@ -103,6 +117,59 @@ export default function EntrepriseProfilPage() {
       return
     }
     router.push(`/pages/messages?destinataire=${data.entreprise.idUtilisateur}`)
+  }
+
+  /* Tout remettre a zero : reouvrir la modale ne doit pas retrouver un
+     mot de passe saisi ni un « forcer » accorde precedemment. */
+  const fermerModal = () => {
+    if (suppressionEnCours) return
+    setModalOuverte(false)
+    setMotDePasse('')
+    setConfirmationTexte('')
+    setErreurSuppression('')
+    setForcerSuppression(false)
+  }
+
+  const suppressionPrete =
+    motDePasse.length > 0 && confirmationTexte === 'SUPPRIMER'
+
+  const handleSupprimerCompte = async () => {
+    if (!suppressionPrete || suppressionEnCours) return
+    setErreurSuppression('')
+    setSuppressionEnCours(true)
+
+    try {
+      const res = await fetch(`/api/entrepriseProfil/${idEntreprise}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({
+          motDePasse,
+          confirmation: 'SUPPRIMER',
+          forcer: forcerSuppression
+        })
+      })
+      const resultat = await res.json()
+
+      if (!res.ok) {
+        setErreurSuppression(resultat.error || `Erreur ${res.status}`)
+        if (resultat.code === 'ENGAGEMENTS_EN_COURS') setForcerSuppression(true)
+        setSuppressionEnCours(false)
+        return
+      }
+
+      /* Le compte n'existe plus : le jeton en memoire ne vaut plus rien,
+         on nettoie avant de sortir. replace() et non push() — revenir en
+         arriere sur un profil supprime n'aurait aucun sens. */
+      localStorage.clear()
+      router.replace('/')
+    } catch (err) {
+      console.error(err)
+      setErreurSuppression('Erreur réseau, réessayez.')
+      setSuppressionEnCours(false)
+    }
   }
 
   if (isLoading) {
@@ -326,6 +393,93 @@ export default function EntrepriseProfilPage() {
             </OffresList>
           )}
         </OffresSection>
+
+        {/* === Zone de danger : uniquement sur son propre profil === */}
+        {estMonProfil && (
+          <DangerZone>
+            <DangerZoneText>
+              <h4>Supprimer mon compte</h4>
+              <p>
+                Efface définitivement votre profil, vos offres, les candidatures
+                reçues et vos messages. Cette action ne peut pas être annulée.
+              </p>
+            </DangerZoneText>
+            <DangerButton onClick={() => setModalOuverte(true)}>
+              <Trash2 size={14} strokeWidth={2} />
+              Supprimer mon compte
+            </DangerButton>
+          </DangerZone>
+        )}
+
+        {/* === Modale de confirmation === */}
+        {modalOuverte && (
+          <ModalOverlay onClick={fermerModal}>
+            <ModalBox onClick={(e) => e.stopPropagation()}>
+              <ModalClose onClick={fermerModal} aria-label="Fermer">
+                <X size={18} strokeWidth={2} />
+              </ModalClose>
+
+              <ModalHeader>
+                <ModalIcon>
+                  <AlertTriangle size={24} strokeWidth={2} />
+                </ModalIcon>
+                <ModalTitle>Supprimer mon compte</ModalTitle>
+              </ModalHeader>
+
+              <ModalWarning>
+                Cette action est <strong>irréversible</strong>. Votre profil, vos
+                offres, les candidatures reçues et vos messages seront
+                définitivement effacés. Les étudiants ayant postulé chez vous ne
+                retrouveront plus leur candidature.
+              </ModalWarning>
+
+              <ModalField>
+                <label htmlFor="mdpSuppression">Mot de passe</label>
+                <input
+                  id="mdpSuppression"
+                  type="password"
+                  autoComplete="current-password"
+                  value={motDePasse}
+                  onChange={(e) => setMotDePasse(e.target.value)}
+                  placeholder="Votre mot de passe"
+                  disabled={suppressionEnCours}
+                />
+              </ModalField>
+
+              <ModalField>
+                <label htmlFor="confirmSuppression">
+                  Tapez <code>SUPPRIMER</code> pour confirmer
+                </label>
+                <input
+                  id="confirmSuppression"
+                  type="text"
+                  value={confirmationTexte}
+                  onChange={(e) => setConfirmationTexte(e.target.value)}
+                  placeholder="SUPPRIMER"
+                  disabled={suppressionEnCours}
+                />
+              </ModalField>
+
+              {erreurSuppression && <ModalError>{erreurSuppression}</ModalError>}
+
+              <ModalActions>
+                <ModalCancelButton onClick={fermerModal} disabled={suppressionEnCours}>
+                  Annuler
+                </ModalCancelButton>
+                <ModalDeleteButton
+                  onClick={handleSupprimerCompte}
+                  disabled={!suppressionPrete || suppressionEnCours}
+                >
+                  {suppressionEnCours
+                    ? 'Suppression...'
+                    : forcerSuppression
+                      ? 'Supprimer quand même'
+                      : 'Supprimer définitivement'}
+                </ModalDeleteButton>
+              </ModalActions>
+            </ModalBox>
+          </ModalOverlay>
+        )}
 
         {selectedOffre && (
           <OffreModal

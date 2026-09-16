@@ -14,7 +14,7 @@ export const PageWrapper = styled.div`
 
 /* ===== NAVBAR ===== */
 
-export const Navbar = styled.nav`
+export const Navbar = styled.nav` 
   display: flex;
   justify-content: space-between;
   align-items: center;

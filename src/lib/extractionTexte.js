@@ -13,7 +13,7 @@ import { obtenirMoteurOcr } from './ocr.js';
 
      - le PDF NUMÉRISÉ n'est qu'une image de page — une photocopie, ou de
        plus en plus souvent une photo prise au téléphone. Aucune couche
-       texte. Un extracteur classique y renvoie du vide, sans erreur : le
+       texte. Un extracteur classique y renvoie du vide, sans erreur : le 
        CV est traité comme s'il ne contenait rien.
 
    L'étudiant ne doit jamais avoir à déclarer laquelle des deux natures

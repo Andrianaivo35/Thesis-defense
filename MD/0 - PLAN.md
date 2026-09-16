@@ -11,7 +11,7 @@ Statut : **PLANIFICATION UNIQUEMENT — rien dans ce document n'est encore impl�
 algorithmes déterministes : comptage, similarité, théorie des graphes, recherche
 d'information classique.
 
-Ce n'est pas un compromis, c'est la position la plus solide pour une soutenance :
+Ce n'est pas un compromis, c'est la position la plus solide pour une soutenance : 
 
 | Avantage | Pourquoi ça compte en soutenance |
 |---|---|
@@ -126,7 +126,7 @@ un jury, et ici il est mérité.
 ---
 
 ## 4. ③ Le multiplicateur : conseiller contrefactuel
-
+ 
 > *Le meilleur rapport effet/effort de tout le projet. Aucun nouvel algorithme.*
 
 Une fois qu'on dispose d'un scoreur déterministe, on peut l'exécuter **hypothétiquement** :

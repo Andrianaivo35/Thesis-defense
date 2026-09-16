@@ -4,7 +4,7 @@ import { fetchAuth, getToken } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   FileText, Upload, Star, Trash2, Eye, Info, AlertCircle, CheckCircle2,
-  Sparkles, ScanLine, RefreshCw
+  Sparkles, ScanLine, RefreshCw, X
 } from 'lucide-react'
 import RevueCompetencesCV from '@/components/revueCompetencesCV'
 import {
@@ -12,7 +12,10 @@ import {
   CandidatureList, CandidatureCard, CardHeader,
   OffreTitre, EntrepriseNom, ScoreBadge,
   CardMeta, MetaItem, CardFooter, ActionButton,
-  EmptyState, LoadingState
+  EmptyState, LoadingState,
+  FormRow, FormField, FieldLabel, TextInput,
+  HiddenFileInput, FileDropZone, FileDropIcon, FileDropText,
+  SelectedFileCard, SelectedFileIcon, SelectedFileInfo, SelectedFileActions
 } from '@/components/styleEtudiantCandidature'
 
 const TAILLE_MAX_MO = 5
@@ -40,6 +43,7 @@ export default function EtudiantCV() {
   // Formulaire d'ajout
   const [libelle, setLibelle] = useState('')
   const [fichier, setFichier] = useState(null)
+  const [survol, setSurvol] = useState(false)
 
   // Revue des compétences détectées : { cv, detections } du CV ouvert
   const [revue, setRevue] = useState(null)
@@ -60,10 +64,42 @@ export default function EtudiantCV() {
 
   useEffect(() => { charger() }, [])
 
+  /* Validation au moment du choix et non plus seulement à l'envoi :
+     inutile de laisser l'étudiant remplir le libellé puis cliquer pour
+     apprendre que son fichier fait 12 Mo. */
+  const choisirFichier = (f) => {
+    if (!f) return
+    if (f.type !== 'application/pdf') {
+      setErreur('Le CV doit être au format PDF.')
+      return
+    }
+    if (f.size > TAILLE_MAX_MO * 1024 * 1024) {
+      setErreur(`Le CV est trop volumineux (maximum ${TAILLE_MAX_MO} Mo).`)
+      return
+    }
+    setErreur('')
+    setFichier(f)
+  }
+
+  const retirerFichier = () => {
+    setFichier(null)
+    /* L'input reste monté : on vide sa valeur pour que rechoisir le
+       même fichier déclenche bien un nouvel onChange. */
+    const champ = document.getElementById('champ-cv')
+    if (champ) champ.value = ''
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setSurvol(false)
+    choisirFichier(e.dataTransfer.files?.[0])
+  }
+
   const ajouter = async (e) => {
     e.preventDefault()
     setErreur(''); setMessage('')
 
+    // Filet de sécurité : choisirFichier a déjà écarté ces cas
     if (!fichier) { setErreur('Veuillez choisir un fichier PDF.'); return }
     if (fichier.type !== 'application/pdf') {
       setErreur('Le CV doit être au format PDF.'); return
@@ -83,8 +119,8 @@ export default function EtudiantCV() {
       if (!res.ok) throw new Error(data.error || 'Envoi impossible')
 
       setMessage(data.message)
-      setLibelle(''); setFichier(null)
-      document.getElementById('champ-cv').value = ''
+      setLibelle('')
+      retirerFichier()
       await charger()
     } catch (err) {
       setErreur(err.message)
@@ -216,33 +252,82 @@ export default function EtudiantCV() {
         <form onSubmit={ajouter} style={{ marginBottom: 28 }}>
           <CandidatureCard>
             <OffreTitre>Ajouter un CV</OffreTitre>
-            <CardMeta style={{ marginTop: 12, gap: 12, flexDirection: 'column', alignItems: 'stretch' }}>
-              <input
-                type="text"
-                value={libelle}
-                onChange={(e) => setLibelle(e.target.value)}
-                placeholder="Nom de ce CV (ex. « CV Développement web »)"
-                maxLength={150}
-                style={{
-                  padding: '11px 14px', border: '1.5px solid #e2e8f0',
-                  borderRadius: 9, fontSize: 14, outline: 'none'
-                }}
-              />
-              <input
-                id="champ-cv"
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => setFichier(e.target.files?.[0] || null)}
-                style={{ fontSize: 14 }}
-              />
+
+            <FormRow>
+              <FormField>
+                <FieldLabel>Nom de ce CV</FieldLabel>
+                <TextInput
+                  type="text"
+                  value={libelle}
+                  onChange={(e) => setLibelle(e.target.value)}
+                  placeholder="ex. « CV Développement web »"
+                  maxLength={150}
+                />
+              </FormField>
+
+              <FormField>
+                <FieldLabel>Document</FieldLabel>
+
+                {/* Input natif masqué mais toujours monté : son rendu
+                    (« Parcourir… / No file chosen ») n'est pas stylable
+                    et affiche un texte anglais. Il reste accessible au
+                    clavier, et « Changer » s'appuie sur son htmlFor. */}
+                <HiddenFileInput
+                  id="champ-cv"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => choisirFichier(e.target.files?.[0])}
+                />
+
+                {fichier ? (
+                  <SelectedFileCard>
+                    <SelectedFileIcon>
+                      <FileText size={20} strokeWidth={2} />
+                    </SelectedFileIcon>
+                    <SelectedFileInfo>
+                      <strong>{fichier.name}</strong>
+                      <span>PDF · {formaterTaille(fichier.size)}</span>
+                    </SelectedFileInfo>
+                    <SelectedFileActions>
+                      <ActionButton as="label" htmlFor="champ-cv">
+                        <RefreshCw size={13} strokeWidth={2} />
+                        Changer
+                      </ActionButton>
+                      <ActionButton type="button" onClick={retirerFichier}>
+                        <X size={13} strokeWidth={2} />
+                        Retirer
+                      </ActionButton>
+                    </SelectedFileActions>
+                  </SelectedFileCard>
+                ) : (
+                  <FileDropZone
+                    htmlFor="champ-cv"
+                    $survol={survol}
+                    onDragOver={(e) => { e.preventDefault(); setSurvol(true) }}
+                    onDragLeave={() => setSurvol(false)}
+                    onDrop={handleDrop}
+                  >
+                    <FileDropIcon>
+                      <Upload size={21} strokeWidth={2} />
+                    </FileDropIcon>
+                    <FileDropText>
+                      <strong>Choisir un fichier ou le déposer ici</strong>
+                      <span>PDF uniquement, {TAILLE_MAX_MO} Mo maximum</span>
+                    </FileDropText>
+                  </FileDropZone>
+                )}
+              </FormField>
+
               <MetaItem>
                 <Info size={13} strokeWidth={2} />
-                Format PDF uniquement, {TAILLE_MAX_MO} Mo maximum. 5 CV au maximum.
+                5 CV au maximum. Le libellé est facultatif : à défaut, le nom
+                du fichier sera utilisé.
               </MetaItem>
-            </CardMeta>
-            <CardFooter>
+            </FormRow>
+
+            <CardFooter style={{ marginTop: 18 }}>
               <span />
-              <ActionButton type="submit" disabled={enCours}>
+              <ActionButton type="submit" disabled={enCours || !fichier}>
                 <Upload size={13} strokeWidth={2} />
                 {enCours ? 'Envoi en cours...' : 'Ajouter ce CV'}
               </ActionButton>

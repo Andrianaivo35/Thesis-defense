@@ -550,7 +550,7 @@ export default function Accueil() {
             </AuthChoiceRow>
           </ModalCard>
         </ModalOverlay>
-      )}
+      )} 
     </PageWrapper>
   )
 }

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import {
   PageContainer,
-  HeaderSection, PageTitle, PageSubtitle,
+  HeroSection, HeroTitle, HeroDescription,
   TabsRow, TabButton,
   SearchBarWrapper, SearchBarIcon, SearchBar,
   Grid, Card, CardLogo, CardName, CardSubtext,
@@ -93,16 +93,16 @@ export default function UniversiteRecherche() {
     <>
       <AppNavbar />
       <PageContainer>
-        <HeaderSection>
-          <PageTitle>
-            <Search size={26} strokeWidth={2} />
-            Trouver une entreprise ou un étudiant
-          </PageTitle>
-          <PageSubtitle>
-            Explorez les entreprises partenaires et découvrez tous les étudiants
-            inscrits sur la plateforme.
-          </PageSubtitle>
-        </HeaderSection>
+        <HeroSection>
+          <HeroTitle>Trouver une entreprise ou un étudiant</HeroTitle>
+          <HeroDescription>
+            Explorez les entreprises partenaires de la plateforme et suivez le
+            parcours des étudiants inscrits. Repérez les recruteurs de votre
+            secteur, découvrez les profils de vos futurs diplômés et identifiez
+            les passerelles à créer entre votre établissement et le monde
+            professionnel.
+          </HeroDescription>
+        </HeroSection>
 
         {/* === ONGLETS === */}
         <TabsRow>
@@ -126,7 +126,7 @@ export default function UniversiteRecherche() {
         <SearchBarWrapper>
           <SearchBarIcon>
             <Search size={18} strokeWidth={2} />
-          </SearchBarIcon>
+          </SearchBarIcon> 
           <SearchBar
             type="text"
             placeholder={placeholders[activeTab]}

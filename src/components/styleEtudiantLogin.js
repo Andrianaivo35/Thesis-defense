@@ -19,7 +19,7 @@ export const PageContainer = styled.div`
   align-items: center;
   justify-content: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 768px) { 
     padding: 12px;
   }
 `
@@ -302,5 +302,51 @@ export const ForgotLink = styled.a`
 
   &:hover {
     color: #A98B76;
+  }
+`
+/* ===== CHAMP MOT DE PASSE AVEC ŒIL =====
+   L'icône se pose par-dessus l'input, donc on réserve la place à
+   droite du texte : sans ce padding, un long mot de passe passerait
+   sous le bouton. Le sélecteur descendant évite de dupliquer le
+   composant InputForm juste pour ça. */
+
+export const PasswordField = styled.div`
+  position: relative;
+  width: 100%;
+
+  input {
+    padding-right: 46px;
+  }
+`
+
+export const PasswordToggle = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: #A98B76;
+    background: #f5f3eb;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #A98B76;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `

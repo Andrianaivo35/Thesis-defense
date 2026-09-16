@@ -320,3 +320,172 @@ export const LoadingState = styled.div`
   font-size: 16px;
   color: #64748b;
 `
+
+/* ===== Formulaire d'import de CV ===============================
+   L'input fichier natif est masqué : son rendu (« Parcourir… /
+   No file chosen ») n'est pas stylable et affiche un texte anglais
+   au milieu d'une interface française. Il reste dans le DOM, donc
+   accessible au clavier et lisible par un lecteur d'écran — c'est
+   le <label htmlFor> qui ouvre le sélecteur.
+*/
+
+export const FormRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+`
+
+export const FormField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+export const FieldLabel = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a8175;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`
+
+export const TextInput = styled.input`
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 14px;
+  color: #1e293b;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &::placeholder { color: #94a3b8; }
+
+  &:focus {
+    border-color: #A98B76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.14);
+  }
+`
+
+/* Masquage accessible : ni display:none ni visibility:hidden, qui
+   retireraient le champ de l'ordre de tabulation. */
+export const HiddenFileInput = styled.input`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+`
+
+export const FileDropZone = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 22px 20px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1.5px dashed ${p => (p.$survol ? '#A98B76' : '#cbd5e1')};
+  background: ${p => (p.$survol ? '#f5f3eb' : '#fcfcfa')};
+
+  &:hover {
+    border-color: #A98B76;
+    background: #f5f3eb;
+  }
+
+  &:focus-within {
+    border-color: #A98B76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.14);
+  }
+`
+
+export const FileDropIcon = styled.div`
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  background: #f5f3eb;
+  color: #A98B76;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+
+  ${FileDropZone}:hover & { background: white; }
+`
+
+export const FileDropText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  span {
+    font-size: 12.5px;
+    color: #94a3b8;
+  }
+`
+
+export const SelectedFileCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #f5f3eb;
+  border: 1.5px solid #d4b89d;
+  border-radius: 11px;
+  flex-wrap: wrap;
+`
+
+export const SelectedFileIcon = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: white;
+  color: #A98B76;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`
+
+export const SelectedFileInfo = styled.div`
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b5744;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    font-size: 12.5px;
+    color: #8a8175;
+  }
+`
+
+export const SelectedFileActions = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+`

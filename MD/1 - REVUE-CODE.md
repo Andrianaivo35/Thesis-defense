@@ -12,7 +12,7 @@ Docker en cours d'exécution. Les constats marqués ✅ **PROUVÉ** ont été re
 
 ## Ce qui est déjà bien fait
 
-Il faut le dire, parce que c'est vrai et défendable en soutenance :
+Il faut le dire, parce que c'est vrai et défendable en soutenance : 
 
 - **Aucune injection SQL.** Les 41 routes utilisent exclusivement des requêtes
   paramétrées (`$1, $2, …`). Aucune concaténation de chaîne dans une requête.

@@ -210,12 +210,7 @@ export default function AdminDashboard() {
           Tableau de bord administrateur
         </HeaderTitle>
         <HeaderRight>
-          <AdminName>{admin?.prenomAdmin} {admin?.nomAdmin}</AdminName>
-          {/* La création d'un administrateur n'était atteignable par
-              aucun lien : la page existait sans que rien n'y mène. */}
-          <HeaderAction onClick={() => router.push('/pages/adminRegistreInfo')}>
-            + Administrateur
-          </HeaderAction>
+          <AdminName>{admin?.prenomAdmin} {admin?.nomAdmin}</AdminName>          
           <LogoutButton onClick={handleLogout}>Déconnexion</LogoutButton>
         </HeaderRight>
       </AdminHeader>

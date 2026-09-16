@@ -31,10 +31,10 @@ export const logout = () => {
   const type = utilisateur?.typeUtilisateur
   
   let loginPath = '/'  // par défaut : page d'accueil
-  if (type === 'Etudiant') loginPath = '/pages/etudiantLogin'
-  else if (type === 'Entreprise') loginPath = '/pages/entrepriseLogin'
-  else if (type === 'Universite') loginPath = '/pages/universiteLogin'
-  else if (type === 'Admin') loginPath = '/pages/adminLogin'
+  if (type === 'Etudiant') loginPath = '/'
+  else if (type === 'Entreprise') loginPath = '/'
+  else if (type === 'Universite') loginPath = '/'
+  else if (type === 'Admin') loginPath = '/'
   
   // 2. Vide le localStorage
   localStorage.removeItem('token')

@@ -1,12 +1,13 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchAuth, getUtilisateur } from '@/lib/auth'
+import { fetchAuth, getUtilisateur, getToken } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
 import {
   BadgeCheck, Pencil, MessageCircle, Info, Calendar, Phone,
   MapPin, Building, Globe, Mail, GraduationCap, BookMarked,
-  Target, ArrowLeft, AlertCircle
+  Target, ArrowLeft, AlertCircle,
+  Trash2, AlertTriangle, X
 } from 'lucide-react'
 import {
   PageContainer, BackButton,
@@ -19,7 +20,11 @@ import {
   MemberSince,
   EtudiantsSection, EtudiantsGrid, EtudiantCard, EtudiantAvatar, EtudiantBody,
   EtudiantName, EtudiantInfo, EtudiantInfoItem,
-  EmptyEtudiants, LoadingState, ErrorCard, ErrorIcon
+  EmptyEtudiants, LoadingState, ErrorCard, ErrorIcon,
+  DangerZone, DangerZoneText, DangerButton,
+  ModalOverlay, ModalBox, ModalClose, ModalHeader, ModalIcon, ModalTitle,
+  ModalWarning, ModalField, ModalError, ModalActions,
+  ModalCancelButton, ModalDeleteButton
 } from '@/components/styleUniversiteProfil'
 
 export default function UniversiteProfilPage() {
@@ -30,6 +35,15 @@ export default function UniversiteProfilPage() {
   const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // === Suppression de compte ===
+  const [modalOuverte, setModalOuverte] = useState(false)
+  const [motDePasse, setMotDePasse] = useState('')
+  const [confirmationTexte, setConfirmationTexte] = useState('')
+  const [erreurSuppression, setErreurSuppression] = useState('')
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false)
+  // passe à true apres un refus 409 : le clic suivant vaut accord explicite
+  const [forcerSuppression, setForcerSuppression] = useState(false)
 
   // lu apres le montage : localStorage n'existe pas cote serveur
   const [utilisateurConnecte, setUtilisateurConnecte] = useState(null)
@@ -79,6 +93,62 @@ export default function UniversiteProfilPage() {
 
   const handleVoirEtudiant = (idEtudiant) => {
     router.push(`/pages/etudiantProfil/${idEtudiant}`)
+  }
+
+  /* Tout remettre a zero : reouvrir la modale ne doit pas retrouver un
+     mot de passe saisi ni un « forcer » accorde precedemment. */
+  const fermerModal = () => {
+    if (suppressionEnCours) return
+    setModalOuverte(false)
+    setMotDePasse('')
+    setConfirmationTexte('')
+    setErreurSuppression('')
+    setForcerSuppression(false)
+  }
+
+  const suppressionPrete =
+    motDePasse.length > 0 && confirmationTexte === 'SUPPRIMER'
+
+  const handleSupprimerCompte = async () => {
+    if (!suppressionPrete || suppressionEnCours) return
+    setErreurSuppression('')
+    setSuppressionEnCours(true)
+
+    try {
+      const res = await fetch(`/api/universiteProfil/${idUniversite}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({
+          motDePasse,
+          confirmation: 'SUPPRIMER',
+          forcer: forcerSuppression
+        })
+      })
+      const resultat = await res.json()
+
+      if (!res.ok) {
+        setErreurSuppression(resultat.error || `Erreur ${res.status}`)
+        if (resultat.code === 'ETUDIANTS_RATTACHES') setForcerSuppression(true)
+        setSuppressionEnCours(false)
+        return
+      }
+
+      /* Le compte n'existe plus : le jeton en memoire ne vaut plus rien,
+         on nettoie avant de sortir, puis retour a l'accueil.
+
+         replace() et non push() : revenir en arriere ramenerait sur un
+         profil qui n'existe plus, et le fetch echouerait en « Université
+         introuvable ». On efface l'etape de l'historique. */
+      localStorage.clear()
+      router.replace('/')
+    } catch (err) {
+      console.error(err)
+      setErreurSuppression('Erreur réseau, réessayez.')
+      setSuppressionEnCours(false)
+    }
   }
 
   if (isLoading) {
@@ -301,6 +371,95 @@ export default function UniversiteProfilPage() {
             </EtudiantsGrid>
           )}
         </EtudiantsSection>
+
+        {/* === Zone de danger : uniquement sur son propre profil === */}
+        {estMonProfil && (
+          <DangerZone>
+            <DangerZoneText>
+              <h4>Supprimer mon compte</h4>
+              <p>
+                Efface définitivement le profil de votre établissement et vos
+                messages. Les comptes de vos étudiants sont conservés, mais
+                perdent leur rattachement. Cette action ne peut pas être annulée.
+              </p>
+            </DangerZoneText>
+            <DangerButton onClick={() => setModalOuverte(true)}>
+              <Trash2 size={14} strokeWidth={2} />
+              Supprimer mon compte
+            </DangerButton>
+          </DangerZone>
+        )}
+
+        {/* === Modale de confirmation === */}
+        {modalOuverte && (
+          <ModalOverlay onClick={fermerModal}>
+            <ModalBox onClick={(e) => e.stopPropagation()}>
+              <ModalClose onClick={fermerModal} aria-label="Fermer">
+                <X size={18} strokeWidth={2} />
+              </ModalClose>
+
+              <ModalHeader>
+                <ModalIcon>
+                  <AlertTriangle size={24} strokeWidth={2} />
+                </ModalIcon>
+                <ModalTitle>Supprimer mon compte</ModalTitle>
+              </ModalHeader>
+
+              <ModalWarning>
+                Cette action est <strong>irréversible</strong>. Le profil de
+                votre établissement et vos messages seront définitivement
+                effacés. Les comptes de vos étudiants ne sont pas supprimés :
+                ils perdent simplement leur rattachement et devront le refaire
+                si vous revenez sur la plateforme.
+              </ModalWarning>
+
+              <ModalField>
+                <label htmlFor="mdpSuppression">Mot de passe</label>
+                <input
+                  id="mdpSuppression"
+                  type="password"
+                  autoComplete="current-password"
+                  value={motDePasse}
+                  onChange={(e) => setMotDePasse(e.target.value)}
+                  placeholder="Votre mot de passe"
+                  disabled={suppressionEnCours}
+                />
+              </ModalField>
+
+              <ModalField>
+                <label htmlFor="confirmSuppression">
+                  Tapez <code>SUPPRIMER</code> pour confirmer
+                </label>
+                <input
+                  id="confirmSuppression"
+                  type="text"
+                  value={confirmationTexte}
+                  onChange={(e) => setConfirmationTexte(e.target.value)}
+                  placeholder="SUPPRIMER"
+                  disabled={suppressionEnCours}
+                />
+              </ModalField>
+
+              {erreurSuppression && <ModalError>{erreurSuppression}</ModalError>}
+
+              <ModalActions>
+                <ModalCancelButton onClick={fermerModal} disabled={suppressionEnCours}>
+                  Annuler
+                </ModalCancelButton>
+                <ModalDeleteButton
+                  onClick={handleSupprimerCompte}
+                  disabled={!suppressionPrete || suppressionEnCours}
+                >
+                  {suppressionEnCours
+                    ? 'Suppression...'
+                    : forcerSuppression
+                      ? 'Supprimer quand même'
+                      : 'Supprimer définitivement'}
+                </ModalDeleteButton>
+              </ModalActions>
+            </ModalBox>
+          </ModalOverlay>
+        )}
       </PageContainer>
     </>
   )

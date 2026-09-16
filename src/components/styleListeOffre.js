@@ -235,7 +235,7 @@ export const CompanyName = styled.div`
     text-align: left;
   }
 `
-
+ 
 export const OfferDetails = styled.div`
   flex: 1;
   display: flex;
@@ -368,4 +368,50 @@ export const PaginationInfo = styled.span`
   font-size: 13.5px;
   color: #64748b;
   font-weight: 600;
+`
+
+
+export const HeroSection = styled.section`
+  text-align: center;
+  padding: 50px 24px 30px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  @media (max-width: 640px) {
+    padding: 30px 16px 20px 16px;
+  }
+`
+
+export const HeroTitle = styled.h1`
+  font-size: 36px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 18px 0;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+
+  background: linear-gradient(135deg, #A98B76 0%, #BFA28C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  @media (max-width: 640px) {
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+`
+
+export const HeroDescription = styled.p`
+  font-size: 15.5px;
+  color: #475569;
+  line-height: 1.7;
+  margin: 0 0 32px 0;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 640px) {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
 `

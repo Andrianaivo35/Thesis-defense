@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Landmark, Phone, Info, Save,
-  AlertCircle, CheckCircle2
+  AlertCircle, CheckCircle2, Eye, EyeOff
 } from 'lucide-react'
 import {
   PageContainer,
@@ -19,8 +19,14 @@ import {
   ContainerBoutton,
   Boutton,
   AlertMessage,
-  FooterHint
+  FooterHint,
+  PasswordField, PasswordToggle
 } from '@/components/styleUniversiteRegistreInfo'
+
+/* Longueur minimale du mot de passe.
+   À aligner sur la règle du serveur si elle diffère : ce contrôle est
+   un confort de saisie, pas une sécurité — l'API reste seule juge. */
+const MDP_LONGUEUR_MIN = 6
 
 export default function UniversiteRegistreInfo() {
   const router = useRouter()
@@ -37,6 +43,19 @@ export default function UniversiteRegistreInfo() {
   const [ville, setVille] = useState('')
   const [siteWeb, setSiteWeb] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
+
+  /* Le formulaire tient sur une seule page avec un vrai bouton submit,
+     donc required et minLength fonctionnent déjà. Ce contrôle explicite
+     s'y ajoute pour afficher le message dans la page, au même endroit
+     que les autres erreurs, plutôt que dans une bulle du navigateur. */
+  const erreurMotDePasse = (valeur) => {
+    if (!valeur) return 'Veuillez renseigner un mot de passe.'
+    if (valeur.length < MDP_LONGUEUR_MIN) {
+      return `Le mot de passe doit contenir au moins ${MDP_LONGUEUR_MIN} caractères.`
+    }
+    return null
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -45,6 +64,14 @@ export default function UniversiteRegistreInfo() {
     setSuccess('')
 
     try {
+      const probleme = erreurMotDePasse(motDePasse)
+      if (probleme) {
+        setError(probleme)
+        setLoading(false)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
       const res = await fetch('/api/universiteRegistreInfo', {
         method: 'POST',
         headers: { 'Content-type': 'application/json' },
@@ -155,19 +182,51 @@ export default function UniversiteRegistreInfo() {
 
               <ContainerLabelInput>
                 <Label>Mot de passe <span>*</span></Label>
-                <Input
-                  type="password"
-                  value={motDePasse}
-                  onChange={(e) => setMotDePasse(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  disabled={loading}
-                />
-                <HelperText>
-                  <Info size={12} strokeWidth={2} />
-                  Au moins 6 caractères.
-                </HelperText>
+
+                <PasswordField>
+                  <Input
+                    type={afficherMotDePasse ? 'text' : 'password'}
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={MDP_LONGUEUR_MIN}
+                    disabled={loading}
+                  />
+                  {/* type="button" obligatoire : dans un <form>, un bouton
+                      sans type vaut submit et enverrait le formulaire à
+                      chaque clic sur l'œil. */}
+                  <PasswordToggle
+                    type="button"
+                    onClick={() => setAfficherMotDePasse(v => !v)}
+                    disabled={loading}
+                    aria-label={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    title={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {afficherMotDePasse
+                      ? <EyeOff size={17} strokeWidth={2} />
+                      : <Eye size={17} strokeWidth={2} />}
+                  </PasswordToggle>
+                </PasswordField>
+
+                {/* L'avis apparaît dès la saisie, pas au moment du clic
+                    sur « Créer mon compte ». */}
+                {motDePasse.length === 0 ? (
+                  <HelperText>
+                    <Info size={12} strokeWidth={2} />
+                    Au moins {MDP_LONGUEUR_MIN} caractères.
+                  </HelperText>
+                ) : erreurMotDePasse(motDePasse) ? (
+                  <HelperText style={{ color: '#b1453a' }}>
+                    <AlertCircle size={12} strokeWidth={2} />
+                    {erreurMotDePasse(motDePasse)}
+                  </HelperText>
+                ) : (
+                  <HelperText style={{ color: '#4d5e2c' }}>
+                    <CheckCircle2 size={12} strokeWidth={2} />
+                    Mot de passe valide.
+                  </HelperText>
+                )}
               </ContainerLabelInput>
             </ColumnForm>
 

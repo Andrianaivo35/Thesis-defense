@@ -18,11 +18,11 @@
    ===================================================================== */
 
 import { similarite } from './cooccurrence.js';
-import { VALEUR_NIVEAU, DUREE_EN_MOIS, domaineDeLaFiliere } from './referentiels.js';
+import { VALEUR_NIVEAU, DUREE_EN_MOIS, domaineDeLaFiliere } from './referentiels.js'; 
 
 export const POIDS = {
   competence: 40,
-  filiere: 20,
+  filiere: 20, 
   niveau: 15,
   localisation: 15,
   preference: 10

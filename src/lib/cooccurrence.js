@@ -247,7 +247,7 @@ function construireVecteursTexte(competences) {
   }
 
   const nombreDocuments = documents.size || 1;
-  const vecteurs = new Map();
+  const vecteurs = new Map(); 
   const normes = new Map();
 
   for (const [id, comptes] of documents) {

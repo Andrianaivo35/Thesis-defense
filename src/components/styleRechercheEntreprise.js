@@ -14,7 +14,7 @@ export const PageContainer = styled.div`
 `
 
 export const HeaderSection = styled.div`
-  margin-bottom: 32px;
+  margin-bottom: 32px; 
 `
 export const SearchBarWrapper = styled.div`
   position: relative;

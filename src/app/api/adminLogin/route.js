@@ -18,7 +18,7 @@ export async function POST(req) {
        que la base n'en autorise qu'un seul (migration 008). */
     const email = normaliserEmail(emailSaisi);
 
-    if (!email || !motDePasse) {
+    if (!email || !motDePasse) { 
       return NextResponse.json(
         { error: 'Email et mot de passe requis' },
         { status: 400 }

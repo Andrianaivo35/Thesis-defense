@@ -85,7 +85,7 @@ export default function RechercheEntreprise() {
             </SearchBarWrapper>
           </HeaderSection>
         </HeroSection>
-
+ 
         {/* === LISTE DES ENTREPRISES === */}
         <PageTitle>Découvrir les entreprises</PageTitle>
 

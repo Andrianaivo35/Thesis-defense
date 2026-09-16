@@ -14,7 +14,7 @@
 
    Dans les deux cas il faut reconnaître deux chaînes proches sans être
    identiques. Une seule mécanique — la distance d'édition — traite
-   l'entrée bruitée ET la normalisation du vocabulaire. C'est ce qui fait
+   l'entrée bruitée ET la normalisation du vocabulaire. C'est ce qui fait 
    de ce pipeline une conception cohérente, et non deux briques
    juxtaposées.
 

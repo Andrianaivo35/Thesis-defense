@@ -149,7 +149,7 @@ candidatures existants sont intacts.
 **Pourquoi.** [AMELIORATIONS A2](2%20-%20AMELIORATIONS.md). Incohérence au sein d'une même
 fonctionnalité : la **création** d'offre saisit les compétences en texte libre, alors que la
 **modification** de la même offre utilise le référentiel. Le serveur applique un
-*find-or-create* : toute compétence inconnue crée une ligne dans `CompetenceReference`.
+*find-or-create* : toute compétence inconnue crée une ligne dans `CompetenceReference`. 
 C'est l'origine exacte de l'entrée `kjhd`.
 
 **C'est le prérequis n° 1 du [PLAN §3](0%20-%20PLAN.md)** : si « JavaScript », « Javascript » et

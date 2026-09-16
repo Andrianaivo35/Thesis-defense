@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, ArrowRight } from 'lucide-react'
+import { AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import {
   ButtonLoginContainer,
   BouttonContainer,
@@ -14,18 +14,20 @@ import {
   StyledImage,
   FormulaireContainer,
   InputLabelContainer,
-  TexteContainer,
+  TexteContainer, 
   ErrorMessage,
   FormFooter,
   FooterHint,
-  FooterLink,
-  ForgotLink
+  FooterLink, 
+  ForgotLink,
+  PasswordField, PasswordToggle
 } from '@/components/styleUniversiteLogin'
 
 export default function UniversiteLogin() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -95,14 +97,30 @@ export default function UniversiteLogin() {
 
               <InputLabelContainer>
                 <LabelForm>Mot de passe</LabelForm>
-                <InputForm
-                  type="password"
-                  value={motDePasse}
-                  onChange={(e) => setMotDePasse(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  disabled={isLoading}
-                />
+                <PasswordField>
+                  <InputForm
+                    type={afficherMotDePasse ? 'text' : 'password'}
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    disabled={isLoading}
+                  />
+                  {/* type="button" obligatoire : dans un <form>, un bouton
+                      sans type vaut submit et tenterait la connexion à
+                      chaque clic sur l'œil. */}
+                  <PasswordToggle
+                    type="button"
+                    onClick={() => setAfficherMotDePasse(v => !v)}
+                    disabled={isLoading}
+                    aria-label={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    title={afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {afficherMotDePasse
+                      ? <EyeOff size={17} strokeWidth={2} />
+                      : <Eye size={17} strokeWidth={2} />}
+                  </PasswordToggle>
+                </PasswordField>
               </InputLabelContainer>
 
               <BouttonContainer>

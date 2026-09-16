@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchAuth } from '@/lib/auth'
 import AppNavbar from '@/components/appNavbar'
+import ChangerMotDePasseModal from '@/components/changerMotDePasseModal'
 import {
   AlertCircle, CheckCircle2, Building2, Phone, ImageIcon, FolderOpen,
-  Trash2, Lightbulb, Lock, Save
+  Trash2, Lightbulb, Lock, Save, ArrowRight
 } from 'lucide-react'
 import {
   PageContainer, BackButton,
@@ -27,6 +28,11 @@ export default function EntrepriseModifierProfilPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  /* Changement de mot de passe : même modale que côté étudiant.
+     L'entreprise reste ainsi sur son formulaire — quitter la page pour
+     une page dédiée faisait perdre les modifications non enregistrées. */
+  const [showPwdModal, setShowPwdModal] = useState(false)
 
   const [formData, setFormData] = useState({
     nomEntreprise: '',
@@ -225,8 +231,10 @@ export default function EntrepriseModifierProfilPage() {
                 />
               </ContainerLabelInput>
 
-              <SecurityLink onClick={() => router.push('/pages/entrepriseChangerMotDePasse')}>
-                <Lock size={14} strokeWidth={2} /> Changer mon mot de passe →
+              <SecurityLink onClick={() => setShowPwdModal(true)}>
+                <Lock size={14} strokeWidth={2} />
+                Changer mon mot de passe
+                <ArrowRight size={13} strokeWidth={2.5} />
               </SecurityLink>
             </AccordionBody>
           )}
@@ -348,6 +356,11 @@ export default function EntrepriseModifierProfilPage() {
             )}
           </SaveButton>
         </ActionBar>
+
+        {/* ========== MODAL : CHANGER LE MOT DE PASSE ========== */}
+        {showPwdModal && (
+          <ChangerMotDePasseModal onClose={() => setShowPwdModal(false)} />
+        )}
       </PageContainer>
     </>
   )
