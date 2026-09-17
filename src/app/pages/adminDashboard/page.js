@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation'
 import { fetchAuth, getUtilisateur, logout } from '@/lib/auth'
 import {
   ShieldCheck, AlertCircle, BarChart3, PieChart as PieChartIcon, TrendingUp,
-  Search, Eye, X, Building2, GraduationCap, CheckCircle2, Info
+  Search, Eye, X, Building2, GraduationCap, CheckCircle2, Info, Wrench
 } from 'lucide-react'
+import AdminCompetences from '@/components/adminCompetences'
 import {
   DashboardContainer,
   NotificationBanner,
@@ -191,7 +192,8 @@ export default function AdminDashboard() {
     { key: 'entreprises', label: `Entreprises (${data.entreprises.length})` },
     { key: 'universites', label: `Universités (${data.universites.length})` },
     { key: 'etudiants', label: `Étudiants (${data.etudiants.length})` },
-    { key: 'offres', label: `Offres (${data.offres.length})` }
+    { key: 'offres', label: `Offres (${data.offres.length})` },
+    { key: 'competences', label: 'Compétences', icone: Wrench }
   ]
 
   const IconeNotification = notification ? ICONE_NOTIFICATION[notification.type] : null
@@ -238,7 +240,7 @@ export default function AdminDashboard() {
       </TabsBar>
 
       {/* Cache la barre de recherche dans l'onglet stats */}
-      {activeTab !== 'stats' && (
+      {activeTab !== 'stats' && activeTab !== 'competences' && (
         <Toolbar>
           <SearchBarWrapper>
             <SearchIcon><Search size={16} strokeWidth={2} /></SearchIcon>
@@ -484,6 +486,11 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </Table>
+        )}
+
+        {/* ========== 6. COMPÉTENCES ========== */}
+        {activeTab === 'competences' && (
+          <AdminCompetences notifier={afficherNotification} />
         )}
 
         {/* ========== 5. OFFRES ========== */}

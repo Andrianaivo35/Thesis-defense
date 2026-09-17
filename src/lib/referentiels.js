@@ -93,6 +93,27 @@ export const DUREE_EN_MOIS = {
        pour rester cohérentes d'un écran à l'autre --- */
 export const NIVEAUX_COMPETENCE = ['Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
 
+/* Catégories du référentiel de compétences. La valeur est celle stockée
+   en base, sans accent, comme les compétences existantes ; le libellé est
+   celui qu'on affiche. La catégorie entre dans le calcul de similarité :
+   deux compétences de même catégorie sont réputées un peu plus proches,
+   en dernier recours, quand ni leur description ni les offres ne les
+   départagent. */
+export const CATEGORIES_COMPETENCE = [
+  { valeur: 'Technique', libelle: 'Technique' },
+  { valeur: 'Donnees', libelle: 'Données' },
+  { valeur: 'Reseaux', libelle: 'Réseaux' },
+  { valeur: 'Gestion', libelle: 'Gestion' },
+  { valeur: 'Industrie', libelle: 'Industrie' },
+  { valeur: 'Langue', libelle: 'Langue' },
+];
+
+/* Bornes de la description d'une compétence. Elle pèse 60 % de la mesure
+   de similarité : trop courte, elle ne partage aucun terme avec ses
+   voisines et la compétence reste isolée. */
+export const DESCRIPTION_COMPETENCE_MIN = 40;
+export const DESCRIPTION_COMPETENCE_MAX = 400;
+
 export const OPTIONS_TELETRAVAIL = ['Oui', 'Non', 'Hybride'];
 
 export const TYPES_STAGE = [
