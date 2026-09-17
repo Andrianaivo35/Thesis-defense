@@ -1,6 +1,7 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
+import { normaliserMatricule, titulaireDuMatricule, estConflitMatricule, messageMatriculePris } from '@/lib/matricule';
 
 // === GET : récupérer toutes les infos modifiables de l'étudiant connecté ===
 export async function GET(req) {
@@ -23,7 +24,7 @@ export async function GET(req) {
         e."photoProfil", e."bio",
         e."matricule", e."filiere", e."specialisation", e."niveauAcademique",
         e."idUniversite", e."nomUniversiteSaisi",
-        e."statutRattachement",
+        e."statutRattachement", e."estVerifieIdentite",
         univ."nomUniversite"
       FROM etudiant e
       LEFT JOIN universite univ ON e."idUniversite" = univ."idUniversite"
@@ -143,13 +144,51 @@ export async function PATCH(req) {
        nouvel établissement de confirmer. Le statut n'est pas touché si
        l'étudiant reste dans la même université. */
     const rattachementActuel = await client.query(
-      'SELECT "idUniversite" FROM etudiant WHERE "idEtudiant" = $1',
+      `SELECT "idUniversite", "matricule", "statutRattachement", "estVerifieIdentite"
+         FROM etudiant WHERE "idEtudiant" = $1`,
       [idEtudiant]
     );
-    const ancienIdUniversite = rattachementActuel.rows[0]?.idUniversite || null;
+    const actuel = rattachementActuel.rows[0] || {};
+    const ancienIdUniversite = actuel.idUniversite || null;
     const universiteChangee =
       idUniversiteMatched !== null &&
       String(idUniversiteMatched) !== String(ancienIdUniversite);
+
+    /* === Matricule ===
+       Un matricule ne s'efface pas une fois déclaré : c'est lui qui permet
+       à l'établissement de reconnaître l'étudiant. Il peut en revanche
+       être corrigé. */
+    const matriculeFourni = matricule !== undefined && matricule !== null;
+    if (matriculeFourni && !String(matricule).trim() && actuel.matricule) {
+      await client.query('ROLLBACK');
+      return NextResponse.json(
+        { error: 'Le matricule ne peut pas être effacé. Vous pouvez le corriger.' },
+        { status: 400 }
+      );
+    }
+    const matriculeChange = matriculeFourni &&
+      normaliserMatricule(matricule) !== normaliserMatricule(actuel.matricule);
+
+    /* Unicité dans l'établissement visé : celui qu'il rejoint, ou celui
+       auquel il est déjà rattaché. Un étudiant refusé ou sorti n'occupe
+       aucun matricule. */
+    const universiteVisee = idUniversiteMatched ?? ancienIdUniversite;
+    const occupeUnMatricule = universiteChangee ||
+      !['Refuse', 'Sorti'].includes(actuel.statutRattachement);
+    if ((matriculeChange || universiteChangee) && universiteVisee && occupeUnMatricule) {
+      const titulaire = await titulaireDuMatricule(
+        client, universiteVisee, matriculeFourni ? matricule : actuel.matricule, idEtudiant);
+      if (titulaire) {
+        await client.query('ROLLBACK');
+        return NextResponse.json({ error: messageMatriculePris(titulaire) }, { status: 409 });
+      }
+    }
+
+    /* La vérification d'identité atteste qu'une personne est bien le
+       titulaire d'un matricule, dans un établissement. Si l'un ou l'autre
+       change, l'attestation ne porte plus sur rien : elle est retirée, et
+       l'établissement devra la refaire. */
+    const verificationRetiree = Boolean(actuel.estVerifieIdentite) && (matriculeChange || universiteChangee);
 
     await client.query(`
       UPDATE etudiant SET
@@ -316,15 +355,30 @@ export async function PATCH(req) {
       }
     }
 
+    if (verificationRetiree) {
+      await client.query(
+        `UPDATE etudiant SET "estVerifieIdentite" = false, "dateVerificationIdentite" = NULL
+          WHERE "idEtudiant" = $1`,
+        [idEtudiant]);
+    }
+
     await client.query('COMMIT');
 
     return NextResponse.json({
       success: true,
-      message: 'Profil mis à jour avec succès'
+      verificationRetiree,
+      message: verificationRetiree
+        ? 'Profil mis à jour. Votre ' + (matriculeChange ? 'matricule' : 'établissement') +
+          " ayant changé, la vérification de votre identité a été retirée : votre établissement" +
+          ' devra la refaire.'
+        : 'Profil mis à jour avec succès'
     }, { status: 200 });
 
   } catch (error) {
     await client.query('ROLLBACK');
+    if (estConflitMatricule(error)) {
+      return NextResponse.json({ error: messageMatriculePris(null) }, { status: 409 });
+    }
     console.error('Erreur PATCH etudiantModifierProfil:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour' },

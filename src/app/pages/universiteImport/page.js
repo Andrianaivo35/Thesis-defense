@@ -82,7 +82,12 @@ export default function UniversiteImport() {
 
   const stats = analyse?.statistiques
   const lignes = analyse?.lignes || []
-  const aProbleme = lignes.filter(l => !l.importable || l.avertissements.length > 0)
+  /* Les lignes rapprochées sont montrées avec les anomalies : ce ne sont
+     pas des erreurs, mais l'établissement doit voir qu'aucun compte ne sera
+     créé pour elles. */
+  const aProbleme = lignes.filter(l =>
+    !l.importable || l.avertissements.length > 0 || l.action === 'rapprocher')
+  const nombreEtudiants = (stats?.importables || 0) + (stats?.rapprochements || 0)
   const affichees = toutAfficher ? lignes : aProbleme.slice(0, 30)
 
   return (
@@ -212,6 +217,10 @@ export default function UniversiteImport() {
                         <StatLabel>Comptes à créer</StatLabel>
                       </StatCard>
                       <StatCard>
+                        <StatValue>{stats.rapprochements}</StatValue>
+                        <StatLabel>Déjà inscrits, reconnus par leur matricule</StatLabel>
+                      </StatCard>
+                      <StatCard>
                         <StatValue>{stats.rejetees}</StatValue>
                         <StatLabel>Lignes rejetées</StatLabel>
                       </StatCard>
@@ -261,9 +270,11 @@ export default function UniversiteImport() {
                                 minWidth: 42, color: '#94a3b8', fontVariantNumeric: 'tabular-nums'
                               }}>L{l.ligne}</span>
                               <span style={{ flexShrink: 0, marginTop: 1 }}>
-                                {l.importable
-                                  ? <TriangleAlert size={13} strokeWidth={2} color="#d97706" />
-                                  : <AlertCircle size={13} strokeWidth={2} color="#dc2626" />}
+                                {!l.importable
+                                  ? <AlertCircle size={13} strokeWidth={2} color="#dc2626" />
+                                  : l.action === 'rapprocher'
+                                    ? <CheckCircle2 size={13} strokeWidth={2} color="#15803d" />
+                                    : <TriangleAlert size={13} strokeWidth={2} color="#d97706" />}
                               </span>
                               <span style={{ minWidth: 0, flex: 1 }}>
                                 <strong style={{ color: '#334155' }}>
@@ -273,6 +284,14 @@ export default function UniversiteImport() {
                                 <div style={{ color: l.importable ? '#b45309' : '#b91c1c', marginTop: 2 }}>
                                   {[...l.erreurs, ...l.avertissements].join(' · ')}
                                 </div>
+                                {l.importable && l.action === 'rapprocher' && (
+                                  <div style={{ color: '#15803d', marginTop: 2 }}>
+                                    déjà inscrit(e) avec le matricule {l.matricule} : aucun compte créé,
+                                    {l.rapprochement?.statut === 'En attente'
+                                      ? ' son rattachement sera validé et il ou elle rejoindra la promotion'
+                                      : ' il ou elle rejoindra la promotion'}
+                                  </div>
+                                )}
                               </span>
                             </div>
                           ))}
@@ -283,7 +302,7 @@ export default function UniversiteImport() {
                         <CardMeta style={{ marginTop: 12 }}>
                           <MetaItem style={{ color: '#15803d' }}>
                             <CheckCircle2 size={13} strokeWidth={2} />
-                            Aucune anomalie : les {stats.importables} lignes sont prêtes.
+                            Aucune anomalie : les {nombreEtudiants} lignes sont prêtes.
                           </MetaItem>
                         </CardMeta>
                       )}
@@ -307,7 +326,7 @@ export default function UniversiteImport() {
                         <CardMeta style={{ marginTop: 6 }}>
                           <MetaItem>
                             <Info size={13} strokeWidth={2} />
-                            Ces {stats.importables} étudiants formeront un groupe que vous
+                            Ces {nombreEtudiants} étudiants formeront un groupe que vous
                             pourrez ensuite gérer d&apos;un seul geste.
                           </MetaItem>
                         </CardMeta>
@@ -336,11 +355,15 @@ export default function UniversiteImport() {
                           <ArrowLeft size={13} strokeWidth={2} /> Changer de fichier
                         </ActionButton>
                         <ActionButton type="button"
-                          disabled={enCours || stats.importables === 0 || !promotion.trim()}
+                          disabled={enCours || nombreEtudiants === 0 || !promotion.trim()}
                           onClick={() => envoyer('confirmation')}>
                           {enCours
-                            ? 'Création en cours...'
-                            : `Créer les ${stats.importables} comptes`}
+                            ? 'Enregistrement en cours...'
+                            : stats.rapprochements === 0
+                              ? `Créer les ${stats.importables} comptes`
+                              : stats.importables === 0
+                                ? `Rattacher les ${stats.rapprochements} étudiants`
+                                : `Créer ${stats.importables} comptes et rattacher ${stats.rapprochements} étudiants`}
                           {!enCours && <ArrowRight size={13} strokeWidth={2.5} />}
                         </ActionButton>
                       </CardFooter>

@@ -37,6 +37,8 @@ export default function EtudiantModifierProfilPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [identiteVerifiee, setIdentiteVerifiee] = useState(false)
+  const [matriculeInitial, setMatriculeInitial] = useState('')
 
   const [showPwdModal, setShowPwdModal] = useState(false)
 
@@ -183,6 +185,8 @@ export default function EtudiantModifierProfilPage() {
             niveau: c.niveau || 'Débutant'
           }))
         })
+        setIdentiteVerifiee(Boolean(e.estVerifieIdentite))
+        setMatriculeInitial(e.matricule || '')
       } catch (err) {
         setError(err.message)
       } finally {
@@ -446,7 +450,9 @@ export default function EtudiantModifierProfilPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || data.details || 'Erreur')
 
-      setSuccess('Profil mis à jour avec succès !')
+      setSuccess(data.message || 'Profil mis à jour avec succès !')
+      if (data.verificationRetiree) setIdentiteVerifiee(false)
+      setMatriculeInitial(formData.matricule)
       setParcoursActions([])
       setInteretsActions([])
       setCompetencesActions([])
@@ -719,6 +725,16 @@ export default function EtudiantModifierProfilPage() {
                   <ContainerLabelInput>
                     <Label>Matricule</Label>
                     <Input value={formData.matricule} onChange={(e) => updateField('matricule', e.target.value)} />
+                    {/* Prévenir avant l'enregistrement, pas après : l'étudiant
+                        doit savoir qu'une correction de son matricule annule
+                        la vérification faite par son établissement. */}
+                    {identiteVerifiee && formData.matricule.trim() !== matriculeInitial.trim() && (
+                      <p style={{ fontSize: 12.5, color: '#b45309', margin: '6px 0 0', lineHeight: 1.45 }}>
+                        <Info size={12} strokeWidth={2} style={{ verticalAlign: -2, marginRight: 5 }} />
+                        Votre identité a été vérifiée par votre établissement pour ce matricule. Le modifier
+                        retirera cette vérification, qu&apos;il devra refaire.
+                      </p>
+                    )}
                   </ContainerLabelInput>
                 </FormColumn>
               </FormGrid>

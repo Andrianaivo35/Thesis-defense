@@ -5,6 +5,7 @@ import { creerJeton, TYPE_ACTIVATION } from '@/lib/jetons';
 import { envoyerLienActivation, lienActivation, envoiConfigure } from '@/lib/mail';
 import { declencherVidage } from '@/lib/fileCourriel';
 import { normaliserEmail, estConflitEmail, MESSAGE_EMAIL_PRIS } from '@/lib/email';
+import { titulaireDuMatricule, estConflitMatricule } from '@/lib/matricule';
 
 /* =====================================================================
    POST : création d'un compte étudiant par son université
@@ -55,6 +56,27 @@ export async function POST(req) {
         { error: MESSAGE_EMAIL_PRIS },
         { status: 409 }
       );
+    }
+
+    /* Un matricule déjà occupé dans l'établissement désigne, le plus
+       souvent, un étudiant qui s'est inscrit lui-même : lui créer un second
+       compte ferait deux profils pour une personne. On oriente
+       l'établissement vers la bonne action plutôt que de simplement
+       refuser. */
+    if (matricule?.trim()) {
+      const titulaire = await titulaireDuMatricule(client, idUniversite, matricule);
+      if (titulaire) {
+        const qui = `${titulaire.prenomEtudiant || ''} ${titulaire.nomEtudiant || ''}`.trim();
+        return NextResponse.json(
+          {
+            error: titulaire.statutRattachement === 'En attente'
+              ? `Ce matricule est celui de ${qui}, déjà inscrit(e) sur la plateforme et en attente de ` +
+                `rattachement. Validez sa demande depuis « Mes étudiants » plutôt que de créer un second compte.`
+              : `Ce matricule est déjà attribué à ${qui}, rattaché(e) à votre établissement.`
+          },
+          { status: 409 }
+        );
+      }
     }
 
     await client.query('BEGIN');
@@ -146,6 +168,11 @@ export async function POST(req) {
        plutôt qu'en « erreur serveur ». */
     if (estConflitEmail(error)) {
       return NextResponse.json({ error: MESSAGE_EMAIL_PRIS }, { status: 409 });
+    }
+    if (estConflitMatricule(error)) {
+      return NextResponse.json(
+        { error: "Ce matricule vient d'être attribué à un autre étudiant de votre établissement." },
+        { status: 409 });
     }
     console.error('Erreur ajout étudiant:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

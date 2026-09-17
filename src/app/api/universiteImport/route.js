@@ -6,6 +6,8 @@ import { creerJeton, TYPE_ACTIVATION } from '@/lib/jetons';
 import { envoyerLienActivation, lienActivation, envoiConfigure } from '@/lib/mail';
 import { trouverOuCreerPromotion, estAnneeValide } from '@/lib/promotions';
 import { declencherVidage } from '@/lib/fileCourriel';
+import { matriculesOccupes } from '@/lib/matricule';
+import { envoyerMessageInterne } from '@/lib/messagerie';
 
 /* =====================================================================
    POST /api/universiteImport — import d'une promotion
@@ -73,7 +75,12 @@ export async function POST(req) {
     const existantes = await client.query('SELECT lower("emailUtilisateur") AS email FROM utilisateur');
     const emailsExistants = new Set(existantes.rows.map(r => r.email));
 
-    const analyse = analyserFichier(tampon, emailsExistants);
+    /* Les matricules déjà occupés dans l'établissement : une ligne qui en
+       porte un désigne un étudiant déjà inscrit, à rapprocher plutôt qu'à
+       créer une seconde fois. */
+    const matricules = await matriculesOccupes(client, payload.idUniversite);
+
+    const analyse = analyserFichier(tampon, emailsExistants, matricules);
 
     if (etape === 'analyse') {
       return NextResponse.json({
@@ -141,7 +148,10 @@ export async function POST(req) {
     const nomUniversite = universite.rows[0]?.nomUniversite || null;
 
     const aImporter = analyse.lignes.filter(l => l.importable);
+    const aCreer = aImporter.filter(l => l.action === 'creer');
+    const aRapprocher = aImporter.filter(l => l.action === 'rapprocher');
     const crees = [];
+    const rapproches = [];
 
     await client.query('BEGIN');
     let promotion;
@@ -160,7 +170,36 @@ export async function POST(req) {
         specialisation: modele.specialisation || null
       });
 
-      for (const ligne of aImporter) {
+      /* Les étudiants rapprochés : déjà inscrits d'eux-mêmes, reconnus par
+         leur matricule et leur nom. Le fichier officiel de l'établissement
+         vaut validation de leur demande de rattachement ; ils rejoignent la
+         promotion. Aucun compte n'est créé, aucun lien d'activation émis. */
+      for (const ligne of aRapprocher) {
+        const { rows } = await client.query(
+          `UPDATE etudiant
+              SET "idPromotion" = $1,
+                  "statutRattachement" = 'Valide',
+                  "dateRattachement" = CASE WHEN "statutRattachement" = 'En attente'
+                                            THEN now() ELSE "dateRattachement" END
+            WHERE "idEtudiant" = $2 AND "idUniversite" = $3
+            RETURNING "idUtilisateur", "prenomEtudiant", "nomEtudiant"`,
+          [promotion.idPromotion, ligne.rapprochement.idEtudiant, payload.idUniversite]);
+        if (rows.length === 0) continue;
+        rapproches.push({
+          nom: `${rows[0].prenomEtudiant} ${rows[0].nomEtudiant}`,
+          etaitEnAttente: ligne.rapprochement.statut === 'En attente'
+        });
+        await envoyerMessageInterne(client, {
+          idExpediteur: payload.idUtilisateur,
+          idDestinataire: rows[0].idUtilisateur,
+          contenu: ligne.rapprochement.statut === 'En attente'
+            ? `Votre établissement ${nomUniversite || ''} a reconnu votre matricule dans sa liste officielle : ` +
+              `votre rattachement est validé, et vous faites partie de la promotion « ${promotion.libelle} ${promotion.annee} ».`
+            : `Votre établissement ${nomUniversite || ''} vous a ajouté à la promotion « ${promotion.libelle} ${promotion.annee} ».`
+        });
+      }
+
+      for (const ligne of aCreer) {
         /* Compte inactif et sans mot de passe : c'est l'étudiant qui
            choisira le sien via le lien d'activation (Lot 6.2). Aucun
            appel à bcrypt, donc aucun problème de durée même sur une
@@ -235,10 +274,16 @@ export async function POST(req) {
     const envoyes = crees.filter(c => c.enFile).length;
     declencherVidage();
 
+    const phraseRapproches = rapproches.length === 0 ? '' :
+      ` ${rapproches.length} étudiant${rapproches.length > 1 ? 's' : ''} déjà inscrit${rapproches.length > 1 ? 's' : ''}` +
+      ` sur la plateforme ${rapproches.length > 1 ? 'ont été reconnus' : 'a été reconnu'} par ${rapproches.length > 1 ? 'leur' : 'son'} matricule` +
+      ` et ${rapproches.length > 1 ? 'rattachés' : 'rattaché'} à la promotion, sans nouveau compte.`;
+
     return NextResponse.json({
       etape: 'confirmation',
       success: true,
       comptesCrees: crees.length,
+      rapproches,
       courrielsEnFile: envoyes,
       promotion: { idPromotion: promotion.idPromotion,
                    libelle: promotion.libelle, annee: promotion.annee },
@@ -251,13 +296,15 @@ export async function POST(req) {
          Le test porte sur la configuration, pas sur le succès d'un envoi
          donné : si SMTP est configuré mais qu'un envoi échoue, rendre le
          lien permettrait de les récolter en provoquant des échecs. */
-      liens: envoiConfigure() && envoyes === crees.length ? null : crees.map(c => ({
+      liens: crees.length === 0 || (envoiConfigure() && envoyes === crees.length) ? null : crees.map(c => ({
         nom: c.nom, email: c.email, lien: lienActivation(c.jeton)
       })),
       message: envoiConfigure() && envoyes === crees.length
-        ? `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». Le lien d'activation part vers chaque étudiant.`
-        : `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». L'envoi de courriel n'étant pas configuré, ` +
-          `transmettez les liens ci-dessous à vos étudiants.`
+        ? `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». Le lien d'activation part vers chaque étudiant.` + phraseRapproches
+        : crees.length === 0
+          ? `Promotion « ${promotion.libelle} — ${promotion.annee} » :` + phraseRapproches
+          : `${crees.length} comptes créés dans la promotion « ${promotion.libelle} — ${promotion.annee} ». L'envoi de courriel n'étant pas configuré, ` +
+            `transmettez les liens ci-dessous à vos étudiants.` + phraseRapproches
     }, { status: 201 });
 
   } catch (error) {

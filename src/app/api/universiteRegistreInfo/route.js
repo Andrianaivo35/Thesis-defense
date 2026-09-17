@@ -131,6 +131,20 @@ export async function POST(req){
             WHERE "idUniversite" IS NULL
               AND "statutRattachement" IS NULL
               AND "nomUniversiteSaisi" IS NOT NULL
+              /* Deux étudiants déclarant le même matricule ne peuvent pas
+                 être rattachés ensemble : le matricule est unique dans un
+                 établissement. Seul le premier inscrit l'est ; les autres
+                 restent en attente d'une correction de leur part. Les
+                 étudiants sans matricule ne sont pas concernés. */
+              AND ("matricule" IS NULL OR btrim("matricule") = '' OR "idEtudiant" IN (
+                SELECT DISTINCT ON (upper(regexp_replace(m."matricule", '\\s', '', 'g'))) m."idEtudiant"
+                  FROM etudiant m
+                 WHERE m."idUniversite" IS NULL AND m."statutRattachement" IS NULL
+                   AND m."matricule" IS NOT NULL AND btrim(m."matricule") <> ''
+                   AND LOWER(regexp_replace(
+                         translate(m."nomUniversiteSaisi", 'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ', 'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC'),
+                         '[^a-zA-Z0-9]+', ' ', 'g')) = $2
+                 ORDER BY upper(regexp_replace(m."matricule", '\\s', '', 'g')), m."idEtudiant"))
               AND LOWER(
                 regexp_replace(
                   translate("nomUniversiteSaisi", 'àâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ', 'aaaeeeeiioouuuycAAAEEEEIIOOUUUYC'),

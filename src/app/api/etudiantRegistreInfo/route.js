@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { validerMotDePasse } from '@/lib/motDePasse';
 import { normalizeName } from '@/lib/normalize';
 import { normaliserEmail, estEmailValide, estConflitEmail, MESSAGE_EMAIL_PRIS } from '@/lib/email';
+import { titulaireDuMatricule, estConflitMatricule, messageMatriculePris } from '@/lib/matricule';
 
 export async function POST(req) {
   const client = await pool.connect();
@@ -103,6 +104,16 @@ export async function POST(req) {
       );
     }
 
+    /* Le matricule est exigé ici et non plus seulement par le formulaire :
+       c'est lui qui permet à l'établissement de reconnaître l'étudiant, et
+       sans lui aucune vérification d'identité n'est possible. */
+    if (!matricule || !String(matricule).trim()) {
+      return NextResponse.json(
+        { error: 'Le matricule attribué par votre établissement est obligatoire.' },
+        { status: 400 }
+      );
+    }
+
     /* === Rattachement à une université ===
        Priorité à l'identifiant transmis par le formulaire : c'est un choix
        explicite de l'étudiant, il n'y a rien à deviner.
@@ -147,6 +158,23 @@ export async function POST(req) {
       if (matchResult.rows.length > 0) {
         idUniversiteMatched = matchResult.rows[0].idUniversite;
         nomUniversiteFinal = matchResult.rows[0].nomUniversite;
+      }
+    }
+
+    /* === Matricule déjà occupé dans cet établissement ===
+       Vérifiable seulement si l'établissement est connu. Pour une
+       université pas encore inscrite, le contrôle a lieu au moment du
+       rattachement automatique. */
+    if (idUniversiteMatched) {
+      const titulaire = await titulaireDuMatricule(client, idUniversiteMatched, matricule);
+      if (titulaire) {
+        const memePersonne =
+          String(titulaire.nomEtudiant || '').trim().toLowerCase() === String(nom).trim().toLowerCase() &&
+          String(titulaire.prenomEtudiant || '').trim().toLowerCase() === String(prenom).trim().toLowerCase();
+        return NextResponse.json(
+          { error: messageMatriculePris(titulaire, memePersonne) },
+          { status: 409 }
+        );
       }
     }
 
@@ -366,6 +394,9 @@ export async function POST(req) {
        plutôt qu'en « erreur serveur ». */
     if (estConflitEmail(error)) {
       return NextResponse.json({ error: MESSAGE_EMAIL_PRIS }, { status: 409 });
+    }
+    if (estConflitMatricule(error)) {
+      return NextResponse.json({ error: messageMatriculePris(null) }, { status: 409 });
     }
     console.error('Erreur complète:', error);
     return NextResponse.json(

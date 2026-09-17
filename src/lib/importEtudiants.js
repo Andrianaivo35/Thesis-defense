@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import { lireCSV } from './csv.js';
 import { normaliserEmail, estEmailValide } from './email.js';
 import { NIVEAUX_ACADEMIQUES, DOMAINES, filieresDuDomaine } from './referentiels.js';
+import { normaliserMatricule, memeNom } from './matricule.js';
 
 /* =====================================================================
    IMPORT D'UNE PROMOTION — analyse et validation
@@ -92,9 +93,22 @@ function apparierReferentiel(valeur, liste) {
  *
  * @param {Buffer} tampon contenu du fichier
  * @param {Set<string>} emailsExistants adresses déjà en base, normalisées
+ * @param {Map<string, object>} matricules matricules déjà occupés dans
+ *   l'établissement, indexés par leur forme normalisée (lib/matricule.js)
+ *
+ * RAPPROCHEMENT PAR MATRICULE
+ *
+ * Une ligne dont le matricule est déjà occupé dans l'établissement ne crée
+ * pas de compte :
+ *   - si le titulaire porte le même nom et le même prénom, c'est la même
+ *     personne, qui s'est inscrite d'elle-même : elle est RAPPROCHÉE, donc
+ *     rattachée à la promotion, et son rattachement est validé s'il était
+ *     en attente. Le fichier officiel de l'établissement vaut confirmation ;
+ *   - sinon, deux personnes revendiquent le même matricule : la ligne est
+ *     rejetée, et l'établissement doit trancher.
  * @returns {object} récapitulatif complet, prêt à afficher
  */
-export function analyserFichier(tampon, emailsExistants = new Set()) {
+export function analyserFichier(tampon, emailsExistants = new Set(), matricules = new Map()) {
   const { entetes, lignes, separateur, total } = lireCSV(tampon);
 
   if (total === 0) {
@@ -121,6 +135,7 @@ export function analyserFichier(tampon, emailsExistants = new Set()) {
      des adresses déjà en base : ce ne sont pas la même erreur, et
      l'université ne les corrige pas de la même façon. */
   const vues = new Map();
+  const matriculesVus = new Map();
   const analysees = [];
 
   for (const brute of lignes) {
@@ -137,13 +152,41 @@ export function analyserFichier(tampon, emailsExistants = new Set()) {
       filiereBrut: lire('filiere'),
       specialisationBrut: lire('specialisation'),
       erreurs: [],
-      avertissements: []
+      avertissements: [],
+      action: 'creer',
+      rapprochement: null
     };
 
     if (!ligne.nom) ligne.erreurs.push('nom manquant');
     if (!ligne.prenom) ligne.erreurs.push('prénom manquant');
 
-    if (!ligne.email) {
+    const cleMatricule = normaliserMatricule(ligne.matricule);
+    if (cleMatricule) {
+      if (matriculesVus.has(cleMatricule)) {
+        ligne.erreurs.push(`matricule en double dans le fichier (ligne ${matriculesVus.get(cleMatricule)})`);
+      } else {
+        matriculesVus.set(cleMatricule, ligne.ligne);
+      }
+      const titulaire = matricules.get(cleMatricule);
+      if (titulaire) {
+        const qui = `${titulaire.prenomEtudiant || ''} ${titulaire.nomEtudiant || ''}`.trim();
+        if (memeNom(titulaire.nomEtudiant, ligne.nom) && memeNom(titulaire.prenomEtudiant, ligne.prenom)) {
+          ligne.action = 'rapprocher';
+          ligne.rapprochement = {
+            idEtudiant: titulaire.idEtudiant,
+            statut: titulaire.statutRattachement
+          };
+        } else {
+          ligne.erreurs.push(`matricule déjà attribué à ${qui} dans votre établissement, sous un autre nom`);
+        }
+      }
+    }
+
+    /* Un étudiant rapproché a déjà son compte : l'adresse du fichier n'a
+       ni à être nouvelle, ni à être celle de son compte. */
+    if (ligne.action === 'rapprocher') {
+      // aucune vérification d'adresse
+    } else if (!ligne.email) {
       ligne.erreurs.push('adresse manquante');
     } else if (!estEmailValide(ligne.email)) {
       ligne.erreurs.push('adresse invalide');
@@ -187,7 +230,8 @@ export function analyserFichier(tampon, emailsExistants = new Set()) {
 
   const statistiques = {
     total: analysees.length,
-    importables: analysees.filter(l => l.importable).length,
+    importables: analysees.filter(l => l.importable && l.action === 'creer').length,
+    rapprochements: analysees.filter(l => l.importable && l.action === 'rapprocher').length,
     rejetees: analysees.filter(l => !l.importable).length,
     avecAvertissement: analysees.filter(l => l.importable && l.avertissements.length > 0).length,
     dejaInscrits: analysees.filter(l => l.erreurs.some(e => e.startsWith('adresse déjà'))).length,
@@ -197,8 +241,8 @@ export function analyserFichier(tampon, emailsExistants = new Set()) {
   };
 
   return {
-    valide: statistiques.importables > 0,
-    erreurGlobale: statistiques.importables === 0
+    valide: statistiques.importables + statistiques.rapprochements > 0,
+    erreurGlobale: statistiques.importables + statistiques.rapprochements === 0
       ? 'Aucune ligne de ce fichier ne peut être importée. Corrigez les erreurs signalées ci-dessous.'
       : null,
     entetes, separateur, colonnes,
@@ -210,7 +254,7 @@ export function analyserFichier(tampon, emailsExistants = new Set()) {
 
 function vides() {
   return {
-    total: 0, importables: 0, rejetees: 0, avecAvertissement: 0,
+    total: 0, importables: 0, rapprochements: 0, rejetees: 0, avecAvertissement: 0,
     dejaInscrits: 0, doublonsFichier: 0, sansNiveau: 0, sansFiliere: 0
   };
 }
@@ -221,7 +265,8 @@ function vides() {
 export function empreinteContenu(lignes) {
   const utile = lignes
     .filter(l => l.importable)
-    .map(l => [l.email, l.nom, l.prenom, l.matricule, l.niveau, l.filiere, l.specialisation].join('|'))
+    .map(l => [l.action, l.rapprochement?.idEtudiant ?? '', l.email, l.nom, l.prenom,
+               l.matricule, l.niveau, l.filiere, l.specialisation].join('|'))
     .join('\n');
   return createHash('sha256').update(utile).digest('hex');
 }
