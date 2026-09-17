@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ETABLISSEMENTS } from '@/lib/etablissements'
+import { normalizeName } from '@/lib/normalize'
 import {
   Landmark, Phone, Info, Save,
   AlertCircle, CheckCircle2, Eye, EyeOff
@@ -44,6 +46,17 @@ export default function UniversiteRegistreInfo() {
   const [siteWeb, setSiteWeb] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
   const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
+
+  /* Un nom choisi dans le référentiel complète le sigle et la ville, sans
+     écraser ce que l'établissement aurait déjà saisi. */
+  const choisirNom = (valeur) => {
+    setNomUniversite(valeur)
+    const connu = ETABLISSEMENTS.find(e => normalizeName(e.nom) === normalizeName(valeur))
+    if (connu) {
+      setSigleUniversitaire(s => s || connu.sigle)
+      setVille(v => v || connu.ville)
+    }
+  }
 
   /* Le formulaire tient sur une seule page avec un vrai bouton submit,
      donc required et minLength fonctionnent déjà. Ce contrôle explicite
@@ -141,15 +154,25 @@ export default function UniversiteRegistreInfo() {
                 <Input
                   type="text"
                   value={nomUniversite}
-                  onChange={(e) => setNomUniversite(e.target.value)}
+                  onChange={(e) => choisirNom(e.target.value)}
                   placeholder="Ex : Université de Toamasina"
+                  list="etablissements-connus"
+                  autoComplete="off"
                   required
                   disabled={loading}
                 />
+                {/* Les mêmes noms que ceux proposés aux étudiants à leur
+                    inscription : choisir le sien dans cette liste garantit
+                    que les étudiants déjà inscrits sous ce nom seront
+                    rattachés. */}
+                <datalist id="etablissements-connus">
+                  {ETABLISSEMENTS.map(e => <option key={e.nom} value={e.nom}>{e.sigle}</option>)}
+                </datalist>
                 <HelperText>
                   <Info size={12} strokeWidth={2} />
-                  Saisissez le nom complet et officiel : c&apos;est lui qui permet de rattacher
-                  automatiquement les étudiants déjà inscrits.
+                  Choisissez votre établissement parmi les propositions, ou saisissez son nom
+                  complet et officiel : c&apos;est lui qui permet de rattacher automatiquement
+                  les étudiants déjà inscrits.
                 </HelperText>
               </ContainerLabelInput>
 

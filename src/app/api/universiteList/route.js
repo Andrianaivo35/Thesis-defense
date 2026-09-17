@@ -1,5 +1,6 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { fusionnerAvecReferentiel } from '@/lib/etablissements';
 
 /* =====================================================================
    GET : liste des universités, pour le sélecteur d'inscription étudiant.
@@ -12,7 +13,11 @@ import { NextResponse } from 'next/server';
    rester sélectionnable, sinon ses étudiants ne peuvent pas s'y rattacher.
    Le statut est exposé pour pouvoir l'afficher côté formulaire.
    ===================================================================== */
-export async function GET() {
+/* ?avecReferentiel=1 ajoute les établissements connus qui n'ont pas encore
+   de compte (voir lib/etablissements.js). Réservé aux formulaires
+   d'inscription : les autres appelants attendent des universités dotées
+   d'un identifiant. */
+export async function GET(req) {
     const client = await pool.connect();
     try {
         const result = await client.query(`
@@ -40,8 +45,9 @@ export async function GET() {
             ORDER BY u."nomUniversite" ASC
         `);
 
+        const avecReferentiel = new URL(req.url).searchParams.get('avecReferentiel') === '1';
         return NextResponse.json(
-            { universites: result.rows },
+            { universites: avecReferentiel ? fusionnerAvecReferentiel(result.rows) : result.rows },
             { status: 200 }
         );
     } catch (error) {

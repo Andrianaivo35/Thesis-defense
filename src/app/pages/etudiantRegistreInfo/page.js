@@ -56,7 +56,7 @@ export default function EtudiantRegistreInfo() {
   useEffect(() => {
     const fetchUniversites = async () => {
       try {
-        const res = await fetch('/api/universiteList')
+        const res = await fetch('/api/universiteList?avecReferentiel=1')
         const data = await res.json()
         if (!res.ok) throw new Error(data.details || data.error)
         setUniversites(data.universites || [])
@@ -105,9 +105,16 @@ export default function EtudiantRegistreInfo() {
      ensuite rapprocher d'une université par normalisation de texte : le
      rattachement échouait silencieusement à la moindre différence d'écriture.
 
-     - idUniversite : renseigné dès qu'une université de la liste est choisie
-     - universite   : le nom, utilisé uniquement en saisie libre (hors liste)
+     La liste réunit les établissements inscrits et ceux, connus, qui n'ont
+     pas encore de compte (lib/etablissements.js). Pour ces derniers, c'est
+     le nom officiel qui part au serveur : l'établissement le retrouvera à
+     l'identique en s'inscrivant, et le rattachement se fera sans ambiguïté.
+
+     - cleUniversite : l'entrée choisie dans la liste (u<id> ou r<rang>)
+     - idUniversite  : renseigné seulement si l'établissement a un compte
+     - universite    : le nom officiel, ou le nom saisi hors liste
      - rechercheUniversite : le texte tapé dans le champ de recherche */
+  const [cleUniversite, setCleUniversite] = useState('')
   const [idUniversite, setIdUniversite] = useState('')
   const [universite, setUniversite] = useState('')
   const [rechercheUniversite, setRechercheUniversite] = useState('')
@@ -135,9 +142,7 @@ export default function EtudiantRegistreInfo() {
     )
   })()
 
-  const universiteChoisie = universites.find(
-    u => String(u.idUniversite) === String(idUniversite)
-  )
+  const universiteChoisie = universites.find(u => u.cle === cleUniversite)
 
   /* Les filières réellement enseignées par l'établissement choisi.
 
@@ -159,15 +164,17 @@ export default function EtudiantRegistreInfo() {
       setFiliere('')
       setSpecialisation('')
     }
-  }, [idUniversite]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cleUniversite]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const choisirUniversite = (u) => {
-    setIdUniversite(u.idUniversite)
+    setCleUniversite(u.cle)
+    setIdUniversite(u.idUniversite || '')
     setUniversite(u.nomUniversite)
     setRechercheUniversite('')
   }
 
   const annulerChoixUniversite = () => {
+    setCleUniversite('')
     setIdUniversite('')
     setUniversite('')
   }
@@ -548,8 +555,16 @@ export default function EtudiantRegistreInfo() {
                           <HelperText>
                             <Info size={12} strokeWidth={2} />
                             {universiteChoisie.ville}
-                            {universiteChoisie.estVerifie === false && ' — en attente de vérification'}
+                            {universiteChoisie.aCompte && universiteChoisie.estVerifie === false &&
+                              ', en attente de vérification'}
                           </HelperText>
+                          {!universiteChoisie.aCompte && (
+                            <HelperText>
+                              <Info size={12} strokeWidth={2} />
+                              Cet établissement n&apos;est pas encore inscrit sur Stage Share.
+                              Vous y serez rattaché dès qu&apos;il créera son compte.
+                            </HelperText>
+                          )}
                         </ItemCard>
                       </>
                     )}
@@ -566,9 +581,7 @@ export default function EtudiantRegistreInfo() {
                         <Select
                           value=""
                           onChange={(e) => {
-                            const u = universites.find(
-                              x => String(x.idUniversite) === String(e.target.value)
-                            )
+                            const u = universites.find(x => x.cle === e.target.value)
                             if (u) choisirUniversite(u)
                           }}
                           size={universitesFiltrees.length > 1 ? 6 : 2}
@@ -591,11 +604,12 @@ export default function EtudiantRegistreInfo() {
                                   alphabétique) semblait impossible à choisir. */}
                               <option value="" disabled hidden>Sélectionnez une université...</option>
                               {universitesFiltrees.map((univ) => (
-                                <option key={univ.idUniversite} value={univ.idUniversite}>
+                                <option key={univ.cle} value={univ.cle}>
                                   {univ.sigleUniversitaire
                                     ? `${univ.sigleUniversitaire} — ${univ.nomUniversite}`
                                     : univ.nomUniversite}
                                   {univ.ville ? ` (${univ.ville})` : ''}
+                                  {!univ.aCompte ? ', pas encore inscrit' : ''}
                                 </option>
                               ))}
                             </>
@@ -603,8 +617,9 @@ export default function EtudiantRegistreInfo() {
                         </Select>
                         <HelperText>
                           <Info size={12} strokeWidth={2} />
-                          Sélectionnez votre université dans la liste pour être rattaché
-                          automatiquement à son établissement.
+                          Choisissez votre établissement dans la liste, même s&apos;il n&apos;est
+                          pas encore inscrit sur Stage Share : vous y serez rattaché
+                          automatiquement.
                         </HelperText>
                       </>
                     )}
